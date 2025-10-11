@@ -9,10 +9,9 @@ import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.newsapp.R
+import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.databinding.FragmentSearchBinding
 import com.example.newsapp.model.NewsArticle
-import com.example.newsapp.model.sampleArticles
-import com.example.newsapp.model.sampleSearchSuggestions
 
 class SearchFragment : Fragment() {
 
@@ -21,6 +20,8 @@ class SearchFragment : Fragment() {
 
     private lateinit var suggestionAdapter: SuggestionAdapter
     private lateinit var resultAdapter: SearchResultAdapter
+    private lateinit var allArticles: List<NewsArticle>
+    private lateinit var suggestionItems: List<String>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,6 +34,8 @@ class SearchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        allArticles = NewsRepository.getArticles(requireContext())
+        suggestionItems = NewsRepository.getSearchSuggestions(requireContext())
         setupAdapters()
         setupListeners()
         showSuggestions()
@@ -51,7 +54,7 @@ class SearchFragment : Fragment() {
         }
         suggestionsRecycler.layoutManager = LinearLayoutManager(requireContext())
         suggestionsRecycler.adapter = suggestionAdapter
-        suggestionAdapter.submitList(sampleSearchSuggestions)
+        suggestionAdapter.submitList(suggestionItems)
 
         resultAdapter = SearchResultAdapter()
         resultsRecycler.layoutManager = LinearLayoutManager(requireContext())
@@ -76,7 +79,7 @@ class SearchFragment : Fragment() {
 
     private fun showResultsForQuery(query: String) {
         val trimmed = query.trim()
-        val filtered: List<NewsArticle> = sampleArticles.filter {
+        val filtered: List<NewsArticle> = allArticles.filter {
             it.title.contains(trimmed, ignoreCase = true) ||
                 it.summary.contains(trimmed, ignoreCase = true) ||
                 it.category.contains(trimmed, ignoreCase = true)
@@ -93,6 +96,6 @@ class SearchFragment : Fragment() {
         suggestionsRecycler.isVisible = true
         resultsRecycler.isVisible = false
         emptyResultText.isVisible = false
-        suggestionAdapter.submitList(sampleSearchSuggestions)
+        suggestionAdapter.submitList(suggestionItems)
     }
 }

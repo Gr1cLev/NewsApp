@@ -9,9 +9,9 @@ import android.widget.Toast
 import androidx.annotation.ColorInt
 import androidx.fragment.app.Fragment
 import com.example.newsapp.R
+import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.databinding.FragmentProfileBinding
 import com.example.newsapp.databinding.ViewProfileStatBinding
-import com.example.newsapp.model.sampleBookmarks
 
 class ProfileFragment : Fragment() {
 
@@ -48,10 +48,11 @@ class ProfileFragment : Fragment() {
     }
 
     private fun setupStats() = with(binding) {
+        val bookmarks = NewsRepository.getBookmarks(requireContext())
         applyStat(
             stat = statBookmarks,
             iconRes = R.drawable.ic_nav_bookmarks,
-            value = sampleBookmarks.size.toString(),
+            value = bookmarks.size.toString(),
             labelRes = R.string.profile_stat_bookmarks,
             startColor = requireContext().getColor(R.color.primary_blue_light),
             endColor = requireContext().getColor(R.color.primary_blue)

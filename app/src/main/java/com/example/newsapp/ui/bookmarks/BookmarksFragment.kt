@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.databinding.FragmentBookmarksBinding
 import com.example.newsapp.model.NewsArticle
-import com.example.newsapp.model.sampleBookmarks
 import com.example.newsapp.ui.news.ArticleAdapter
 
 class BookmarksFragment : Fragment() {
@@ -31,7 +31,7 @@ class BookmarksFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecycler()
-        renderBookmarks(sampleBookmarks)
+        renderBookmarks(NewsRepository.getBookmarks(requireContext()))
     }
 
     override fun onDestroyView() {

@@ -4,15 +4,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.CompositePageTransformer
 import androidx.viewpager2.widget.MarginPageTransformer
+import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.databinding.FragmentNewsBinding
-import com.example.newsapp.model.sampleArticles
-import com.example.newsapp.model.sampleCategories
-import com.example.newsapp.model.sampleFeaturedArticles
+import com.example.newsapp.model.NewsData
 import kotlin.math.abs
 
 class NewsFragment : Fragment() {
@@ -20,15 +20,19 @@ class NewsFragment : Fragment() {
     private var _binding: FragmentNewsBinding? = null
     private val binding get() = _binding!!
 
+    private lateinit var newsData: NewsData
     private lateinit var categoryAdapter: CategoryAdapter
     private lateinit var articleAdapter: ArticleAdapter
     private lateinit var featuredAdapter: FeaturedArticleAdapter
 
-    private var selectedCategoryName: String = sampleCategories.firstOrNull()?.name ?: "All"
+    private var selectedCategoryName: String = "All"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        selectedCategoryName = savedInstanceState?.getString(KEY_SELECTED_CATEGORY) ?: selectedCategoryName
+        newsData = NewsRepository.getNewsData(requireContext())
+        selectedCategoryName = savedInstanceState?.getString(KEY_SELECTED_CATEGORY)
+            ?: newsData.categories.firstOrNull()?.name
+            ?: "All"
     }
 
     override fun onCreateView(
@@ -64,30 +68,35 @@ class NewsFragment : Fragment() {
     }
 
     private fun setupAdapters() {
-        featuredAdapter = FeaturedArticleAdapter(sampleFeaturedArticles)
+        featuredAdapter = FeaturedArticleAdapter(newsData.featuredArticles)
         articleAdapter = ArticleAdapter(showCategory = true)
-        categoryAdapter = CategoryAdapter(sampleCategories) { category ->
+        categoryAdapter = CategoryAdapter(newsData.categories) { category ->
             selectedCategoryName = category.name
             updateArticlesForCategory(category.name)
         }
     }
 
-    private fun setupFeaturedPager() = with(binding.featuredPager) {
-        adapter = featuredAdapter
-        offscreenPageLimit = sampleFeaturedArticles.size.coerceAtLeast(3)
-        setPadding(48.dpToPx(), 0, 48.dpToPx(), 0)
-        clipToPadding = false
-        clipChildren = false
-        (getChildAt(0) as? RecyclerView)?.overScrollMode = RecyclerView.OVER_SCROLL_NEVER
+    private fun setupFeaturedPager() {
+        binding.featuredPager.isVisible = newsData.featuredArticles.isNotEmpty()
+        if (newsData.featuredArticles.isEmpty()) return
 
-        val compositeTransformer = CompositePageTransformer().apply {
-            addTransformer(MarginPageTransformer(16.dpToPx()))
-            addTransformer { page, position ->
-                val scale = 0.9f + (1 - abs(position)) * 0.1f
-                page.scaleY = scale
+        with(binding.featuredPager) {
+            adapter = featuredAdapter
+            offscreenPageLimit = newsData.featuredArticles.size.coerceAtLeast(3)
+            setPadding(48.dpToPx(), 0, 48.dpToPx(), 0)
+            clipToPadding = false
+            clipChildren = false
+            (getChildAt(0) as? RecyclerView)?.overScrollMode = RecyclerView.OVER_SCROLL_NEVER
+
+            val compositeTransformer = CompositePageTransformer().apply {
+                addTransformer(MarginPageTransformer(16.dpToPx()))
+                addTransformer { page, position ->
+                    val scale = 0.9f + (1 - abs(position)) * 0.1f
+                    page.scaleY = scale
+                }
             }
+            setPageTransformer(compositeTransformer)
         }
-        setPageTransformer(compositeTransformer)
     }
 
     private fun setupCategoryList() = with(binding.categoryRecycler) {
@@ -103,9 +112,9 @@ class NewsFragment : Fragment() {
 
     private fun updateArticlesForCategory(categoryName: String) {
         val filtered = if (categoryName.equals("All", ignoreCase = true)) {
-            sampleArticles
+            newsData.articles
         } else {
-            sampleArticles.filter { it.category.equals(categoryName, ignoreCase = true) }
+            newsData.articles.filter { it.category.equals(categoryName, ignoreCase = true) }
         }
         articleAdapter.submitList(filtered)
     }
