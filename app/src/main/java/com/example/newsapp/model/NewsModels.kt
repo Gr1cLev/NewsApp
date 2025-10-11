@@ -1,7 +1,6 @@
 package com.example.newsapp.model
 
-import androidx.compose.ui.graphics.Color
-import com.example.newsapp.ui.theme.PrimaryBlue
+import android.graphics.Color
 
 data class NewsCategory(
     val id: Int,
@@ -15,7 +14,7 @@ data class NewsArticle(
     val summary: String,
     val source: String,
     val publishedAt: String,
-    val accentColor: Color,
+    val accentColor: Int,
     val heroImageUrl: String? = null,
     val tag: String = category,
     val isFeatured: Boolean = false
@@ -39,7 +38,7 @@ val sampleFeaturedArticles = listOf(
         summary = "Discover what the stars have in store and why keeping an open mind sparks new opportunities.",
         source = "DailyStars",
         publishedAt = "2023-09-06 10:11:29",
-        accentColor = PrimaryBlue,
+        accentColor = Color.parseColor("#00AEEF"),
         heroImageUrl = null,
         tag = "entertainment",
         isFeatured = true
@@ -54,7 +53,7 @@ val sampleArticles = listOf(
         summary = "The coach responds to rumours linking his star midfielder away from the club.",
         source = "snl24",
         publishedAt = "2023-09-06 10:11:29",
-        accentColor = Color(0xFF0EA5E9)
+        accentColor = Color.parseColor("#0EA5E9")
     ),
     NewsArticle(
         id = 202,
@@ -63,7 +62,7 @@ val sampleArticles = listOf(
         summary = "South Africa's attack clicks into gear with a newfound fluency and relentless press.",
         source = "snl24",
         publishedAt = "2023-09-06 10:11:29",
-        accentColor = Color(0xFF14B8A6)
+        accentColor = Color.parseColor("#14B8A6")
     ),
     NewsArticle(
         id = 203,
@@ -72,7 +71,7 @@ val sampleArticles = listOf(
         summary = "A light-hearted take on daily insights with tips on navigating the week ahead.",
         source = "mercurynews",
         publishedAt = "2023-09-06 10:10:11",
-        accentColor = Color(0xFFF97316)
+        accentColor = Color.parseColor("#F97316")
     ),
     NewsArticle(
         id = 204,
@@ -81,7 +80,7 @@ val sampleArticles = listOf(
         summary = "The forward faces a heavy sanction following last season's controversial incident.",
         source = "thecourier",
         publishedAt = "2023-09-06 09:56:13",
-        accentColor = Color(0xFF6366F1)
+        accentColor = Color.parseColor("#6366F1")
     ),
     NewsArticle(
         id = 205,
@@ -90,7 +89,7 @@ val sampleArticles = listOf(
         summary = "Analysts predict a cautious rally amid signals of cooling price pressure worldwide.",
         source = "finledger",
         publishedAt = "2023-09-06 09:30:00",
-        accentColor = Color(0xFFD946EF)
+        accentColor = Color.parseColor("#D946EF")
     ),
     NewsArticle(
         id = 206,
@@ -99,7 +98,7 @@ val sampleArticles = listOf(
         summary = "A novel solid-state design could extend mobile endurance without sacrificing size.",
         source = "techpulse",
         publishedAt = "2023-09-06 08:42:17",
-        accentColor = Color(0xFF8B5CF6)
+        accentColor = Color.parseColor("#8B5CF6")
     )
 )
 
@@ -115,5 +114,3 @@ val sampleSearchSuggestions = listOf(
     "Local weather updates",
     "AI tools for students"
 )
-
-
