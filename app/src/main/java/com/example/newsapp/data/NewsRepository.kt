@@ -28,6 +28,11 @@ object NewsRepository {
     fun getBookmarks(context: Context): List<NewsArticle> =
         getData(context).bookmarkedArticles
 
+    fun getArticleById(context: Context, articleId: Int): NewsArticle? {
+        val data = getData(context)
+        return (data.articles + data.featuredArticles).firstOrNull { it.id == articleId }
+    }
+
     fun getSearchSuggestions(context: Context): List<String> =
         getData(context).searchSuggestions
 
@@ -134,7 +139,8 @@ object NewsRepository {
             accentColor = accentColor,
             heroImageUrl = heroImageUrl,
             tag = tagValue ?: obj.optString("category"),
-            isFeatured = obj.optBoolean("isFeatured", false)
+            isFeatured = obj.optBoolean("isFeatured", false),
+            content = obj.optJSONArray("content").toStringList()
         )
     }
 

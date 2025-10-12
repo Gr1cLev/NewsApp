@@ -8,11 +8,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.newsapp.databinding.ItemSearchResultBinding
 import com.example.newsapp.model.NewsArticle
 
-class SearchResultAdapter : ListAdapter<NewsArticle, SearchResultAdapter.ResultViewHolder>(ResultDiffCallback) {
+class SearchResultAdapter(
+    private val onArticleClick: (NewsArticle) -> Unit
+) : ListAdapter<NewsArticle, SearchResultAdapter.ResultViewHolder>(ResultDiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ResultViewHolder {
         val binding = ItemSearchResultBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ResultViewHolder(binding)
+        return ResultViewHolder(binding, onArticleClick)
     }
 
     override fun onBindViewHolder(holder: ResultViewHolder, position: Int) {
@@ -20,10 +22,20 @@ class SearchResultAdapter : ListAdapter<NewsArticle, SearchResultAdapter.ResultV
     }
 
     class ResultViewHolder(
-        private val binding: ItemSearchResultBinding
+        private val binding: ItemSearchResultBinding,
+        private val onArticleClick: (NewsArticle) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
+        private var boundArticle: NewsArticle? = null
+
+        init {
+            binding.root.setOnClickListener {
+                boundArticle?.let(onArticleClick)
+            }
+        }
+
         fun bind(article: NewsArticle) = with(binding) {
+            boundArticle = article
             resultTitle.text = article.title
             resultSummary.text = article.summary
             resultMeta.text = "${article.source} - ${article.publishedAt}"

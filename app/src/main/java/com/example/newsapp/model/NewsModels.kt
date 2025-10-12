@@ -15,7 +15,8 @@ data class NewsArticle(
     val accentColor: Int,
     val heroImageUrl: String? = null,
     val tag: String = category,
-    val isFeatured: Boolean = false
+    val isFeatured: Boolean = false,
+    val content: List<String> = emptyList()
 )
 
 data class NewsData(

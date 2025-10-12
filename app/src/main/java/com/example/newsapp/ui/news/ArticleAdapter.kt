@@ -15,12 +15,13 @@ import com.example.newsapp.model.NewsArticle
 import java.util.Locale
 
 class ArticleAdapter(
-    private val showCategory: Boolean = true
+    private val showCategory: Boolean = true,
+    private val onArticleClick: (NewsArticle) -> Unit
 ) : ListAdapter<NewsArticle, ArticleAdapter.ArticleViewHolder>(ArticleDiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ArticleViewHolder {
         val binding = ItemNewsArticleBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ArticleViewHolder(binding, showCategory)
+        return ArticleViewHolder(binding, showCategory, onArticleClick)
     }
 
     override fun onBindViewHolder(holder: ArticleViewHolder, position: Int) {
@@ -29,10 +30,20 @@ class ArticleAdapter(
 
     class ArticleViewHolder(
         private val binding: ItemNewsArticleBinding,
-        private val showCategory: Boolean
+        private val showCategory: Boolean,
+        private val onArticleClick: (NewsArticle) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
+        private var boundArticle: NewsArticle? = null
+
+        init {
+            binding.root.setOnClickListener {
+                boundArticle?.let(onArticleClick)
+            }
+        }
+
         fun bind(article: NewsArticle) = with(binding) {
+            boundArticle = article
             articleCategory.text = article.category.lowercase(Locale.getDefault())
             articleCategory.isVisible = showCategory
 

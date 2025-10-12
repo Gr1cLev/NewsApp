@@ -38,9 +38,12 @@
     <string name="action_edit_profile">Edit Profile</string>
     <string name="toast_settings_coming_soon">Settings coming soon</string>
     <string name="toast_edit_profile_unavailable">Edit profile not yet available</string>
+    <string name="toast_article_not_found">Article no longer available.</string>
+    <string name="detail_meta_format">Published %1$s • %2$s</string>
 
     <!-- Content descriptions -->
     <string name="content_desc_email">Email address</string>
     <string name="content_desc_membership">Membership status</string>
+    <string name="content_desc_article_image">Article hero image</string>
 </resources>
 

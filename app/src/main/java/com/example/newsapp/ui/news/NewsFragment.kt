@@ -13,6 +13,7 @@ import androidx.viewpager2.widget.MarginPageTransformer
 import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.databinding.FragmentNewsBinding
 import com.example.newsapp.model.NewsData
+import com.example.newsapp.navigation.ArticleNavigator
 import kotlin.math.abs
 
 class NewsFragment : Fragment() {
@@ -67,9 +68,16 @@ class NewsFragment : Fragment() {
         _binding = null
     }
 
+    private val articleNavigator: ArticleNavigator?
+        get() = activity as? ArticleNavigator
+
     private fun setupAdapters() {
-        featuredAdapter = FeaturedArticleAdapter(newsData.featuredArticles)
-        articleAdapter = ArticleAdapter(showCategory = true)
+        featuredAdapter = FeaturedArticleAdapter(newsData.featuredArticles) { article ->
+            articleNavigator?.openArticleDetail(article.id)
+        }
+        articleAdapter = ArticleAdapter(showCategory = true) { article ->
+            articleNavigator?.openArticleDetail(article.id)
+        }
         categoryAdapter = CategoryAdapter(newsData.categories) { category ->
             selectedCategoryName = category.name
             updateArticlesForCategory(category.name)

@@ -11,6 +11,7 @@ import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.databinding.FragmentBookmarksBinding
 import com.example.newsapp.model.NewsArticle
 import com.example.newsapp.ui.news.ArticleAdapter
+import com.example.newsapp.navigation.ArticleNavigator
 
 class BookmarksFragment : Fragment() {
 
@@ -18,6 +19,9 @@ class BookmarksFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var articleAdapter: ArticleAdapter
+
+    private val articleNavigator: ArticleNavigator?
+        get() = activity as? ArticleNavigator
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,7 +45,9 @@ class BookmarksFragment : Fragment() {
 
     private fun setupRecycler() = with(binding.bookmarksRecycler) {
         layoutManager = LinearLayoutManager(requireContext())
-        articleAdapter = ArticleAdapter(showCategory = true)
+        articleAdapter = ArticleAdapter(showCategory = true) { article ->
+            articleNavigator?.openArticleDetail(article.id)
+        }
         adapter = articleAdapter
     }
 

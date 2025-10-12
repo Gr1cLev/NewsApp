@@ -18,7 +18,12 @@
       "publishedAt": "2023-09-06 10:11:29",
       "accentColor": "#00AEEF",
       "tag": "entertainment",
-      "isFeatured": true
+      "isFeatured": true,
+      "content": [
+        "Rosie Perez invites readers to lean into curiosity today; learning something new may set the tone for unexpected adventures.",
+        "The horoscope also emphasises staying grounded through mindful breathing, especially when schedules become hectic.",
+        "Sharing insights with loved ones is encouraged, as collective reflection can deepen connections and spark laughter."
+      ]
     },
     {
       "id": 102,
@@ -29,7 +34,12 @@
       "publishedAt": "2023-09-06 08:55:11",
       "accentColor": "#14B8A6",
       "tag": "sport",
-      "isFeatured": true
+      "isFeatured": true,
+      "content": [
+        "The derby clash produced fireworks as both sides traded blows in front of a sold-out crowd at the National Stadium.",
+        "Late drama ensued when the visiting striker buried a curling effort into the top corner to cancel out an earlier penalty.",
+        "Coaches praised their teams for showing resilience, hinting at tactical tweaks ahead of the second leg next weekend."
+      ]
     }
   ],
   "articles": [
@@ -40,7 +50,12 @@
       "summary": "The coach responds to rumours linking his star midfielder away from the club.",
       "source": "snl24",
       "publishedAt": "2023-09-06 10:11:29",
-      "accentColor": "#0EA5E9"
+      "accentColor": "#0EA5E9",
+      "content": [
+        "Pitso Mosimane has dismissed speculation linking Gaston Sirino with a move to Al Wahda, insisting the midfielder remains committed to the current campaign.",
+        "Speaking after training on Wednesday, Mosimane emphasised that the club is focused on building momentum and will not be distracted by rumours.",
+        "Sirino has been instrumental this season, contributing six assists and three goals across competitions while anchoring the midfield with his high pressing."
+      ]
     },
     {
       "id": 202,
@@ -49,7 +64,12 @@
       "summary": "South Africa's attack clicks into gear with a newfound fluency and relentless press.",
       "source": "snl24",
       "publishedAt": "2023-09-06 10:11:29",
-      "accentColor": "#14B8A6"
+      "accentColor": "#14B8A6",
+      "content": [
+        "Bafana Bafana coach Hugo Broos hailed the striking duo of Lyle Foster and Zakhele Lepasa after both players found the back of the net during the Afcon qualifiers.",
+        "Broos highlighted the chemistry between the attacking pair, noting their off-ball movement and the intensity they bring to the national setup.",
+        "The technical team is now fine-tuning transition play with a focus on quick diagonal switches that keep defenders guessing."
+      ]
     },
     {
       "id": 203,
@@ -58,7 +78,12 @@
       "summary": "A light-hearted take on daily insights with tips on navigating the week ahead.",
       "source": "mercurynews",
       "publishedAt": "2023-09-06 10:10:11",
-      "accentColor": "#F97316"
+      "accentColor": "#F97316",
+      "content": [
+        "Rosie Perez encourages you to expand your worldview by diving into a new book or documentary today.",
+        "Conversations with friends could unlock creative ideas—keep a notebook close to capture spontaneous inspiration.",
+        "A calm evening ritual will help balance the hustle of midweek responsibilities and reframe challenges as opportunities."
+      ]
     },
     {
       "id": 204,
@@ -67,7 +92,12 @@
       "summary": "The forward faces a heavy sanction following last season's controversial incident.",
       "source": "thecourier",
       "publishedAt": "2023-09-06 09:56:13",
-      "accentColor": "#6366F1"
+      "accentColor": "#6366F1",
+      "content": [
+        "Leigh Griffiths has been hit with a hefty fine after the league concluded its investigation into the smoke bomb incident at Dens Park.",
+        "The disciplinary panel cited endangerment of supporters and players, stressing that the punishment serves as a deterrent for similar behaviour.",
+        "Griffiths issued a statement apologising to fans and promising to focus on his fitness and contribution on the pitch."
+      ]
     },
     {
       "id": 205,
@@ -76,7 +106,12 @@
       "summary": "Analysts predict a cautious rally amid signals of cooling price pressure worldwide.",
       "source": "finledger",
       "publishedAt": "2023-09-06 09:30:00",
-      "accentColor": "#D946EF"
+      "accentColor": "#D946EF",
+      "content": [
+        "Global indices traded sideways ahead of the release of a pivotal inflation report, reflecting investor patience after weeks of volatility.",
+        "Economists expect the data to show a gradual easing of price pressures, reinforcing the view that interest rates may remain unchanged.",
+        "Portfolio managers advise a balanced approach, highlighting sectors like tech infrastructure and renewable energy as resilient picks."
+      ]
     },
     {
       "id": 206,
@@ -85,7 +120,12 @@
       "summary": "A novel solid-state design could extend mobile endurance without sacrificing size.",
       "source": "techpulse",
       "publishedAt": "2023-09-06 08:42:17",
-      "accentColor": "#8B5CF6"
+      "accentColor": "#8B5CF6",
+      "content": [
+        "NextVolt, a Singapore-based startup, claims its latest solid-state cell can power smartphones for seven days on a single charge.",
+        "The prototype utilises a composite electrolyte that delivers density without overheating, edging closer to mass-market viability.",
+        "Manufacturers are evaluating pilot batches, with industry insiders predicting commercial devices could emerge within 18 months."
+      ]
     },
     {
       "id": 207,
@@ -94,7 +134,12 @@
       "summary": "Experts share simple, evidence-based habits that bring calm and focus before heading to work.",
       "source": "healthline",
       "publishedAt": "2023-09-05 18:25:48",
-      "accentColor": "#22C55E"
+      "accentColor": "#22C55E",
+      "content": [
+        "Begin your day with three minutes of deep breathing to activate the parasympathetic nervous system and reduce cortisol spikes.",
+        "Follow up with a stretch flow that targets the hips and shoulders—muscle groups that often tighten during long commutes or desk work.",
+        "Close the routine by journaling one intention for the day; psychologists note that this practice increases follow-through on personal goals."
+      ]
     },
     {
       "id": 208,
@@ -103,7 +148,12 @@
       "summary": "A new investor survey indicates appetite returning for growth-stage companies with proven revenue.",
       "source": "venturebeat",
       "publishedAt": "2023-09-05 15:02:03",
-      "accentColor": "#F97316"
+      "accentColor": "#F97316",
+      "content": [
+        "Venture capital firms reported a slight rebound in deal flow during Q3, driven primarily by software-as-a-service and climate tech plays.",
+        "Limited partners remain cautious but optimistic, urging founders to demonstrate efficient growth and clear paths to profitability.",
+        "Analysts say the funding uptick could extend into early next year if macroeconomic indicators continue trending positively."
+      ]
     }
   ],
   "bookmarked_article_ids": [203, 205],

@@ -12,6 +12,7 @@ import com.example.newsapp.R
 import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.databinding.FragmentSearchBinding
 import com.example.newsapp.model.NewsArticle
+import com.example.newsapp.navigation.ArticleNavigator
 
 class SearchFragment : Fragment() {
 
@@ -23,6 +24,8 @@ class SearchFragment : Fragment() {
     private lateinit var allArticles: List<NewsArticle>
     private lateinit var suggestionItems: List<String>
 
+    private val articleNavigator: ArticleNavigator?
+        get() = activity as? ArticleNavigator
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -56,7 +59,9 @@ class SearchFragment : Fragment() {
         suggestionsRecycler.adapter = suggestionAdapter
         suggestionAdapter.submitList(suggestionItems)
 
-        resultAdapter = SearchResultAdapter()
+        resultAdapter = SearchResultAdapter { article ->
+            articleNavigator?.openArticleDetail(article.id)
+        }
         resultsRecycler.layoutManager = LinearLayoutManager(requireContext())
         resultsRecycler.adapter = resultAdapter
     }
