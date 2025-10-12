@@ -1,22 +1,27 @@
-package com.example.newsapp.ui.profile
+﻿package com.example.newsapp.ui.profile
 
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.annotation.ColorInt
 import androidx.fragment.app.Fragment
 import com.example.newsapp.R
 import com.example.newsapp.data.NewsRepository
+import com.example.newsapp.data.UserPreferences
 import com.example.newsapp.databinding.FragmentProfileBinding
 import com.example.newsapp.databinding.ViewProfileStatBinding
+import com.example.newsapp.navigation.ProfileNavigator
+import java.util.Locale
 
 class ProfileFragment : Fragment() {
 
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
+
+    private val profileNavigator: ProfileNavigator?
+        get() = activity as? ProfileNavigator
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,17 +39,36 @@ class ProfileFragment : Fragment() {
         setupButtons()
     }
 
+    override fun onResume() {
+        super.onResume()
+        setupProfileCard()
+        setupStats()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 
     private fun setupProfileCard() = with(binding) {
-        // Values are static placeholders, update here when wiring real data
-        avatarInitials.text = getString(R.string.profile_initials)
-        profileName.text = getString(R.string.profile_name)
-        profileEmail.text = getString(R.string.profile_email)
-        profileStatus.text = getString(R.string.profile_membership)
+        val defaultProfile = UserPreferences.Profile(
+            firstName = getString(R.string.profile_first_name_default),
+            lastName = getString(R.string.profile_last_name_default),
+            email = getString(R.string.profile_email_default),
+            password = ""
+        )
+        val profile = UserPreferences.getProfile(requireContext(), defaultProfile)
+        val displayName = listOf(profile.firstName, profile.lastName)
+            .filter { it.isNotBlank() }
+            .joinToString(separator = " ")
+
+        val resolvedName = if (displayName.isBlank()) defaultProfile.firstName else displayName
+
+        profileName.text = resolvedName
+        profileEmail.text = if (profile.email.isBlank()) defaultProfile.email else profile.email
+        avatarInitials.text = resolvedName.split(" ")
+            .take(2)
+            .joinToString("") { it.firstOrNull()?.uppercase(Locale.getDefault()) ?: "" }
     }
 
     private fun setupStats() = with(binding) {
@@ -75,14 +99,24 @@ class ProfileFragment : Fragment() {
             startColor = requireContext().getColor(R.color.accent_magenta),
             endColor = requireContext().getColor(R.color.accent_violet)
         )
+
+        val notificationsEnabled = UserPreferences.isNotificationsEnabled(requireContext())
+        val nightModeEnabled = UserPreferences.isNightModeEnabled(requireContext())
+        profileNotifications.text = if (notificationsEnabled) {
+            getString(R.string.profile_pref_notifications_on)
+        } else {
+            getString(R.string.profile_pref_notifications_off)
+        }
+        profileReadingMode.text = if (nightModeEnabled) {
+            getString(R.string.profile_pref_reading_on)
+        } else {
+            getString(R.string.profile_pref_reading_off)
+        }
     }
 
     private fun setupButtons() = with(binding) {
         buttonSettings.setOnClickListener {
-            Toast.makeText(requireContext(), R.string.toast_settings_coming_soon, Toast.LENGTH_SHORT).show()
-        }
-        buttonEditProfile.setOnClickListener {
-            Toast.makeText(requireContext(), R.string.toast_edit_profile_unavailable, Toast.LENGTH_SHORT).show()
+            profileNavigator?.openSettings()
         }
     }
 

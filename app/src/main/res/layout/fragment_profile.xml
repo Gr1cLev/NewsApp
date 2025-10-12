@@ -67,10 +67,10 @@
                         android:id="@+id/profileName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/profile_name"
                         android:textColor="@color/text_primary"
                         android:textSize="18sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        tools:text="Rina Anggraini" />
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -90,33 +90,11 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
-                            android:text="@string/profile_email"
                             android:textColor="@color/text_secondary"
-                            android:textSize="14sp" />
+                            android:textSize="14sp"
+                            tools:text="rina.anggraini@example.com" />
                     </LinearLayout>
 
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:orientation="horizontal">
-
-                        <ImageView
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:contentDescription="@string/content_desc_membership"
-                            android:src="@drawable/ic_star_badge"
-                            android:tint="@color/primary_blue_dark" />
-
-                        <TextView
-                            android:id="@+id/profileStatus"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:text="@string/profile_membership"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="14sp" />
-                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
@@ -215,9 +193,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="@string/profile_pref_notifications_desc"
                     android:textColor="@color/text_secondary"
-                    android:textSize="13sp" />
+                    android:textSize="13sp"
+                    tools:text="Notifications enabled" />
             </LinearLayout>
 
             <View
@@ -245,43 +223,26 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="@string/profile_pref_reading_desc"
                     android:textColor="@color/text_secondary"
-                    android:textSize="13sp" />
+                    android:textSize="13sp"
+                    tools:text="Night mode disabled" />
             </LinearLayout>
 
         </LinearLayout>
 
-        <LinearLayout
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonSettings"
+            style="@style/Widget.Material3.Button.ElevatedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonSettings"
-                style="@style/Widget.Material3.Button.ElevatedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
-                android:layout_weight="1"
-                android:textColor="@android:color/white"
-                android:text="@string/action_settings"
-                app:icon="@drawable/ic_settings"
-                app:iconGravity="textStart"
-                app:iconPadding="8dp"
-                app:iconTint="@android:color/white"
-                app:backgroundTint="@color/primary_blue" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonEditProfile"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/action_edit_profile" />
-        </LinearLayout>
+            android:layout_marginTop="24dp"
+            android:textColor="@android:color/white"
+            android:text="@string/action_settings"
+            app:icon="@drawable/ic_settings"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconTint="@android:color/white"
+            app:backgroundTint="@color/primary_blue" />
 
     </LinearLayout>
 </ScrollView>

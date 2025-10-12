@@ -1,4 +1,4 @@
-package com.example.newsapp.data
+﻿package com.example.newsapp.data
 
 import android.content.Context
 import android.graphics.Color
@@ -13,6 +13,8 @@ object NewsRepository {
     private const val DATA_FILE_NAME = "news_data.json"
     @Volatile
     private var cachedData: NewsData? = null
+    private val bookmarkIds = mutableSetOf<Int>()
+    private var articleIndex: Map<Int, NewsArticle> = emptyMap()
 
     fun getNewsData(context: Context): NewsData = getData(context)
 
@@ -26,15 +28,33 @@ object NewsRepository {
         getData(context).articles
 
     fun getBookmarks(context: Context): List<NewsArticle> =
-        getData(context).bookmarkedArticles
+        ensureData(context).bookmarkedArticles
 
     fun getArticleById(context: Context, articleId: Int): NewsArticle? {
-        val data = getData(context)
-        return (data.articles + data.featuredArticles).firstOrNull { it.id == articleId }
+        ensureData(context)
+        return articleIndex[articleId]
     }
 
     fun getSearchSuggestions(context: Context): List<String> =
         getData(context).searchSuggestions
+
+    fun isArticleBookmarked(context: Context, articleId: Int): Boolean {
+        ensureData(context)
+        return bookmarkIds.contains(articleId)
+    }
+
+    fun toggleBookmark(context: Context, articleId: Int): Boolean {
+        ensureData(context)
+        val isBookmarked = if (bookmarkIds.contains(articleId)) {
+            bookmarkIds.remove(articleId)
+            false
+        } else {
+            bookmarkIds.add(articleId)
+            true
+        }
+        refreshCachedBookmarks()
+        return isBookmarked
+    }
 
     private fun getData(context: Context): NewsData {
         val existing = cachedData
@@ -52,6 +72,8 @@ object NewsRepository {
         }
     }
 
+    private fun ensureData(context: Context): NewsData = getData(context)
+
     private fun loadData(context: Context): NewsData {
         val jsonString = context.assets.open(DATA_FILE_NAME).bufferedReader().use { it.readText() }
         return parseJson(jsonString)
@@ -66,11 +88,10 @@ object NewsRepository {
 
         val bookmarkIds = root.optJSONArray("bookmarked_article_ids").toIntList()
         val articlePool = (articles + featuredArticles).associateBy { it.id }
-        val bookmarks = if (bookmarkIds.isEmpty()) {
-            emptyList()
-        } else {
-            bookmarkIds.mapNotNull { articlePool[it] }
-        }
+        articleIndex = articlePool
+        this.bookmarkIds.clear()
+        this.bookmarkIds.addAll(bookmarkIds)
+        val bookmarks = recomputeBookmarks()
 
         val suggestions = root.optJSONArray("search_suggestions").toStringList()
 
@@ -82,6 +103,13 @@ object NewsRepository {
             searchSuggestions = suggestions
         )
     }
+
+    private fun refreshCachedBookmarks() {
+        cachedData = cachedData?.copy(bookmarkedArticles = recomputeBookmarks())
+    }
+
+    private fun recomputeBookmarks(): List<NewsArticle> =
+        bookmarkIds.mapNotNull { articleIndex[it] }
 
     private fun JSONArray?.toCategoryList(): List<NewsCategory> = this?.let { array ->
         buildList(array.length()) {

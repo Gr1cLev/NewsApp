@@ -1,4 +1,4 @@
-package com.example.newsapp.ui.news
+﻿package com.example.newsapp.ui.news
 
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater

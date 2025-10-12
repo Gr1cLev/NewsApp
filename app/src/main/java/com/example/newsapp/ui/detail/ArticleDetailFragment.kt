@@ -1,4 +1,4 @@
-package com.example.newsapp.ui.detail
+﻿package com.example.newsapp.ui.detail
 
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
@@ -21,6 +21,7 @@ class ArticleDetailFragment : Fragment() {
 
     private var articleId: Int = -1
     private var article: NewsArticle? = null
+    private var isBookmarked: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,6 +77,19 @@ class ArticleDetailFragment : Fragment() {
             ?: article.summary
 
         applyHeroBackground(article.accentColor)
+        isBookmarked = NewsRepository.isArticleBookmarked(requireContext(), article.id)
+        updateBookmarkButton()
+
+        binding.bookmarkButton.setOnClickListener {
+            val context = requireContext()
+            isBookmarked = NewsRepository.toggleBookmark(context, article.id)
+            updateBookmarkButton()
+            Toast.makeText(
+                context,
+                if (isBookmarked) R.string.bookmark_added else R.string.bookmark_removed,
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 
     private fun applyHeroBackground(accentColor: Int) {
@@ -92,6 +106,14 @@ class ArticleDetailFragment : Fragment() {
         binding.categoryChip.background = chipBackground
         binding.categoryChip.setTextColor(ColorUtils.blendARGB(accentColor, 0xFF0F172A.toInt(), 0.2f))
         binding.categoryChip.setPadding(16.dp(), 6.dp(), 16.dp(), 6.dp())
+    }
+
+    private fun updateBookmarkButton() {
+        val iconRes = if (isBookmarked) R.drawable.ic_bookmark_filled else R.drawable.ic_bookmark_outline
+        binding.bookmarkButton.setImageResource(iconRes)
+        binding.bookmarkButton.contentDescription = getString(
+            if (isBookmarked) R.string.bookmark_added else R.string.bookmark_removed
+        )
     }
 
     companion object {

@@ -1,4 +1,4 @@
-package com.example.newsapp.ui.search
+﻿package com.example.newsapp.ui.search
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

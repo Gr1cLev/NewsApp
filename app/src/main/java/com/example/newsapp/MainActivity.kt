@@ -1,24 +1,35 @@
-package com.example.newsapp
+﻿package com.example.newsapp
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import com.example.newsapp.data.UserPreferences
 import com.example.newsapp.databinding.ActivityMainBinding
 import com.example.newsapp.navigation.ArticleNavigator
+import com.example.newsapp.navigation.ProfileNavigator
 import com.example.newsapp.ui.bookmarks.BookmarksFragment
 import com.example.newsapp.ui.detail.ArticleDetailFragment
 import com.example.newsapp.ui.news.NewsFragment
 import com.example.newsapp.ui.profile.ProfileFragment
 import com.example.newsapp.ui.search.SearchFragment
+import com.example.newsapp.ui.settings.EditProfileFragment
+import com.example.newsapp.ui.settings.SettingsFragment
 
-class MainActivity : AppCompatActivity(), ArticleNavigator {
+class MainActivity : AppCompatActivity(), ArticleNavigator, ProfileNavigator {
 
     private lateinit var binding: ActivityMainBinding
     private var currentItemId: Int = R.id.navigation_news
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val nightMode = if (UserPreferences.isNightModeEnabled(this)) {
+            AppCompatDelegate.MODE_NIGHT_YES
+        } else {
+            AppCompatDelegate.MODE_NIGHT_NO
+        }
+        AppCompatDelegate.setDefaultNightMode(nightMode)
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -75,6 +86,7 @@ class MainActivity : AppCompatActivity(), ArticleNavigator {
 
         transaction.commit()
         currentItemId = itemId
+        updateBottomNavigationVisibility()
     }
 
     private fun createFragment(itemId: Int): Fragment {
@@ -91,25 +103,40 @@ class MainActivity : AppCompatActivity(), ArticleNavigator {
     }
 
     override fun openArticleDetail(articleId: Int) {
-        binding.bottomNavigation.isVisible = false
-        val transaction = supportFragmentManager.beginTransaction()
         val detailFragment = ArticleDetailFragment.newInstance(articleId)
-        transaction.setCustomAnimations(
-            android.R.anim.fade_in,
-            android.R.anim.fade_out,
-            android.R.anim.fade_in,
-            android.R.anim.fade_out
-        )
         val detailTag = "${ARTICLE_FRAGMENT_TAG}_$articleId"
-        transaction.add(R.id.fragmentContainerView, detailFragment, detailTag)
-        transaction.addToBackStack(ARTICLE_BACKSTACK_NAME)
-        transaction.commit()
-        updateBottomNavigationVisibility()
+        pushContentFragment(detailFragment, detailTag, ARTICLE_BACKSTACK_NAME)
+    }
+
+    override fun openSettings() {
+        pushContentFragment(SettingsFragment(), SETTINGS_FRAGMENT_TAG, SETTINGS_BACKSTACK_NAME)
+    }
+
+    override fun openEditProfile() {
+        pushContentFragment(EditProfileFragment(), EDIT_PROFILE_FRAGMENT_TAG, EDIT_PROFILE_BACKSTACK)
+    }
+
+    private fun pushContentFragment(fragment: Fragment, tag: String, backstackName: String) {
+        binding.bottomNavigation.isVisible = false
+        supportFragmentManager.beginTransaction()
+            .setCustomAnimations(
+                android.R.anim.fade_in,
+                android.R.anim.fade_out,
+                android.R.anim.fade_in,
+                android.R.anim.fade_out
+            )
+            .add(R.id.fragmentContainerView, fragment, tag)
+            .addToBackStack(backstackName)
+            .commit()
     }
 
     companion object {
         private const val KEY_SELECTED_ITEM = "selected_bottom_nav_item"
         private const val ARTICLE_BACKSTACK_NAME = "article_detail_backstack"
         private const val ARTICLE_FRAGMENT_TAG = "article_detail_fragment"
+        private const val SETTINGS_BACKSTACK_NAME = "settings_backstack"
+        private const val SETTINGS_FRAGMENT_TAG = "settings_fragment"
+        private const val EDIT_PROFILE_BACKSTACK = "edit_profile_backstack"
+        private const val EDIT_PROFILE_FRAGMENT_TAG = "edit_profile_fragment"
     }
 }

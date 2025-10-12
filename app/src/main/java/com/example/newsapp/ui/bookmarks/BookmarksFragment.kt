@@ -1,4 +1,4 @@
-package com.example.newsapp.ui.bookmarks
+﻿package com.example.newsapp.ui.bookmarks
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -35,6 +35,11 @@ class BookmarksFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecycler()
+        renderBookmarks(NewsRepository.getBookmarks(requireContext()))
+    }
+
+    override fun onResume() {
+        super.onResume()
         renderBookmarks(NewsRepository.getBookmarks(requireContext()))
     }
 
