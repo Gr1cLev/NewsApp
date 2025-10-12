@@ -94,5 +94,19 @@
                     android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/bookmarkToggle"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="start"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/bg_bookmark_button"
+            android:contentDescription="@string/content_desc_bookmark"
+            android:padding="10dp"
+            android:scaleType="centerInside"
+            android:tooltipText="@string/content_desc_bookmark"
+            app:srcCompat="@drawable/ic_bookmark_outline" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

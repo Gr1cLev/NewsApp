@@ -4,12 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.CompositePageTransformer
 import androidx.viewpager2.widget.MarginPageTransformer
+import com.example.newsapp.R
 import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.databinding.FragmentNewsBinding
 import com.example.newsapp.model.NewsData
@@ -75,9 +77,16 @@ class NewsFragment : Fragment() {
         featuredAdapter = FeaturedArticleAdapter(newsData.featuredArticles) { article ->
             articleNavigator?.openArticleDetail(article.id)
         }
-        articleAdapter = ArticleAdapter(showCategory = true) { article ->
-            articleNavigator?.openArticleDetail(article.id)
-        }
+        articleAdapter = ArticleAdapter(
+            showCategory = true,
+            onArticleClick = { article ->
+                articleNavigator?.openArticleDetail(article.id)
+            },
+            onBookmarkToggle = { _, isBookmarked ->
+                val messageRes = if (isBookmarked) R.string.bookmark_added else R.string.bookmark_removed
+                Toast.makeText(requireContext(), getString(messageRes), Toast.LENGTH_SHORT).show()
+            }
+        )
         categoryAdapter = CategoryAdapter(newsData.categories) { category ->
             selectedCategoryName = category.name
             updateArticlesForCategory(category.name)
