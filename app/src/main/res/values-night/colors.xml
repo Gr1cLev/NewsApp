@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="primary_blue">#FF38BDF8</color>
+    <color name="primary_blue_dark">#FF0284C7</color>
+    <color name="primary_blue_light">#FF1E3A56</color>
+    <color name="text_primary">#FFE2E8F0</color>
+    <color name="text_secondary">#FF94A3B8</color>
+    <color name="divider_color">#FF233347</color>
+    <color name="app_background">#FF0B1524</color>
+    <color name="card_background">#FF16243A</color>
+    <color name="surface_container">#FF16243A</color>
+    <color name="surface_bottom_nav">#FF0D1A2B</color>
+    <color name="surface_overlay">#80223347</color>
+    <color name="accent_teal">#FF14B8A6</color>
+    <color name="accent_blue">#FF38BDF8</color>
+    <color name="accent_purple">#FF6366F1</color>
+    <color name="accent_orange">#FFF97316</color>
+    <color name="accent_magenta">#FFD946EF</color>
+    <color name="accent_violet">#FF8B5CF6</color>
+    <color name="neutral_icon">#FF64748B</color>
+</resources>
