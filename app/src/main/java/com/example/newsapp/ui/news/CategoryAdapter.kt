@@ -3,6 +3,7 @@ package com.example.newsapp.ui.news
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import com.google.android.material.chip.Chip
 import androidx.recyclerview.widget.RecyclerView
 import com.example.newsapp.R
 import com.example.newsapp.databinding.ItemCategoryChipBinding
@@ -48,12 +49,23 @@ class CategoryAdapter(
             }
         }
 
-        fun bind(category: NewsCategory, isSelected: Boolean) = with(binding.categoryChip) {
-            text = category.name
-            isChecked = isSelected
-            val textColorRes = if (isSelected) R.color.white else R.color.text_secondary
-            setTextColor(ContextCompat.getColor(context, textColorRes))
+        fun bind(category: NewsCategory, isSelected: Boolean) {
+            binding.categoryChip.apply {
+                text = category.name
+                isChecked = isSelected
+                refreshVisualState(this, isSelected)
+            }
         }
+    }
+
+    private fun refreshVisualState(chip: Chip, isSelected: Boolean) {
+        val context = chip.context
+        val textColorRes = if (isSelected) R.color.white else R.color.text_secondary
+        val backgroundColorRes = if (isSelected) R.color.primary_blue else R.color.surface_overlay
+        chip.setTextColor(ContextCompat.getColor(context, textColorRes))
+        chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(
+            ContextCompat.getColor(context, backgroundColorRes)
+        )
     }
 
     fun selectCategoryByName(name: String) {

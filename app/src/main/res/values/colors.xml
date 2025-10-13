@@ -13,6 +13,7 @@
     <color name="surface_container">#FFFFFFFF</color>
     <color name="surface_bottom_nav">#FFFFFFFF</color>
     <color name="surface_overlay">#F2FFFFFF</color>
+    <color name="accent_red">#FFE11D48</color>
     <color name="accent_teal">#FF14B8A6</color>
     <color name="accent_blue">#FF0EA5E9</color>
     <color name="accent_purple">#FF6366F1</color>

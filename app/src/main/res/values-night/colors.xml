@@ -20,4 +20,5 @@
     <color name="accent_magenta">#FFD946EF</color>
     <color name="accent_violet">#FF8B5CF6</color>
     <color name="neutral_icon">#FF64748B</color>
+    <color name="accent_red">#FFEF4444</color>
 </resources>

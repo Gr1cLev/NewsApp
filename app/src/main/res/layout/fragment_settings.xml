@@ -85,7 +85,8 @@
                     android:layout_height="wrap_content"
                     android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                     android:layout_marginStart="8dp"
-                    />
+                    android:thumbTint="@color/switch_thumb_off"
+                    android:trackTint="@color/switch_track_off" />
             </LinearLayout>
 
             <!-- Notification -->
@@ -137,7 +138,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
-                    android:layout_marginStart="8dp" />
+                    android:layout_marginStart="8dp"
+                    android:thumbTint="@color/switch_thumb_off"
+                    android:trackTint="@color/switch_track_off" />
 
             </LinearLayout>
 
@@ -177,17 +180,18 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonLogout"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.Material3.Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="24dp"
                 android:text="@string/action_logout"
-                android:textColor="@color/primary_blue_dark"
+                android:textColor="@android:color/white"
+                app:backgroundTint="@color/accent_red"
                 app:icon="@drawable/ic_logout"
                 app:iconGravity="textStart"
                 app:iconPadding="8dp"
-                app:iconTint="@color/primary_blue_dark" />
+                app:iconTint="@android:color/white" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
