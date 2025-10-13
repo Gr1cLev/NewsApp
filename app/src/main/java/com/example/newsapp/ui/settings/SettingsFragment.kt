@@ -4,15 +4,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.example.newsapp.R
+import com.example.newsapp.data.ProfileRepository
 import com.example.newsapp.data.UserPreferences
 import com.example.newsapp.databinding.FragmentSettingsBinding
 import com.example.newsapp.databinding.ViewSettingsExpandableBinding
+import com.example.newsapp.navigation.AuthNavigator
+import com.example.newsapp.ui.profile.ProfileFragment
 import com.example.newsapp.navigation.ProfileNavigator
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SettingsFragment : Fragment() {
 
@@ -21,6 +29,9 @@ class SettingsFragment : Fragment() {
 
     private val profileNavigator: ProfileNavigator?
         get() = activity as? ProfileNavigator
+
+    private val authNavigator: AuthNavigator?
+        get() = activity as? AuthNavigator
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,6 +50,10 @@ class SettingsFragment : Fragment() {
 
         binding.buttonEditProfile.setOnClickListener {
             profileNavigator?.openEditProfile()
+        }
+
+        binding.buttonLogout.setOnClickListener {
+            performLogout()
         }
     }
 
@@ -90,6 +105,26 @@ class SettingsFragment : Fragment() {
             val expanding = !binding.contentText.isVisible
             binding.contentText.isVisible = expanding
             binding.headerIcon.rotation = if (expanding) 180f else 0f
+        }
+    }
+
+    private fun performLogout() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                ProfileRepository.logout(requireContext())
+            }
+            if (!isAdded) return@launch
+            result.onSuccess {
+                Toast.makeText(requireContext(), R.string.toast_logout_success, Toast.LENGTH_SHORT).show()
+                parentFragmentManager.setFragmentResult(ProfileFragment.PROFILE_UPDATED_RESULT, android.os.Bundle())
+                authNavigator?.openLogin()
+            }.onFailure { error ->
+                Toast.makeText(
+                    requireContext(),
+                    error.message ?: getString(R.string.error_generic),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 }

@@ -1,18 +1,21 @@
 ﻿package com.example.newsapp.ui.profile
 
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.ColorInt
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.example.newsapp.R
-import com.example.newsapp.data.NewsRepository
+import com.example.newsapp.data.ProfileRepository
 import com.example.newsapp.data.UserPreferences
 import com.example.newsapp.databinding.FragmentProfileBinding
-import com.example.newsapp.databinding.ViewProfileStatBinding
+import com.example.newsapp.navigation.AuthNavigator
 import com.example.newsapp.navigation.ProfileNavigator
+import com.example.newsapp.model.UserProfile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Locale
 
 class ProfileFragment : Fragment() {
@@ -22,6 +25,21 @@ class ProfileFragment : Fragment() {
 
     private val profileNavigator: ProfileNavigator?
         get() = activity as? ProfileNavigator
+
+    private val authNavigator: AuthNavigator?
+        get() = activity as? AuthNavigator
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        parentFragmentManager.setFragmentResultListener(
+            PROFILE_UPDATED_RESULT,
+            this
+        ) { _, _ ->
+            if (isAdded && _binding != null) {
+                loadProfile()
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,15 +52,15 @@ class ProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupProfileCard()
-        setupStats()
+        loadProfile()
+        updatePreferences()
         setupButtons()
     }
 
     override fun onResume() {
         super.onResume()
-        setupProfileCard()
-        setupStats()
+        loadProfile()
+        updatePreferences()
     }
 
     override fun onDestroyView() {
@@ -50,56 +68,46 @@ class ProfileFragment : Fragment() {
         _binding = null
     }
 
-    private fun setupProfileCard() = with(binding) {
-        val defaultProfile = UserPreferences.Profile(
-            firstName = getString(R.string.profile_first_name_default),
-            lastName = getString(R.string.profile_last_name_default),
-            email = getString(R.string.profile_email_default),
-            password = ""
-        )
-        val profile = UserPreferences.getProfile(requireContext(), defaultProfile)
-        val displayName = listOf(profile.firstName, profile.lastName)
+    private fun loadProfile() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val profile = withContext(Dispatchers.IO) {
+                ProfileRepository.getActiveProfile(requireContext())
+            }
+            if (!isAdded) return@launch
+            if (profile == null) {
+                authNavigator?.openLogin()
+                displayGuestProfile()
+                updatePreferences()
+                return@launch
+            }
+            renderProfile(profile)
+            updatePreferences()
+        }
+    }
+
+    private fun renderProfile(profile: UserProfile) = with(binding) {
+        val displayName = profile.fullName().ifBlank { profile.email.substringBefore("@") }
+        val resolvedEmail = profile.email
+
+        profileName.text = displayName
+        profileEmail.text = resolvedEmail
+        avatarInitials.text = displayName.split(" ")
             .filter { it.isNotBlank() }
-            .joinToString(separator = " ")
-
-        val resolvedName = if (displayName.isBlank()) defaultProfile.firstName else displayName
-
-        profileName.text = resolvedName
-        profileEmail.text = if (profile.email.isBlank()) defaultProfile.email else profile.email
-        avatarInitials.text = resolvedName.split(" ")
             .take(2)
             .joinToString("") { it.firstOrNull()?.uppercase(Locale.getDefault()) ?: "" }
     }
 
-    private fun setupStats() = with(binding) {
-        val bookmarks = NewsRepository.getBookmarks(requireContext())
-        applyStat(
-            stat = statBookmarks,
-            iconRes = R.drawable.ic_nav_bookmarks,
-            value = bookmarks.size.toString(),
-            labelRes = R.string.profile_stat_bookmarks,
-            startColor = requireContext().getColor(R.color.primary_blue_light),
-            endColor = requireContext().getColor(R.color.primary_blue)
-        )
+    private fun displayGuestProfile() = with(binding) {
+        val placeholder = getString(R.string.profile_guest_label)
+        profileName.text = placeholder
+        profileEmail.text = getString(R.string.profile_guest_email_placeholder)
+        avatarInitials.text = placeholder.take(2).uppercase(Locale.getDefault())
+    }
 
-        applyStat(
-            stat = statTopics,
-            iconRes = R.drawable.ic_topics,
-            value = "12",
-            labelRes = R.string.profile_stat_topics,
-            startColor = requireContext().getColor(R.color.accent_teal),
-            endColor = requireContext().getColor(R.color.accent_blue)
-        )
-
-        applyStat(
-            stat = statFollowing,
-            iconRes = R.drawable.ic_person_add,
-            value = "8",
-            labelRes = R.string.profile_stat_following,
-            startColor = requireContext().getColor(R.color.accent_magenta),
-            endColor = requireContext().getColor(R.color.accent_violet)
-        )
-
+    private fun updatePreferences() = with(binding) {
+        if (!isAdded) {
+            return@with
+        }
         val notificationsEnabled = UserPreferences.isNotificationsEnabled(requireContext())
         val nightModeEnabled = UserPreferences.isNightModeEnabled(requireContext())
         profileNotifications.text = if (notificationsEnabled) {
@@ -120,22 +128,7 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    private fun applyStat(
-        stat: ViewProfileStatBinding,
-        iconRes: Int,
-        value: String,
-        labelRes: Int,
-        @ColorInt startColor: Int,
-        @ColorInt endColor: Int
-    ) {
-        stat.statIcon.setImageResource(iconRes)
-        stat.statValue.text = value
-        stat.statLabel.setText(labelRes)
-        stat.statIconContainer.background = GradientDrawable(
-            GradientDrawable.Orientation.TR_BL,
-            intArrayOf(startColor, endColor)
-        ).apply {
-            cornerRadius = 18f * resources.displayMetrics.density
-        }
+    companion object {
+        const val PROFILE_UPDATED_RESULT = "profile_updated_result"
     }
 }

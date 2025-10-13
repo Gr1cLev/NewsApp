@@ -1,0 +1,19 @@
+{
+  "activeProfileId": null,
+  "profiles": [
+    {
+      "id": "profile-admin",
+      "firstName": "Admin",
+      "lastName": "User",
+      "email": "admin@admin",
+      "password": "123"
+    },
+    {
+      "id": "profile-1",
+      "firstName": "Rina",
+      "lastName": "Anggraini",
+      "email": "rina.anggraini@example.com",
+      "password": "3211"
+    }
+  ]
+}

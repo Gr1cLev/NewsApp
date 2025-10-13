@@ -5,15 +5,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.example.newsapp.R
-import com.example.newsapp.data.UserPreferences
+import com.example.newsapp.data.ProfileRepository
 import com.example.newsapp.databinding.FragmentEditProfileBinding
+import com.example.newsapp.model.UserProfile
+import com.example.newsapp.ui.profile.ProfileFragment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class EditProfileFragment : Fragment() {
 
     private var _binding: FragmentEditProfileBinding? = null
     private val binding get() = _binding!!
+    private var currentProfile: UserProfile? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,18 +50,23 @@ class EditProfileFragment : Fragment() {
         }
     }
 
-    private fun populateFields() = with(binding) {
-        val defaults = UserPreferences.Profile(
-            firstName = getString(R.string.profile_first_name_default),
-            lastName = getString(R.string.profile_last_name_default),
-            email = getString(R.string.profile_email_default),
-            password = ""
-        )
-        val profile = UserPreferences.getProfile(requireContext(), defaults)
-        firstNameInput.setText(profile.firstName)
-        lastNameInput.setText(profile.lastName)
-        emailInput.setText(profile.email)
-        passwordInput.setText(profile.password)
+    private fun populateFields() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val profile = withContext(Dispatchers.IO) {
+                ProfileRepository.getActiveProfile(requireContext())
+            }
+            if (!isAdded) return@launch
+            if (profile == null) {
+                Toast.makeText(requireContext(), R.string.error_profile_missing, Toast.LENGTH_SHORT).show()
+                requireActivity().onBackPressedDispatcher.onBackPressed()
+                return@launch
+            }
+            currentProfile = profile
+            binding.firstNameInput.setText(profile.firstName)
+            binding.lastNameInput.setText(profile.lastName)
+            binding.emailInput.setText(profile.email)
+            binding.passwordInput.setText(profile.password)
+        }
     }
 
     private fun saveProfile() = with(binding) {
@@ -87,12 +100,39 @@ class EditProfileFragment : Fragment() {
 
         if (hasError) return@with
 
-        UserPreferences.saveProfile(
-            requireContext(),
-            UserPreferences.Profile(firstName, lastName, email, password)
+        val updatedProfile = UserProfile(
+            id = currentProfile?.id ?: "",
+            firstName = firstName,
+            lastName = lastName,
+            email = email,
+            password = password
         )
 
-        Toast.makeText(requireContext(), R.string.toast_profile_saved, Toast.LENGTH_SHORT).show()
-        requireActivity().onBackPressedDispatcher.onBackPressed()
+        viewLifecycleOwner.lifecycleScope.launch {
+            setSaving(true)
+            val result = withContext(Dispatchers.IO) {
+                ProfileRepository.updateActiveProfile(requireContext(), updatedProfile)
+            }
+            setSaving(false)
+            result.onSuccess { savedProfile ->
+                currentProfile = savedProfile
+                parentFragmentManager.setFragmentResult(
+                    ProfileFragment.PROFILE_UPDATED_RESULT,
+                    bundleOf()
+                )
+                Toast.makeText(requireContext(), R.string.toast_profile_saved, Toast.LENGTH_SHORT).show()
+                requireActivity().onBackPressedDispatcher.onBackPressed()
+            }.onFailure { error ->
+                Toast.makeText(requireContext(), error.message ?: getString(R.string.error_profile_update_failed), Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun setSaving(saving: Boolean) {
+        binding.buttonSave.isEnabled = !saving
+        binding.firstNameLayout.isEnabled = !saving
+        binding.lastNameLayout.isEnabled = !saving
+        binding.emailLayout.isEnabled = !saving
+        binding.passwordLayout.isEnabled = !saving
     }
 }

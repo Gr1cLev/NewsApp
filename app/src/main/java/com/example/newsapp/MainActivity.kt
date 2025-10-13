@@ -6,10 +6,15 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
+import com.example.newsapp.data.ProfileRepository
 import com.example.newsapp.data.UserPreferences
 import com.example.newsapp.databinding.ActivityMainBinding
 import com.example.newsapp.navigation.ArticleNavigator
+import com.example.newsapp.navigation.AuthNavigator
 import com.example.newsapp.navigation.ProfileNavigator
+import com.example.newsapp.ui.auth.LoginFragment
+import com.example.newsapp.ui.auth.RegisterFragment
 import com.example.newsapp.ui.bookmarks.BookmarksFragment
 import com.example.newsapp.ui.detail.ArticleDetailFragment
 import com.example.newsapp.ui.news.NewsFragment
@@ -17,8 +22,11 @@ import com.example.newsapp.ui.profile.ProfileFragment
 import com.example.newsapp.ui.search.SearchFragment
 import com.example.newsapp.ui.settings.EditProfileFragment
 import com.example.newsapp.ui.settings.SettingsFragment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class MainActivity : AppCompatActivity(), ArticleNavigator, ProfileNavigator {
+class MainActivity : AppCompatActivity(), ArticleNavigator, ProfileNavigator, AuthNavigator {
 
     private lateinit var binding: ActivityMainBinding
     private var currentItemId: Int = R.id.navigation_news
@@ -44,17 +52,29 @@ class MainActivity : AppCompatActivity(), ArticleNavigator, ProfileNavigator {
         }
 
         if (savedInstanceState == null) {
-            showFragment(R.id.navigation_news)
-            binding.bottomNavigation.selectedItemId = R.id.navigation_news
+            lifecycleScope.launch {
+                val hasActiveProfile = withContext(Dispatchers.IO) {
+                    ProfileRepository.hasActiveProfile(this@MainActivity)
+                }
+                if (hasActiveProfile) {
+                    showFragment(R.id.navigation_news)
+                    binding.bottomNavigation.selectedItemId = R.id.navigation_news
+                } else {
+                    showAuthScreen(LoginFragment(), LOGIN_FRAGMENT_TAG)
+                }
+                updateBottomNavigationVisibility()
+            }
         } else {
             currentItemId = savedInstanceState.getInt(KEY_SELECTED_ITEM, R.id.navigation_news)
-            if (supportFragmentManager.backStackEntryCount == 0) {
-                showFragment(currentItemId)
-            }
             binding.bottomNavigation.selectedItemId = currentItemId
+            val authFragmentPresent = supportFragmentManager.findFragmentById(R.id.authContainer) != null
+            binding.authContainer.isVisible = authFragmentPresent
+            if (authFragmentPresent) {
+                binding.bottomNavigation.isVisible = false
+            } else {
+                updateBottomNavigationVisibility()
+            }
         }
-
-        updateBottomNavigationVisibility()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -99,7 +119,8 @@ class MainActivity : AppCompatActivity(), ArticleNavigator, ProfileNavigator {
     }
 
     private fun updateBottomNavigationVisibility() {
-        binding.bottomNavigation.isVisible = supportFragmentManager.backStackEntryCount == 0
+        binding.bottomNavigation.isVisible =
+            !binding.authContainer.isVisible && supportFragmentManager.backStackEntryCount == 0
     }
 
     override fun openArticleDetail(articleId: Int) {
@@ -117,6 +138,9 @@ class MainActivity : AppCompatActivity(), ArticleNavigator, ProfileNavigator {
     }
 
     private fun pushContentFragment(fragment: Fragment, tag: String, backstackName: String) {
+        if (supportFragmentManager.findFragmentByTag(tag) != null) {
+            return
+        }
         binding.bottomNavigation.isVisible = false
         supportFragmentManager.beginTransaction()
             .setCustomAnimations(
@@ -130,6 +154,45 @@ class MainActivity : AppCompatActivity(), ArticleNavigator, ProfileNavigator {
             .commit()
     }
 
+    override fun openLogin() {
+        lifecycleScope.launch {
+            withContext(Dispatchers.Main) {
+                supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                currentItemId = R.id.navigation_news
+                showAuthScreen(LoginFragment(), LOGIN_FRAGMENT_TAG)
+            }
+        }
+    }
+
+    override fun openRegister() {
+        showAuthScreen(RegisterFragment(), REGISTER_FRAGMENT_TAG)
+    }
+
+    override fun onAuthenticationSuccess() {
+        lifecycleScope.launch {
+            withContext(Dispatchers.Main) {
+                supportFragmentManager.findFragmentById(R.id.authContainer)?.let {
+                    supportFragmentManager.beginTransaction()
+                        .remove(it)
+                        .commitAllowingStateLoss()
+                }
+                binding.authContainer.isVisible = false
+                supportFragmentManager.setFragmentResult(ProfileFragment.PROFILE_UPDATED_RESULT, android.os.Bundle())
+                showFragment(R.id.navigation_news)
+                binding.bottomNavigation.selectedItemId = R.id.navigation_news
+                updateBottomNavigationVisibility()
+            }
+        }
+    }
+
+    private fun showAuthScreen(fragment: Fragment, tag: String) {
+        binding.authContainer.isVisible = true
+        binding.bottomNavigation.isVisible = false
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.authContainer, fragment, tag)
+            .commitAllowingStateLoss()
+    }
+
     companion object {
         private const val KEY_SELECTED_ITEM = "selected_bottom_nav_item"
         private const val ARTICLE_BACKSTACK_NAME = "article_detail_backstack"
@@ -138,5 +201,7 @@ class MainActivity : AppCompatActivity(), ArticleNavigator, ProfileNavigator {
         private const val SETTINGS_FRAGMENT_TAG = "settings_fragment"
         private const val EDIT_PROFILE_BACKSTACK = "edit_profile_backstack"
         private const val EDIT_PROFILE_FRAGMENT_TAG = "edit_profile_fragment"
+        private const val LOGIN_FRAGMENT_TAG = "login_fragment"
+        private const val REGISTER_FRAGMENT_TAG = "register_fragment"
     }
 }
