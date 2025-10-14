@@ -1,5 +1,6 @@
-﻿package com.example.newsapp.ui.news
+package com.example.newsapp.ui.news
 
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +17,7 @@ import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.databinding.FragmentNewsBinding
 import com.example.newsapp.model.NewsData
 import com.example.newsapp.navigation.ArticleNavigator
+import com.example.newsapp.ui.detail.ArticleDetailFragment
 import kotlin.math.abs
 
 class NewsFragment : Fragment() {
@@ -53,11 +55,22 @@ class NewsFragment : Fragment() {
         setupFeaturedPager()
         setupCategoryList()
         setupArticleList()
+        parentFragmentManager.setFragmentResultListener(
+            ArticleDetailFragment.BOOKMARK_RESULT_KEY,
+            viewLifecycleOwner
+        ) { _, _ ->
+            articleAdapter.refreshBookmarks()
+        }
 
         updateArticlesForCategory(selectedCategoryName)
         binding.categoryRecycler.post {
             categoryAdapter.selectCategoryByName(selectedCategoryName)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        articleAdapter.refreshBookmarks()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

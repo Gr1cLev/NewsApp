@@ -1,168 +1,903 @@
-﻿{
-  "categories": [
-    { "id": 0, "name": "All" },
-    { "id": 1, "name": "Top" },
-    { "id": 2, "name": "Sport" },
-    { "id": 3, "name": "Business" },
-    { "id": 4, "name": "Entertainment" },
-    { "id": 5, "name": "Tech" },
-    { "id": 6, "name": "Health" }
-  ],
-  "featured_articles": [
-    {
-      "id": 101,
-      "category": "Entertainment",
-      "title": "Horoscopes Sept. 6, 2023: Rosie Perez says knowledge will broaden your world",
-      "summary": "Discover what the stars have in store and why keeping an open mind sparks new opportunities.",
-      "source": "DailyStars",
-      "publishedAt": "2023-09-06 10:11:29",
-      "accentColor": "#00AEEF",
-      "tag": "entertainment",
-      "isFeatured": true,
-      "content": [
-        "Rosie Perez invites readers to lean into curiosity today; learning something new may set the tone for unexpected adventures.",
-        "The horoscope also emphasises staying grounded through mindful breathing, especially when schedules become hectic.",
-        "Sharing insights with loved ones is encouraged, as collective reflection can deepen connections and spark laughter."
-      ]
-    },
-    {
-      "id": 102,
-      "category": "Sport",
-      "title": "Highlights | Thrilling derby ends level after late equaliser",
-      "summary": "The local derby served up drama with a last-minute equaliser that kept both sides satisfied.",
-      "source": "Matchday",
-      "publishedAt": "2023-09-06 08:55:11",
-      "accentColor": "#14B8A6",
-      "tag": "sport",
-      "isFeatured": true,
-      "content": [
-        "The derby clash produced fireworks as both sides traded blows in front of a sold-out crowd at the National Stadium.",
-        "Late drama ensued when the visiting striker buried a curling effort into the top corner to cancel out an earlier penalty.",
-        "Coaches praised their teams for showing resilience, hinting at tactical tweaks ahead of the second leg next weekend."
-      ]
-    }
-  ],
-  "articles": [
-    {
-      "id": 201,
-      "category": "Sport",
-      "title": "Kickoff | Pitso 'annoyed' at Sirino, Al Wahda links",
-      "summary": "The coach responds to rumours linking his star midfielder away from the club.",
-      "source": "snl24",
-      "publishedAt": "2023-09-06 10:11:29",
-      "accentColor": "#0EA5E9",
-      "content": [
-        "Pitso Mosimane has dismissed speculation linking Gaston Sirino with a move to Al Wahda, insisting the midfielder remains committed to the current campaign.",
-        "Speaking after training on Wednesday, Mosimane emphasised that the club is focused on building momentum and will not be distracted by rumours.",
-        "Sirino has been instrumental this season, contributing six assists and three goals across competitions while anchoring the midfield with his high pressing."
-      ]
-    },
-    {
-      "id": 202,
-      "category": "Sport",
-      "title": "Kickoff | Broos revels in Foster and Lepasa scoring form",
-      "summary": "South Africa's attack clicks into gear with a newfound fluency and relentless press.",
-      "source": "snl24",
-      "publishedAt": "2023-09-06 10:11:29",
-      "accentColor": "#14B8A6",
-      "content": [
-        "Bafana Bafana coach Hugo Broos hailed the striking duo of Lyle Foster and Zakhele Lepasa after both players found the back of the net during the Afcon qualifiers.",
-        "Broos highlighted the chemistry between the attacking pair, noting their off-ball movement and the intensity they bring to the national setup.",
-        "The technical team is now fine-tuning transition play with a focus on quick diagonal switches that keep defenders guessing."
-      ]
-    },
-    {
-      "id": 203,
-      "category": "Entertainment",
-      "title": "Horoscopes Sept. 6, 2023: Rosie Perez knows knowledge broadens horizons",
-      "summary": "A light-hearted take on daily insights with tips on navigating the week ahead.",
-      "source": "mercurynews",
-      "publishedAt": "2023-09-06 10:10:11",
-      "accentColor": "#F97316",
-      "content": [
-        "Rosie Perez encourages you to expand your worldview by diving into a new book or documentary today.",
-        "Conversations with friends could unlock creative ideasâ€”keep a notebook close to capture spontaneous inspiration.",
-        "A calm evening ritual will help balance the hustle of midweek responsibilities and reframe challenges as opportunities."
-      ]
-    },
-    {
-      "id": 204,
-      "category": "Top",
-      "title": "Dens Park smoke bomb kick has cost Leigh Griffiths GBP 17k",
-      "summary": "The forward faces a heavy sanction following last season's controversial incident.",
-      "source": "thecourier",
-      "publishedAt": "2023-09-06 09:56:13",
-      "accentColor": "#6366F1",
-      "content": [
-        "Leigh Griffiths has been hit with a hefty fine after the league concluded its investigation into the smoke bomb incident at Dens Park.",
-        "The disciplinary panel cited endangerment of supporters and players, stressing that the punishment serves as a deterrent for similar behaviour.",
-        "Griffiths issued a statement apologising to fans and promising to focus on his fitness and contribution on the pitch."
-      ]
-    },
-    {
-      "id": 205,
-      "category": "Business",
-      "title": "Global markets steady as investors eye key inflation data",
-      "summary": "Analysts predict a cautious rally amid signals of cooling price pressure worldwide.",
-      "source": "finledger",
-      "publishedAt": "2023-09-06 09:30:00",
-      "accentColor": "#D946EF",
-      "content": [
-        "Global indices traded sideways ahead of the release of a pivotal inflation report, reflecting investor patience after weeks of volatility.",
-        "Economists expect the data to show a gradual easing of price pressures, reinforcing the view that interest rates may remain unchanged.",
-        "Portfolio managers advise a balanced approach, highlighting sectors like tech infrastructure and renewable energy as resilient picks."
-      ]
-    },
-    {
-      "id": 206,
-      "category": "Tech",
-      "title": "Startup unveils battery breakthrough promising week-long phone power",
-      "summary": "A novel solid-state design could extend mobile endurance without sacrificing size.",
-      "source": "techpulse",
-      "publishedAt": "2023-09-06 08:42:17",
-      "accentColor": "#8B5CF6",
-      "content": [
-        "NextVolt, a Singapore-based startup, claims its latest solid-state cell can power smartphones for seven days on a single charge.",
-        "The prototype utilises a composite electrolyte that delivers density without overheating, edging closer to mass-market viability.",
-        "Manufacturers are evaluating pilot batches, with industry insiders predicting commercial devices could emerge within 18 months."
-      ]
-    },
-    {
-      "id": 207,
-      "category": "Health",
-      "title": "Wellness tips | Building a mindful morning routine in 15 minutes",
-      "summary": "Experts share simple, evidence-based habits that bring calm and focus before heading to work.",
-      "source": "healthline",
-      "publishedAt": "2023-09-05 18:25:48",
-      "accentColor": "#22C55E",
-      "content": [
-        "Begin your day with three minutes of deep breathing to activate the parasympathetic nervous system and reduce cortisol spikes.",
-        "Follow up with a stretch flow that targets the hips and shouldersâ€”muscle groups that often tighten during long commutes or desk work.",
-        "Close the routine by journaling one intention for the day; psychologists note that this practice increases follow-through on personal goals."
-      ]
-    },
-    {
-      "id": 208,
-      "category": "Business",
-      "title": "Startups eye fresh funding as venture confidence ticks upward",
-      "summary": "A new investor survey indicates appetite returning for growth-stage companies with proven revenue.",
-      "source": "venturebeat",
-      "publishedAt": "2023-09-05 15:02:03",
-      "accentColor": "#F97316",
-      "content": [
-        "Venture capital firms reported a slight rebound in deal flow during Q3, driven primarily by software-as-a-service and climate tech plays.",
-        "Limited partners remain cautious but optimistic, urging founders to demonstrate efficient growth and clear paths to profitability.",
-        "Analysts say the funding uptick could extend into early next year if macroeconomic indicators continue trending positively."
-      ]
-    }
-  ],
-  "bookmarked_article_ids": [203, 205],
-  "search_suggestions": [
-    "UEFA Champions League schedule",
-    "Stock market open today",
-    "Rosie Perez horoscope recap",
-    "Local weather updates",
-    "AI tools for students",
-    "Morning routine tips"
-  ]
+{
+    "categories":  [
+                       {
+                           "id":  0,
+                           "name":  "All"
+                       },
+                       {
+                           "id":  1,
+                           "name":  "Top"
+                       },
+                       {
+                           "id":  2,
+                           "name":  "Sport"
+                       },
+                       {
+                           "id":  3,
+                           "name":  "Business"
+                       },
+                       {
+                           "id":  4,
+                           "name":  "Entertainment"
+                       },
+                       {
+                           "id":  5,
+                           "name":  "Tech"
+                       },
+                       {
+                           "id":  6,
+                           "name":  "Health"
+                       },
+                       {
+                           "id":  7,
+                           "name":  "Science"
+                       }
+                   ],
+    "featured_articles":  [
+                              {
+                                  "id":  101,
+                                  "category":  "Top",
+                                  "title":  "US markets rally as inflation cools faster than expected",
+                                  "summary":  "Major US indices jumped after the latest CPI report showed inflation easing, bolstering hopes for a soft landing.",
+                                  "source":  "Reuters",
+                                  "publishedAt":  "2025-10-12 14:05:00",
+                                  "accentColor":  "#0EA5E9",
+                                  "tag":  "markets",
+                                  "heroImageUrl":  "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                                  "isFeatured":  true,
+                                  "content":  [
+                                                  "Stocks climbed worldwide after new CPI figures showed headline inflation dipping below 3% for the first time in two years.",
+                                                  "Investors now price in two rate cuts before year-end, while analysts warn that energy and wage pressures could still surprise.",
+                                                  "Economists recommend diversified portfolios as central banks weigh slower growth against sticky service-sector prices."
+                                              ]
+                              },
+                              {
+                                  "id":  102,
+                                  "category":  "Sport",
+                                  "title":  "Spain books Euro 2028 spot after decisive win over Italy",
+                                  "summary":  "La Roja kept a perfect qualifying run with a 3-1 victory, sealing an early ticket to the continental showpiece.",
+                                  "source":  "BBC Sport",
+                                  "publishedAt":  "2025-10-11 21:40:00",
+                                  "accentColor":  "#14B8A6",
+                                  "tag":  "football",
+                                  "heroImageUrl":  "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                                  "isFeatured":  true,
+                                  "content":  [
+                                                  "Midfielder Pedri pulled the strings with two assists, while �lvaro Morata netted a brace to silence a lively San Siro crowd.",
+                                                  "Coach Luis de la Fuente praised his side\u0027s pressing intensity and hinted that several U-21 standouts could join the senior squad in 2026.",
+                                                  "Italy will need results elsewhere to go their way after slipping to third in Group A with one matchday remaining."
+                                              ]
+                              },
+                              {
+                                  "id":  103,
+                                  "category":  "Tech",
+                                  "title":  "Quantum startup claims breakthrough in error correction",
+                                  "summary":  "Seoul-based QubitWave says its new approach halves error rates, pushing quantum computing closer to practical workloads.",
+                                  "source":  "The Verge",
+                                  "publishedAt":  "2025-10-10 09:15:00",
+                                  "accentColor":  "#8B5CF6",
+                                  "tag":  "quantum",
+                                  "heroImageUrl":  "https://images.unsplash.com/photo-1518779578993-ec3579fee39f?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                                  "isFeatured":  true,
+                                  "content":  [
+                                                  "QubitWave\u0027s prototype chip uses a lattice of photonic qubits with adaptive machine-learning stabilisers to curb decoherence.",
+                                                  "Industry observers say the approach could accelerate finance and pharmaceutical simulations, though large-scale deployment remains years away.",
+                                                  "The startup plans to open-source its control stack next quarter to attract academic collaboration."
+                                              ]
+                              }
+                          ],
+    "articles":  [
+                     {
+                         "id":  201,
+                         "category":  "Entertainment",
+                         "title":  "Barbie sequel announced with Greta Gerwig returning to direct",
+                         "summary":  "The follow-up will explore entrepreneurship and sustainability themes.",
+                         "source":  "Financial Times",
+                         "publishedAt":  "2025-10-12 12:00:00",
+                         "accentColor":  "#F97316",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "film",
+                         "content":  [
+                                         "The follow-up will explore entrepreneurship and sustainability themes.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  202,
+                         "category":  "Entertainment",
+                         "title":  "Barbie sequel announced with Greta Gerwig returning to direct",
+                         "summary":  "The follow-up will explore entrepreneurship and sustainability themes.",
+                         "source":  "AP News",
+                         "publishedAt":  "2025-10-12 10:00:00",
+                         "accentColor":  "#F97316",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "music",
+                         "content":  [
+                                         "The follow-up will explore entrepreneurship and sustainability themes.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  203,
+                         "category":  "Tech",
+                         "title":  "Intel launches Lunar Lake chips aimed at AI PCs",
+                         "summary":  "The architecture integrates a neural engine delivering 50 TOPS for on-device models.",
+                         "source":  "TechCrunch",
+                         "publishedAt":  "2025-10-12 08:00:00",
+                         "accentColor":  "#6366F1",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "devices",
+                         "content":  [
+                                         "The architecture integrates a neural engine delivering 50 TOPS for on-device models.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  204,
+                         "category":  "Business",
+                         "title":  "Alibaba spins off logistics arm Cainiao in Hong Kong listing",
+                         "summary":  "The move raises capital for global warehouse expansion and smart delivery tech.",
+                         "source":  "The Guardian",
+                         "publishedAt":  "2025-10-12 06:00:00",
+                         "accentColor":  "#D946EF",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "fintech",
+                         "content":  [
+                                         "The move raises capital for global warehouse expansion and smart delivery tech.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  205,
+                         "category":  "Business",
+                         "title":  "Alibaba spins off logistics arm Cainiao in Hong Kong listing",
+                         "summary":  "The move raises capital for global warehouse expansion and smart delivery tech.",
+                         "source":  "NPR",
+                         "publishedAt":  "2025-10-12 04:00:00",
+                         "accentColor":  "#D946EF",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "fintech",
+                         "content":  [
+                                         "The move raises capital for global warehouse expansion and smart delivery tech.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  206,
+                         "category":  "Entertainment",
+                         "title":  "Barbie sequel announced with Greta Gerwig returning to direct",
+                         "summary":  "The follow-up will explore entrepreneurship and sustainability themes.",
+                         "source":  "The Guardian",
+                         "publishedAt":  "2025-10-12 02:00:00",
+                         "accentColor":  "#F97316",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "film",
+                         "content":  [
+                                         "The follow-up will explore entrepreneurship and sustainability themes.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  207,
+                         "category":  "Tech",
+                         "title":  "Meta introduces safer teen default settings after regulatory pressure",
+                         "summary":  "Instagram and Threads now hide likes and limit DMs by default for users under 18.",
+                         "source":  "CNBC",
+                         "publishedAt":  "2025-10-12 00:00:00",
+                         "accentColor":  "#6366F1",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "security",
+                         "content":  [
+                                         "Instagram and Threads now hide likes and limit DMs by default for users under 18.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  208,
+                         "category":  "Top",
+                         "title":  "Australia unveils $60bn green industry package to rival EU",
+                         "summary":  "The plan includes hydrogen subsidies, EV incentives, and critical mineral grants.",
+                         "source":  "Bloomberg",
+                         "publishedAt":  "2025-10-11 22:00:00",
+                         "accentColor":  "#2563EB",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1505849864904-012600a660ec?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "world",
+                         "content":  [
+                                         "The plan includes hydrogen subsidies, EV incentives, and critical mineral grants.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  209,
+                         "category":  "Top",
+                         "title":  "Historic peace accord signed between Armenia and Azerbaijan",
+                         "summary":  "The EU-brokered deal ends decades of conflict over Nagorno-Karabakh with phased troop withdrawals.",
+                         "source":  "Al Jazeera",
+                         "publishedAt":  "2025-10-11 20:00:00",
+                         "accentColor":  "#2563EB",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1505849864904-012600a660ec?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "policy",
+                         "content":  [
+                                         "The EU-brokered deal ends decades of conflict over Nagorno-Karabakh with phased troop withdrawals.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  210,
+                         "category":  "Business",
+                         "title":  "Microsoft unveils Copilot Workspace for enterprise AI workflows",
+                         "summary":  "The subscription bundle knits together GitHub, Office, and Azure AI with fine-tuned models.",
+                         "source":  "Space.com",
+                         "publishedAt":  "2025-10-11 18:00:00",
+                         "accentColor":  "#D946EF",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "fintech",
+                         "content":  [
+                                         "The subscription bundle knits together GitHub, Office, and Azure AI with fine-tuned models.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  211,
+                         "category":  "Business",
+                         "title":  "Stripe rolls out Tap to Pay across Southeast Asia",
+                         "summary":  "Merchants in Indonesia, Malaysia, and Vietnam can now accept contactless payments with Android phones.",
+                         "source":  "ESPN",
+                         "publishedAt":  "2025-10-11 16:00:00",
+                         "accentColor":  "#D946EF",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "economy",
+                         "content":  [
+                                         "Merchants in Indonesia, Malaysia, and Vietnam can now accept contactless payments with Android phones.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  212,
+                         "category":  "Science",
+                         "title":  "James Webb spots water vapor on potentially habitable exoplanet",
+                         "summary":  "The discovery strengthens the case for a temperate atmosphere around K2-18 b.",
+                         "source":  "The Verge",
+                         "publishedAt":  "2025-10-11 14:00:00",
+                         "accentColor":  "#0EA5E9",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "space",
+                         "content":  [
+                                         "The discovery strengthens the case for a temperate atmosphere around K2-18 b.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  213,
+                         "category":  "Business",
+                         "title":  "Microsoft unveils Copilot Workspace for enterprise AI workflows",
+                         "summary":  "The subscription bundle knits together GitHub, Office, and Azure AI with fine-tuned models.",
+                         "source":  "CNBC",
+                         "publishedAt":  "2025-10-11 12:00:00",
+                         "accentColor":  "#D946EF",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "fintech",
+                         "content":  [
+                                         "The subscription bundle knits together GitHub, Office, and Azure AI with fine-tuned models.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  214,
+                         "category":  "Entertainment",
+                         "title":  "Barbie sequel announced with Greta Gerwig returning to direct",
+                         "summary":  "The follow-up will explore entrepreneurship and sustainability themes.",
+                         "source":  "The Guardian",
+                         "publishedAt":  "2025-10-11 10:00:00",
+                         "accentColor":  "#F97316",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "culture",
+                         "content":  [
+                                         "The follow-up will explore entrepreneurship and sustainability themes.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  215,
+                         "category":  "Top",
+                         "title":  "Australia unveils $60bn green industry package to rival EU",
+                         "summary":  "The plan includes hydrogen subsidies, EV incentives, and critical mineral grants.",
+                         "source":  "Al Jazeera",
+                         "publishedAt":  "2025-10-11 08:00:00",
+                         "accentColor":  "#2563EB",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1505849864904-012600a660ec?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "world",
+                         "content":  [
+                                         "The plan includes hydrogen subsidies, EV incentives, and critical mineral grants.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  216,
+                         "category":  "Health",
+                         "title":  "Study links ultra-processed foods to higher depression risk",
+                         "summary":  "Researchers tracked 30,000 adults over 12 years, prompting calls for labeling reforms.",
+                         "source":  "AP News",
+                         "publishedAt":  "2025-10-11 06:00:00",
+                         "accentColor":  "#22C55E",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1587502536263-929f9a0d31d1?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "pandemic",
+                         "content":  [
+                                         "Researchers tracked 30,000 adults over 12 years, prompting calls for labeling reforms.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  217,
+                         "category":  "Tech",
+                         "title":  "Google debuts Gemini 2 with multimodal video reasoning",
+                         "summary":  "The model understands hour-long clips and summarizes key actions for analysts.",
+                         "source":  "Bloomberg",
+                         "publishedAt":  "2025-10-11 04:00:00",
+                         "accentColor":  "#6366F1",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "software",
+                         "content":  [
+                                         "The model understands hour-long clips and summarizes key actions for analysts.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  218,
+                         "category":  "Top",
+                         "title":  "Record wildfires prompt Canada to rethink emergency response",
+                         "summary":  "Ottawa will deploy national firefighting brigades and invest in early warning satellites.",
+                         "source":  "Financial Times",
+                         "publishedAt":  "2025-10-11 02:00:00",
+                         "accentColor":  "#2563EB",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1505849864904-012600a660ec?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "world",
+                         "content":  [
+                                         "Ottawa will deploy national firefighting brigades and invest in early warning satellites.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  219,
+                         "category":  "Health",
+                         "title":  "Global measles surge prompts emergency vaccination drives",
+                         "summary":  "WHO urges countries to close immunity gaps caused during pandemic shutdowns.",
+                         "source":  "Financial Times",
+                         "publishedAt":  "2025-10-11 00:00:00",
+                         "accentColor":  "#22C55E",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1587502536263-929f9a0d31d1?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "research",
+                         "content":  [
+                                         "WHO urges countries to close immunity gaps caused during pandemic shutdowns.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  220,
+                         "category":  "Sport",
+                         "title":  "Lionel Messi announces MLS retirement tour in 2026",
+                         "summary":  "Inter Miami will stage exhibition matches across South America to celebrate his career.",
+                         "source":  "BBC",
+                         "publishedAt":  "2025-10-10 22:00:00",
+                         "accentColor":  "#14B8A6",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "nba",
+                         "content":  [
+                                         "Inter Miami will stage exhibition matches across South America to celebrate his career.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  221,
+                         "category":  "Top",
+                         "title":  "Australia unveils $60bn green industry package to rival EU",
+                         "summary":  "The plan includes hydrogen subsidies, EV incentives, and critical mineral grants.",
+                         "source":  "NPR",
+                         "publishedAt":  "2025-10-10 20:00:00",
+                         "accentColor":  "#2563EB",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1505849864904-012600a660ec?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "world",
+                         "content":  [
+                                         "The plan includes hydrogen subsidies, EV incentives, and critical mineral grants.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  222,
+                         "category":  "Science",
+                         "title":  "China\u0027s Zhurong rover resumes operations on Mars after dust storm hiatus",
+                         "summary":  "Solar panels cleared naturally, allowing new geological surveys of Utopia Planitia.",
+                         "source":  "The Guardian",
+                         "publishedAt":  "2025-10-10 18:00:00",
+                         "accentColor":  "#0EA5E9",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "environment",
+                         "content":  [
+                                         "Solar panels cleared naturally, allowing new geological surveys of Utopia Planitia.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  223,
+                         "category":  "Science",
+                         "title":  "ESA greenlights lunar ice mining mission for 2029",
+                         "summary":  "The project will test extraction tech in permanently shadowed craters.",
+                         "source":  "ESPN",
+                         "publishedAt":  "2025-10-10 16:00:00",
+                         "accentColor":  "#0EA5E9",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "innovation",
+                         "content":  [
+                                         "The project will test extraction tech in permanently shadowed craters.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  224,
+                         "category":  "Tech",
+                         "title":  "Apple previews VisionOS 2 with spatial photo editing and SharePlay",
+                         "summary":  "Developers gain new APIs for collaborative design and immersive classrooms.",
+                         "source":  "BBC",
+                         "publishedAt":  "2025-10-10 14:00:00",
+                         "accentColor":  "#6366F1",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "security",
+                         "content":  [
+                                         "Developers gain new APIs for collaborative design and immersive classrooms.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  225,
+                         "category":  "Business",
+                         "title":  "Alibaba spins off logistics arm Cainiao in Hong Kong listing",
+                         "summary":  "The move raises capital for global warehouse expansion and smart delivery tech.",
+                         "source":  "Al Jazeera",
+                         "publishedAt":  "2025-10-10 12:00:00",
+                         "accentColor":  "#D946EF",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "energy",
+                         "content":  [
+                                         "The move raises capital for global warehouse expansion and smart delivery tech.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  226,
+                         "category":  "Health",
+                         "title":  "Global measles surge prompts emergency vaccination drives",
+                         "summary":  "WHO urges countries to close immunity gaps caused during pandemic shutdowns.",
+                         "source":  "Space.com",
+                         "publishedAt":  "2025-10-10 10:00:00",
+                         "accentColor":  "#22C55E",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1587502536263-929f9a0d31d1?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "research",
+                         "content":  [
+                                         "WHO urges countries to close immunity gaps caused during pandemic shutdowns.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  227,
+                         "category":  "Business",
+                         "title":  "Alibaba spins off logistics arm Cainiao in Hong Kong listing",
+                         "summary":  "The move raises capital for global warehouse expansion and smart delivery tech.",
+                         "source":  "BBC",
+                         "publishedAt":  "2025-10-10 08:00:00",
+                         "accentColor":  "#D946EF",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "fintech",
+                         "content":  [
+                                         "The move raises capital for global warehouse expansion and smart delivery tech.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  228,
+                         "category":  "Science",
+                         "title":  "Researchers map deepest parts of Antarctic ice shelf using drones",
+                         "summary":  "Autonomous subs reveal warmer currents accelerating melt from below.",
+                         "source":  "ESPN",
+                         "publishedAt":  "2025-10-10 06:00:00",
+                         "accentColor":  "#0EA5E9",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "innovation",
+                         "content":  [
+                                         "Autonomous subs reveal warmer currents accelerating melt from below.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  229,
+                         "category":  "Tech",
+                         "title":  "Samsung teases foldable tablet with roll-out display at Galaxy Summit",
+                         "summary":  "The prototype expands to 15 inches and supports S Pen input for creatives.",
+                         "source":  "CNN",
+                         "publishedAt":  "2025-10-10 04:00:00",
+                         "accentColor":  "#6366F1",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "ai",
+                         "content":  [
+                                         "The prototype expands to 15 inches and supports S Pen input for creatives.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  230,
+                         "category":  "Tech",
+                         "title":  "Samsung teases foldable tablet with roll-out display at Galaxy Summit",
+                         "summary":  "The prototype expands to 15 inches and supports S Pen input for creatives.",
+                         "source":  "Nature",
+                         "publishedAt":  "2025-10-10 02:00:00",
+                         "accentColor":  "#6366F1",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "ai",
+                         "content":  [
+                                         "The prototype expands to 15 inches and supports S Pen input for creatives.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  231,
+                         "category":  "Entertainment",
+                         "title":  "Grammy Awards add category for AI-assisted compositions",
+                         "summary":  "Organisers say transparency about training data will be required for eligibility.",
+                         "source":  "Financial Times",
+                         "publishedAt":  "2025-10-10 00:00:00",
+                         "accentColor":  "#F97316",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "music",
+                         "content":  [
+                                         "Organisers say transparency about training data will be required for eligibility.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  232,
+                         "category":  "Tech",
+                         "title":  "Google debuts Gemini 2 with multimodal video reasoning",
+                         "summary":  "The model understands hour-long clips and summarizes key actions for analysts.",
+                         "source":  "Al Jazeera",
+                         "publishedAt":  "2025-10-09 22:00:00",
+                         "accentColor":  "#6366F1",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "ai",
+                         "content":  [
+                                         "The model understands hour-long clips and summarizes key actions for analysts.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  233,
+                         "category":  "Entertainment",
+                         "title":  "Barbie sequel announced with Greta Gerwig returning to direct",
+                         "summary":  "The follow-up will explore entrepreneurship and sustainability themes.",
+                         "source":  "Reuters",
+                         "publishedAt":  "2025-10-09 20:00:00",
+                         "accentColor":  "#F97316",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "streaming",
+                         "content":  [
+                                         "The follow-up will explore entrepreneurship and sustainability themes.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  234,
+                         "category":  "Health",
+                         "title":  "Study links ultra-processed foods to higher depression risk",
+                         "summary":  "Researchers tracked 30,000 adults over 12 years, prompting calls for labeling reforms.",
+                         "source":  "NPR",
+                         "publishedAt":  "2025-10-09 18:00:00",
+                         "accentColor":  "#22C55E",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1587502536263-929f9a0d31d1?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "research",
+                         "content":  [
+                                         "Researchers tracked 30,000 adults over 12 years, prompting calls for labeling reforms.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  235,
+                         "category":  "Health",
+                         "title":  "Study links ultra-processed foods to higher depression risk",
+                         "summary":  "Researchers tracked 30,000 adults over 12 years, prompting calls for labeling reforms.",
+                         "source":  "CNBC",
+                         "publishedAt":  "2025-10-09 16:00:00",
+                         "accentColor":  "#22C55E",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1587502536263-929f9a0d31d1?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "wellness",
+                         "content":  [
+                                         "Researchers tracked 30,000 adults over 12 years, prompting calls for labeling reforms.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  236,
+                         "category":  "Sport",
+                         "title":  "Novak Djokovic claims 2025 Australian Open in five-set thriller",
+                         "summary":  "The Serbian star rallied from two sets down against Carlos Alcaraz.",
+                         "source":  "The Guardian",
+                         "publishedAt":  "2025-10-09 14:00:00",
+                         "accentColor":  "#14B8A6",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "tennis",
+                         "content":  [
+                                         "The Serbian star rallied from two sets down against Carlos Alcaraz.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  237,
+                         "category":  "Business",
+                         "title":  "Alibaba spins off logistics arm Cainiao in Hong Kong listing",
+                         "summary":  "The move raises capital for global warehouse expansion and smart delivery tech.",
+                         "source":  "Space.com",
+                         "publishedAt":  "2025-10-09 12:00:00",
+                         "accentColor":  "#D946EF",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "startups",
+                         "content":  [
+                                         "The move raises capital for global warehouse expansion and smart delivery tech.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  238,
+                         "category":  "Tech",
+                         "title":  "Samsung teases foldable tablet with roll-out display at Galaxy Summit",
+                         "summary":  "The prototype expands to 15 inches and supports S Pen input for creatives.",
+                         "source":  "TechCrunch",
+                         "publishedAt":  "2025-10-09 10:00:00",
+                         "accentColor":  "#6366F1",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "ai",
+                         "content":  [
+                                         "The prototype expands to 15 inches and supports S Pen input for creatives.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  239,
+                         "category":  "Health",
+                         "title":  "New wearable monitors blood pressure continuously without cuff",
+                         "summary":  "Stanford engineers created a graphene sensor patch for 24/7 cardiovascular insights.",
+                         "source":  "BBC",
+                         "publishedAt":  "2025-10-09 08:00:00",
+                         "accentColor":  "#22C55E",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1587502536263-929f9a0d31d1?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "pandemic",
+                         "content":  [
+                                         "Stanford engineers created a graphene sensor patch for 24/7 cardiovascular insights.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  240,
+                         "category":  "Science",
+                         "title":  "ESA greenlights lunar ice mining mission for 2029",
+                         "summary":  "The project will test extraction tech in permanently shadowed craters.",
+                         "source":  "CNBC",
+                         "publishedAt":  "2025-10-09 06:00:00",
+                         "accentColor":  "#0EA5E9",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "space",
+                         "content":  [
+                                         "The project will test extraction tech in permanently shadowed craters.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  241,
+                         "category":  "Top",
+                         "title":  "G20 leaders endorse global tax overhaul targeting digital giants",
+                         "summary":  "Finance ministers reached consensus on a 15% minimum tax and new profit-sharing rules.",
+                         "source":  "AP News",
+                         "publishedAt":  "2025-10-09 04:00:00",
+                         "accentColor":  "#2563EB",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1505849864904-012600a660ec?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "world",
+                         "content":  [
+                                         "Finance ministers reached consensus on a 15% minimum tax and new profit-sharing rules.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  242,
+                         "category":  "Business",
+                         "title":  "Uber reports first full-year profit as delivery demand surges",
+                         "summary":  "Cost controls and membership bundles helped offset ride-hailing competition.",
+                         "source":  "Nature",
+                         "publishedAt":  "2025-10-09 02:00:00",
+                         "accentColor":  "#D946EF",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "economy",
+                         "content":  [
+                                         "Cost controls and membership bundles helped offset ride-hailing competition.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  243,
+                         "category":  "Tech",
+                         "title":  "Intel launches Lunar Lake chips aimed at AI PCs",
+                         "summary":  "The architecture integrates a neural engine delivering 50 TOPS for on-device models.",
+                         "source":  "Bloomberg",
+                         "publishedAt":  "2025-10-09 00:00:00",
+                         "accentColor":  "#6366F1",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "ai",
+                         "content":  [
+                                         "The architecture integrates a neural engine delivering 50 TOPS for on-device models.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  244,
+                         "category":  "Sport",
+                         "title":  "Novak Djokovic claims 2025 Australian Open in five-set thriller",
+                         "summary":  "The Serbian star rallied from two sets down against Carlos Alcaraz.",
+                         "source":  "NPR",
+                         "publishedAt":  "2025-10-08 22:00:00",
+                         "accentColor":  "#14B8A6",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "motorsport",
+                         "content":  [
+                                         "The Serbian star rallied from two sets down against Carlos Alcaraz.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  245,
+                         "category":  "Business",
+                         "title":  "Microsoft unveils Copilot Workspace for enterprise AI workflows",
+                         "summary":  "The subscription bundle knits together GitHub, Office, and Azure AI with fine-tuned models.",
+                         "source":  "Reuters",
+                         "publishedAt":  "2025-10-08 20:00:00",
+                         "accentColor":  "#D946EF",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "energy",
+                         "content":  [
+                                         "The subscription bundle knits together GitHub, Office, and Azure AI with fine-tuned models.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  246,
+                         "category":  "Business",
+                         "title":  "Saudi Aramco invests $11bn in carbon capture hub on Persian Gulf",
+                         "summary":  "The project aims to sequester 9m tonnes of CO2 annually by 2030.",
+                         "source":  "ESPN",
+                         "publishedAt":  "2025-10-08 18:00:00",
+                         "accentColor":  "#D946EF",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "energy",
+                         "content":  [
+                                         "The project aims to sequester 9m tonnes of CO2 annually by 2030.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  247,
+                         "category":  "Sport",
+                         "title":  "Kenyan runner Faith Kipyegon breaks indoor mile world record",
+                         "summary":  "She finished in 4:12.83 at the world indoor series in Glasgow.",
+                         "source":  "Financial Times",
+                         "publishedAt":  "2025-10-08 16:00:00",
+                         "accentColor":  "#14B8A6",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "football",
+                         "content":  [
+                                         "She finished in 4:12.83 at the world indoor series in Glasgow.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  248,
+                         "category":  "Business",
+                         "title":  "Alibaba spins off logistics arm Cainiao in Hong Kong listing",
+                         "summary":  "The move raises capital for global warehouse expansion and smart delivery tech.",
+                         "source":  "ESPN",
+                         "publishedAt":  "2025-10-08 14:00:00",
+                         "accentColor":  "#D946EF",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "economy",
+                         "content":  [
+                                         "The move raises capital for global warehouse expansion and smart delivery tech.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  249,
+                         "category":  "Tech",
+                         "title":  "Apple previews VisionOS 2 with spatial photo editing and SharePlay",
+                         "summary":  "Developers gain new APIs for collaborative design and immersive classrooms.",
+                         "source":  "Reuters",
+                         "publishedAt":  "2025-10-08 12:00:00",
+                         "accentColor":  "#6366F1",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "devices",
+                         "content":  [
+                                         "Developers gain new APIs for collaborative design and immersive classrooms.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     },
+                     {
+                         "id":  250,
+                         "category":  "Entertainment",
+                         "title":  "Netflix inks multi-picture deal with Korean director Park Chan-wook",
+                         "summary":  "The auteur will produce three thrillers blending noir and sci-fi elements.",
+                         "source":  "The Verge",
+                         "publishedAt":  "2025-10-08 10:00:00",
+                         "accentColor":  "#F97316",
+                         "heroImageUrl":  "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format\u0026fit=crop\u0026w=1200\u0026q=80",
+                         "tag":  "music",
+                         "content":  [
+                                         "The auteur will produce three thrillers blending noir and sci-fi elements.",
+                                         "Analysts interviewed by major outlets highlighted regional impacts and policy responses under review.",
+                                         "Further updates are expected over the coming weeks as stakeholders digest the developments."
+                                     ]
+                     }
+                 ],
+    "bookmarked_article_ids":  [
+                                   203,
+                                   205
+                               ],
+    "search_suggestions":  [
+                               "UEFA Champions League schedule",
+                               "Stock market open today",
+                               "Latest AI breakthroughs",
+                               "Global weather alerts",
+                               "NBA standings",
+                               "Best travel deals 2025"
+                           ]
 }

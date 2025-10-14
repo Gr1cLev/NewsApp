@@ -1,4 +1,4 @@
-﻿package com.example.newsapp.ui.news
+package com.example.newsapp.ui.news
 
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
@@ -29,6 +29,10 @@ class ArticleAdapter(
 
     override fun onBindViewHolder(holder: ArticleViewHolder, position: Int) {
         holder.bind(getItem(position))
+    }
+
+    fun refreshBookmarks() {
+        notifyDataSetChanged()
     }
 
     class ArticleViewHolder(
@@ -103,3 +107,4 @@ class ArticleAdapter(
         override fun areContentsTheSame(oldItem: NewsArticle, newItem: NewsArticle): Boolean = oldItem == newItem
     }
 }
+

@@ -1,4 +1,4 @@
-﻿package com.example.newsapp.ui.search
+package com.example.newsapp.ui.search
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,19 +13,21 @@ import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.databinding.FragmentSearchBinding
 import com.example.newsapp.model.NewsArticle
 import com.example.newsapp.navigation.ArticleNavigator
+import com.example.newsapp.ui.detail.ArticleDetailFragment
 
 class SearchFragment : Fragment() {
 
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var suggestionAdapter: SuggestionAdapter
     private lateinit var resultAdapter: SearchResultAdapter
+    private lateinit var recommendationAdapter: SearchResultAdapter
     private lateinit var allArticles: List<NewsArticle>
-    private lateinit var suggestionItems: List<String>
+    private lateinit var recommendedArticles: List<NewsArticle>
 
     private val articleNavigator: ArticleNavigator?
         get() = activity as? ArticleNavigator
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -38,10 +40,12 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         allArticles = NewsRepository.getArticles(requireContext())
-        suggestionItems = NewsRepository.getSearchSuggestions(requireContext())
+        recommendedArticles = allArticles.filter { it.category.equals("Sport", ignoreCase = true) }
+            .ifEmpty { allArticles.take(4) }
         setupAdapters()
         setupListeners()
-        showSuggestions()
+        setupBookmarkListener()
+        showRecommendations()
     }
 
     override fun onDestroyView() {
@@ -50,14 +54,12 @@ class SearchFragment : Fragment() {
     }
 
     private fun setupAdapters() = with(binding) {
-        suggestionAdapter = SuggestionAdapter { suggestion ->
-            searchInput.setText(suggestion)
-            searchInput.setSelection(suggestion.length)
-            showResultsForQuery(suggestion)
+        recommendationAdapter = SearchResultAdapter { article ->
+            articleNavigator?.openArticleDetail(article.id)
         }
-        suggestionsRecycler.layoutManager = LinearLayoutManager(requireContext())
-        suggestionsRecycler.adapter = suggestionAdapter
-        suggestionAdapter.submitList(suggestionItems)
+        recommendationsRecycler.layoutManager = LinearLayoutManager(requireContext())
+        recommendationsRecycler.adapter = recommendationAdapter
+        recommendationAdapter.submitList(recommendedArticles)
 
         resultAdapter = SearchResultAdapter { article ->
             articleNavigator?.openArticleDetail(article.id)
@@ -70,7 +72,7 @@ class SearchFragment : Fragment() {
         searchInput.doOnTextChanged { text, _, _, _ ->
             val query = text?.toString().orEmpty()
             if (query.isBlank()) {
-                showSuggestions()
+                showRecommendations()
             } else {
                 showResultsForQuery(query)
             }
@@ -78,29 +80,48 @@ class SearchFragment : Fragment() {
 
         searchInputLayout.setEndIconOnClickListener {
             searchInput.setText("")
-            showSuggestions()
+            showRecommendations()
+        }
+    }
+
+    private fun setupBookmarkListener() {
+        parentFragmentManager.setFragmentResultListener(
+            ArticleDetailFragment.BOOKMARK_RESULT_KEY,
+            viewLifecycleOwner
+        ) { _, _ ->
+            allArticles = NewsRepository.getArticles(requireContext())
+            recommendedArticles = allArticles.filter { it.category.equals("Sport", ignoreCase = true) }
+                .ifEmpty { allArticles.take(4) }
+            if (binding.searchInput.text.isNullOrBlank()) {
+                showRecommendations()
+            } else {
+                showResultsForQuery(binding.searchInput.text.toString())
+            }
         }
     }
 
     private fun showResultsForQuery(query: String) {
         val trimmed = query.trim()
-        val filtered: List<NewsArticle> = allArticles.filter {
+        val filtered = allArticles.filter {
             it.title.contains(trimmed, ignoreCase = true) ||
                 it.summary.contains(trimmed, ignoreCase = true) ||
                 it.category.contains(trimmed, ignoreCase = true)
         }
         resultAdapter.submitList(filtered)
         binding.resultsRecycler.isVisible = filtered.isNotEmpty()
+        binding.searchSectionTitle.isVisible = filtered.isNotEmpty()
         binding.emptyResultText.isVisible = filtered.isEmpty()
-        binding.suggestionsRecycler.isVisible = false
-        binding.searchSectionTitle.setText(R.string.title_results)
+        binding.recommendationsRecycler.isVisible = false
+        binding.recommendationTitle.isVisible = false
     }
 
-    private fun showSuggestions() = with(binding) {
-        searchSectionTitle.setText(R.string.title_suggestions)
-        suggestionsRecycler.isVisible = true
+    private fun showRecommendations() = with(binding) {
+        searchInput.clearFocus()
+        recommendationAdapter.submitList(recommendedArticles)
+        recommendationsRecycler.isVisible = recommendedArticles.isNotEmpty()
+        recommendationTitle.isVisible = recommendedArticles.isNotEmpty()
+        searchSectionTitle.isVisible = false
         resultsRecycler.isVisible = false
         emptyResultText.isVisible = false
-        suggestionAdapter.submitList(suggestionItems)
     }
 }

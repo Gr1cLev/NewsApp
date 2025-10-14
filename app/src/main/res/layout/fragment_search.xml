@@ -40,24 +40,35 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
-        android:id="@+id/searchSectionTitle"
+        android:id="@+id/recommendationTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="@string/title_suggestions"
+        android:text="@string/title_recommended"
         android:textColor="@color/text_primary"
         android:textSize="18sp"
         android:textStyle="bold" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/suggestionsRecycler"
+        android:id="@+id/recommendationsRecycler"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:nestedScrollingEnabled="false"
         android:overScrollMode="never"
-        tools:itemCount="5"
-        tools:listitem="@layout/item_search_suggestion" />
+        tools:itemCount="3"
+        tools:listitem="@layout/item_search_result" />
+
+    <TextView
+        android:id="@+id/searchSectionTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/title_results"
+        android:textColor="@color/text_primary"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/resultsRecycler"

@@ -1,17 +1,21 @@
-﻿package com.example.newsapp.ui.detail
+package com.example.newsapp.ui.detail
 
+import android.content.res.ColorStateList
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import com.example.newsapp.R
 import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.databinding.FragmentArticleDetailBinding
 import com.example.newsapp.model.NewsArticle
+import com.google.android.material.chip.Chip
 import java.util.Locale
 
 class ArticleDetailFragment : Fragment() {
@@ -21,6 +25,7 @@ class ArticleDetailFragment : Fragment() {
 
     private var articleId: Int = -1
     private var article: NewsArticle? = null
+    private var isBookmarked: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,7 +80,90 @@ class ArticleDetailFragment : Fragment() {
             ?.joinToString(separator = "\n\n")
             ?: article.summary
 
+        isBookmarked = NewsRepository.isArticleBookmarked(requireContext(), article.id)
         applyHeroBackground(article.accentColor)
+        renderAiTags(article)
+        setupActions(article)
+    }
+
+    private fun setupActions(article: NewsArticle) = with(binding) {
+        updateBookmarkButton()
+        actionBookmark.setOnClickListener {
+            isBookmarked = NewsRepository.toggleBookmark(requireContext(), article.id)
+            updateBookmarkButton()
+            notifyBookmarkChanged(article.id)
+            val messageRes = if (isBookmarked) R.string.bookmark_added else R.string.bookmark_removed
+            Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
+        }
+        actionDownload.setOnClickListener {
+            Toast.makeText(requireContext(), R.string.toast_download_unavailable, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun updateBookmarkButton() = with(binding.actionBookmark) {
+        if (isBookmarked) {
+            text = context.getString(R.string.action_remove_bookmark)
+            icon = ContextCompat.getDrawable(context, R.drawable.ic_bookmark_filled)
+        } else {
+            text = context.getString(R.string.action_add_bookmark)
+            icon = ContextCompat.getDrawable(context, R.drawable.ic_bookmark_outline)
+        }
+    }
+
+    private fun notifyBookmarkChanged(articleId: Int) {
+        parentFragmentManager.setFragmentResult(
+            BOOKMARK_RESULT_KEY,
+            bundleOf(
+                EXTRA_ARTICLE_ID to articleId,
+                EXTRA_IS_BOOKMARKED to isBookmarked
+            )
+        )
+    }
+
+    private fun renderAiTags(article: NewsArticle) = with(binding) {
+        val tags = generateAiTags(article)
+        aiTagGroup.removeAllViews()
+        if (tags.isEmpty()) {
+            aiSectionContainer.visibility = View.GONE
+            return@with
+        }
+        aiSectionContainer.visibility = View.VISIBLE
+        val chipBackground = ContextCompat.getColor(root.context, R.color.primary_blue_light)
+        val textColor = ContextCompat.getColor(root.context, R.color.primary_blue_dark)
+        tags.forEach { label ->
+            val chip = Chip(root.context).apply {
+                text = label
+                isCheckable = false
+                chipBackgroundColor = ColorStateList.valueOf(chipBackground)
+                setTextColor(textColor)
+            }
+            aiTagGroup.addView(chip)
+        }
+    }
+
+    private fun generateAiTags(article: NewsArticle): List<String> {
+        val resources = requireContext().resources
+        val output = mutableListOf<String>()
+        output += resources.getString(R.string.ai_tag_trending)
+        when (article.category.lowercase(Locale.getDefault())) {
+            "sport" -> output += listOf(
+                resources.getString(R.string.ai_tag_fan_favorite),
+                "Match insight"
+            )
+            "business" -> output += listOf(
+                resources.getString(R.string.ai_tag_morning_brief),
+                "Market radar"
+            )
+            "tech" -> output += listOf(
+                "Innovation pulse",
+                resources.getString(R.string.ai_tag_featured)
+            )
+            else -> output += resources.getString(R.string.ai_tag_featured)
+        }
+        if (article.summary.contains("analysis", ignoreCase = true)) {
+            output += "Deep analysis"
+        }
+        return output.distinct().take(4)
     }
 
     private fun applyHeroBackground(accentColor: Int) {
@@ -96,6 +184,9 @@ class ArticleDetailFragment : Fragment() {
 
     companion object {
         private const val ARG_ARTICLE_ID = "arg_article_id"
+        const val BOOKMARK_RESULT_KEY = "bookmark_result"
+        const val EXTRA_ARTICLE_ID = "extra_article_id"
+        const val EXTRA_IS_BOOKMARKED = "extra_is_bookmarked"
 
         fun newInstance(articleId: Int): ArticleDetailFragment {
             return ArticleDetailFragment().apply {

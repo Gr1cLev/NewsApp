@@ -38,6 +38,12 @@ class BookmarksFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupRecycler()
         renderBookmarks(NewsRepository.getBookmarks(requireContext()))
+        parentFragmentManager.setFragmentResultListener(
+            com.example.newsapp.ui.detail.ArticleDetailFragment.BOOKMARK_RESULT_KEY,
+            viewLifecycleOwner
+        ) { _, _ ->
+            renderBookmarks(NewsRepository.getBookmarks(requireContext()))
+        }
     }
 
     override fun onResume() {

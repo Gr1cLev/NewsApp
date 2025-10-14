@@ -101,4 +101,14 @@
     <string name="toast_login_success">Welcome back, %1$s!</string>
     <string name="toast_register_success">Account for %1$s created.</string>
     <string name="toast_logout_success">You have been logged out.</string>
+    <string name="ai_tags_title">Personalised picks</string>
+    <string name="action_add_bookmark">Save to bookmarks</string>
+    <string name="action_remove_bookmark">Remove bookmark</string>
+    <string name="action_download_news">Download news</string>
+    <string name="toast_download_unavailable">Offline download isn\u2019t available yet. Stay tuned!</string>
+    <string name="title_recommended">Recommended for you</string>
+    <string name="ai_tag_trending">Trending now</string>
+    <string name="ai_tag_featured">Featured pick</string>
+    <string name="ai_tag_morning_brief">Morning brief</string>
+    <string name="ai_tag_fan_favorite">Fan favourite</string>
 </resources>
