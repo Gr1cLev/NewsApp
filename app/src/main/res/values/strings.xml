@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">NewsApp</string>
 
@@ -51,9 +51,9 @@
     <string name="settings_faq">Frequently Asked Questions</string>
     <string name="settings_contact">Contact Us</string>
     <string name="settings_about">About</string>
-    <string name="settings_faq_content">This is a placeholder FAQ. Update with real answers when available.</string>
-    <string name="settings_contact_content">Reach out via email: support@newsapp.local. This is a demo contact entry.</string>
-    <string name="settings_about_content">NewsApp is a learning project showcasing modern Android best practices.</string>
+    <string name="settings_faq_content">Find quick answers about saved preferences, login issues, and notification settings.</string>
+    <string name="settings_contact_content">Email support@newsapp.local or call +62 21 555 0190 every weekday 09.00-18.00 WIB.</string>
+    <string name="settings_about_content">NewsApp curates trusted headlines, delivers smart alerts, and keeps your reading history synced across devices.</string>
     <string name="settings_edit_profile">Edit profile</string>
 
     <!-- Edit profile -->
