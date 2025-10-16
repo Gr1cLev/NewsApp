@@ -1,12 +1,14 @@
 ﻿package com.example.newsapp.ui.news
 
 import android.graphics.drawable.GradientDrawable
+import androidx.core.view.isVisible
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.ColorInt
 import androidx.core.graphics.ColorUtils
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.example.newsapp.databinding.ItemFeaturedArticleBinding
 import com.example.newsapp.model.NewsArticle
 import java.util.Locale
@@ -45,13 +47,27 @@ class FeaturedArticleAdapter(
             featuredTag.text = article.tag.uppercase(Locale.getDefault())
             featuredTitle.text = article.title
             featuredSummary.text = article.summary
-
-            featuredBackground.background = GradientDrawable(
+            val backgroundDrawable = GradientDrawable(
                 GradientDrawable.Orientation.TR_BL,
                 intArrayOf(article.accentColor, lighten(article.accentColor))
             ).apply {
                 cornerRadius = featuredBackground.radius(28f)
             }
+            val hasHeroImage = !article.heroImageUrl.isNullOrBlank()
+            if (hasHeroImage) {
+                featuredImage.isVisible = true
+                featuredImage.load(article.heroImageUrl) {
+                    crossfade(true)
+                    placeholder(com.example.newsapp.R.drawable.bg_detail_placeholder)
+                    error(com.example.newsapp.R.drawable.bg_detail_placeholder)
+                }
+                backgroundDrawable.alpha = (255 * 0.82f).toInt()
+            } else {
+                featuredImage.setImageDrawable(null)
+                featuredImage.isVisible = false
+                backgroundDrawable.alpha = 255
+            }
+            featuredBackground.background = backgroundDrawable
         }
 
         private fun lighten(@ColorInt baseColor: Int): Int {

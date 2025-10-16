@@ -8,48 +8,60 @@
     app:cardPreventCornerOverlap="true"
     app:cardUseCompatPadding="false">
 
-    <LinearLayout
-        android:id="@+id/featuredBackground"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/featuredTag"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_tag_badge"
-            android:paddingStart="16dp"
-            android:paddingTop="6dp"
-            android:paddingEnd="16dp"
-            android:paddingBottom="6dp"
-            android:textAllCaps="true"
-            android:textColor="@color/primary_blue_dark"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/featuredTitle"
+        <ImageView
+            android:id="@+id/featuredImage"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:maxLines="3"
-            android:ellipsize="end" />
+            android:layout_height="match_parent"
+            android:contentDescription="@string/content_desc_article_image"
+            android:scaleType="centerCrop"
+            android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/featuredSummary"
+        <LinearLayout
+            android:id="@+id/featuredBackground"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:textColor="@android:color/white"
-            android:textSize="14sp"
-            android:maxLines="3"
-            android:ellipsize="end" />
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="24dp">
 
-    </LinearLayout>
+            <TextView
+                android:id="@+id/featuredTag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_tag_badge"
+                android:paddingStart="16dp"
+                android:paddingTop="6dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="6dp"
+                android:textAllCaps="true"
+                android:textColor="@color/primary_blue_dark"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
+            <TextView
+                android:id="@+id/featuredTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:maxLines="3"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/featuredSummary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                android:maxLines="3"
+                android:ellipsize="end" />
+
+        </LinearLayout>
+    </FrameLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -178,13 +178,14 @@ object NewsRepository {
     }
 
     private fun defaultCategories(): List<NewsCategory> = listOf(
-        NewsCategory(0, "All"),
-        NewsCategory(1, "Top"),
-        NewsCategory(2, "Sport"),
-        NewsCategory(3, "Business"),
-        NewsCategory(4, "Entertainment"),
-        NewsCategory(5, "Tech"),
-        NewsCategory(6, "Health")
+        NewsCategory(0, "Semua"),
+        NewsCategory(1, "Teratas"),
+        NewsCategory(2, "Olahraga"),
+        NewsCategory(3, "Bisnis"),
+        NewsCategory(4, "Hiburan"),
+        NewsCategory(5, "Teknologi"),
+        NewsCategory(6, "Kesehatan"),
+        NewsCategory(7, "Sains")
     )
 }
 

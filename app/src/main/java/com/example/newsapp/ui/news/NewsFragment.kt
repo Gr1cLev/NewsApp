@@ -30,14 +30,14 @@ class NewsFragment : Fragment() {
     private lateinit var articleAdapter: ArticleAdapter
     private lateinit var featuredAdapter: FeaturedArticleAdapter
 
-    private var selectedCategoryName: String = "All"
+    private var selectedCategoryName: String = "Semua"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         newsData = NewsRepository.getNewsData(requireContext())
         selectedCategoryName = savedInstanceState?.getString(KEY_SELECTED_CATEGORY)
             ?: newsData.categories.firstOrNull()?.name
-            ?: "All"
+            ?: "Semua"
     }
 
     override fun onCreateView(
@@ -146,7 +146,7 @@ class NewsFragment : Fragment() {
     }
 
     private fun updateArticlesForCategory(categoryName: String) {
-        val filtered = if (categoryName.equals("All", ignoreCase = true)) {
+        val filtered = if (categoryName.equals("Semua", ignoreCase = true)) {
             newsData.articles
         } else {
             newsData.articles.filter { it.category.equals(categoryName, ignoreCase = true) }

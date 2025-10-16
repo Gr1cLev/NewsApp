@@ -143,22 +143,24 @@ class ArticleDetailFragment : Fragment() {
         val output = mutableListOf<String>()
         output += resources.getString(R.string.ai_tag_trending)
         when (article.category.lowercase(Locale.getDefault())) {
-            "sport" -> output += listOf(
+            "olahraga", "sport" -> output += listOf(
                 resources.getString(R.string.ai_tag_fan_favorite),
-                "Match insight"
+                "Analisis laga"
             )
-            "business" -> output += listOf(
+            "bisnis", "business" -> output += listOf(
                 resources.getString(R.string.ai_tag_morning_brief),
-                "Market radar"
+                "Radar pasar"
             )
-            "tech" -> output += listOf(
-                "Innovation pulse",
+            "teknologi", "tech" -> output += listOf(
+                "Detak inovasi",
                 resources.getString(R.string.ai_tag_featured)
             )
             else -> output += resources.getString(R.string.ai_tag_featured)
         }
-        if (article.summary.contains("analysis", ignoreCase = true)) {
-            output += "Deep analysis"
+        if (article.summary.contains("analysis", ignoreCase = true) ||
+            article.summary.contains("analisis", ignoreCase = true)
+        ) {
+            output += "Ulasan mendalam"
         }
         return output.distinct().take(4)
     }

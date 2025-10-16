@@ -19,8 +19,8 @@ object ProfileRepository {
     private val defaultAdminProfile = UserProfile(
         id = "profile-admin",
         firstName = "Admin",
-        lastName = "User",
-        email = "admin@admin",
+        lastName = "Aplikasi",
+        email = "admin@beritakini.id",
         password = "123"
     )
 

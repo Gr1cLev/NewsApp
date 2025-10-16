@@ -40,7 +40,7 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         allArticles = NewsRepository.getArticles(requireContext())
-        recommendedArticles = allArticles.filter { it.category.equals("Sport", ignoreCase = true) }
+        recommendedArticles = allArticles.filter { it.category.equals("Olahraga", ignoreCase = true) }
             .ifEmpty { allArticles.take(4) }
         setupAdapters()
         setupListeners()
@@ -90,7 +90,7 @@ class SearchFragment : Fragment() {
             viewLifecycleOwner
         ) { _, _ ->
             allArticles = NewsRepository.getArticles(requireContext())
-            recommendedArticles = allArticles.filter { it.category.equals("Sport", ignoreCase = true) }
+            recommendedArticles = allArticles.filter { it.category.equals("Olahraga", ignoreCase = true) }
                 .ifEmpty { allArticles.take(4) }
             if (binding.searchInput.text.isNullOrBlank()) {
                 showRecommendations()

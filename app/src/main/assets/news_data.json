@@ -1,707 +1,834 @@
 {
   "categories": [
-    { "id": 0, "name": "All" },
-    { "id": 1, "name": "Top" },
-    { "id": 2, "name": "Sport" },
-    { "id": 3, "name": "Business" },
-    { "id": 4, "name": "Entertainment" },
-    { "id": 5, "name": "Tech" },
-    { "id": 6, "name": "Health" },
-    { "id": 7, "name": "Science" }
+    { "id": 0, "name": "Semua" },
+    { "id": 1, "name": "Teratas" },
+    { "id": 2, "name": "Olahraga" },
+    { "id": 3, "name": "Bisnis" },
+    { "id": 4, "name": "Hiburan" },
+    { "id": 5, "name": "Teknologi" },
+    { "id": 6, "name": "Kesehatan" },
+    { "id": 7, "name": "Sains" }
   ],
   "featured_articles": [
     {
-      "id": 1001,
-      "category": "Top",
-      "title": "Gaza ceasefire sees final hostages freed as global summit convenes",
-      "summary": "Kesepakatan gencatan senjata menghasilkan pembebasan sandera dan tahanan; para pemimpin dunia bertemu untuk peta jalan rekonstruksi.",
-      "source": "The Guardian",
-      "publishedAt": "2025-10-14 10:30:00",
+      "id": 2001,
+      "category": "Teratas",
+      "title": "KTT Iklim Jakarta Mantapkan Dana Transisi Energi ASEAN",
+      "summary": "Para pemimpin menyetujui dana hijau Rp75 triliun untuk proyek energi terbarukan kawasan.",
+      "source": "Kompas",
+      "publishedAt": "2025-10-15 08:30",
       "accentColor": "#0EA5E9",
-      "tag": "middle-east",
-      "heroImageUrl": "https://images.unsplash.com/photo-1526481280698-8fcc13fd1f52?auto=format&fit=crop&w=1200&q=80",
+      "tag": "transisi-energi",
+      "heroImageUrl": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
       "isFeatured": true,
       "content": [
-        "Hari bersejarah: sandera Israel yang masih hidup dibebaskan dan Israel melepas ~2.000 tahanan Palestina.",
-        "Negara-negara kunci merundingkan stabilisasi Gaza dan mekanisme bantuan jangka panjang."
+        "Kesepakatan menargetkan pembangunan 48 proyek pembangkit surya dan angin dalam lima tahun.",
+        "Pendanaan ditopang konsorsium bank pembangunan serta komitmen swasta dari Indonesia dan Singapura."
       ]
     },
     {
-      "id": 1002,
-      "category": "Business",
-      "title": "Global stocks wobble as US–China tensions flare; gold climbs",
-      "summary": "Saham global melemah dan aset safe haven naik di tengah retaliasi dagang dan ketidakpastian kebijakan.",
-      "source": "Reuters",
-      "publishedAt": "2025-10-14 18:00:00",
+      "id": 2002,
+      "category": "Bisnis",
+      "title": "Rupiah Menguat Setelah Bank Indonesia Jaga Suku Bunga",
+      "summary": "Nilai tukar menembus Rp15.200 per dolar AS usai BI mempertahankan BI-Rate di 6,25 persen.",
+      "source": "Bisnis Indonesia",
+      "publishedAt": "2025-10-15 11:15",
       "accentColor": "#F59E0B",
-      "tag": "markets",
-      "heroImageUrl": "https://images.unsplash.com/photo-1541140134513-85a161dc4a00?auto=format&fit=crop&w=1200&q=80",
+      "tag": "pasar-keuangan",
+      "heroImageUrl": "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80",
       "isFeatured": true,
       "content": [
-        "Kontrak S&P 500 turun, Nasdaq 100 melemah; emas menguat seiring risk-off.",
-        "Investor menimbang prospek suku bunga dan tensi dagang US–China."
+        "Surplus neraca perdagangan dan arus masuk portofolio menopang penguatan mata uang.",
+        "Pelaku pasar menilai komunikasi BI yang konsisten membuat volatilitas pekan ini menurun."
       ]
     },
     {
-      "id": 1003,
-      "category": "Tech",
-      "title": "OpenAI gandeng Broadcom untuk bikin chip AI in-house",
-      "summary": "Langkah besar untuk mengamankan kapasitas komputasi; produksi ditargetkan mulai paruh akhir 2026.",
-      "source": "Reuters",
-      "publishedAt": "2025-10-14 07:45:00",
+      "id": 2003,
+      "category": "Teknologi",
+      "title": "Startup Lokal Luncurkan Model AI Berbahasa Nusantara",
+      "summary": "Perusahaan rintisan LinguaCore memperkenalkan model bahasa yang dilatih pada 12 dialek daerah.",
+      "source": "Tekno.id",
+      "publishedAt": "2025-10-15 09:45",
       "accentColor": "#8B5CF6",
-      "tag": "ai-chips",
-      "heroImageUrl": "https://images.unsplash.com/photo-1555618568-9f2b1c6dfce4?auto=format&fit=crop&w=1200&q=80",
+      "tag": "ai-nusantara",
+      "heroImageUrl": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
       "isFeatured": true,
       "content": [
-        "Kemitraan kustom menambah alternatif di luar ekosistem Nvidia.",
-        "Menandakan tren pemain cloud/AI merancang silicon sendiri."
+        "Model ini diklaim mampu menjawab pertanyaan layanan publik dalam bahasa Indonesia, Jawa, Sunda, hingga Bugis.",
+        "LinguaCore menggandeng pemerintah daerah untuk mengintegrasikan sistem ke pusat layanan terpadu."
       ]
     }
   ],
   "articles": [
     {
-      "id": 1101,
-      "category": "Top",
-      "title": "Thailand–Cambodia capai kemajuan gencatan senjata jelang KTT ASEAN",
-      "summary": "Upaya diplomasi regional dorong perjanjian damai komprehensif pascakonflik perbatasan.",
-      "source": "Reuters",
-      "publishedAt": "2025-10-14 15:10:00",
+      "id": 2101,
+      "category": "Teratas",
+      "title": "Tol Laut Generasi Baru Siap Layani 15 Pelabuhan Timur 2026",
+      "summary": "Kemenhub membuka tender kapal berpendingin untuk memperkuat distribusi logistik pangan ke Maluku dan Papua.",
+      "source": "Tempo",
+      "publishedAt": "2025-10-14 17:40",
       "accentColor": "#0EA5E9",
-      "tag": "asean",
-      "heroImageUrl": "https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=1200&q=80",
+      "tag": "logistik",
+      "heroImageUrl": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80",
       "isFeatured": false,
       "content": [
-        "Perundingan difasilitasi Malaysia sebagai Ketua ASEAN.",
-        "Kesepakatan menyentuh pembersihan ranjau dan penarikan artileri berat."
+        "Skema subsidi mengutamakan komoditas pangan, obat-obatan, dan bahan bakar untuk wilayah kepulauan.",
+        "Pelaku usaha menyambut baik karena tarif angkut diproyeksi turun 15 persen."
       ]
     },
     {
-      "id": 1102,
-      "category": "Top",
-      "title": "Ledakan saat penggerebekan: tiga Carabinieri tewas di Italia",
-      "summary": "Insiden mematikan terjadi dalam operasi polisi; investigasi tengah berlangsung.",
-      "source": "Reuters",
-      "publishedAt": "2025-10-14 18:20:00",
+      "id": 2102,
+      "category": "Teratas",
+      "title": "BMKG: Musim Hujan Dimajukan, Pemerintah Siapkan Operasi Pangan",
+      "summary": "Curah hujan tinggi diprediksi merata mulai akhir Oktober di sebagian besar Jawa dan Sumatera.",
+      "source": "Antara",
+      "publishedAt": "2025-10-14 06:20",
       "accentColor": "#0EA5E9",
-      "tag": "europe",
-      "heroImageUrl": "https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?auto=format&fit=crop&w=1200&q=80",
+      "tag": "cuaca",
+      "heroImageUrl": "https://images.unsplash.com/photo-1470246973918-29a93221c455?auto=format&fit=crop&w=1200&q=80",
       "isFeatured": false,
       "content": [
-        "Pihak berwenang belum merilis detail pelaku.",
-        "Keamanan publik diperketat di lokasi kejadian."
+        "Kementerian Pertanian menyiapkan distribusi benih cepat tanam agar petani tidak kehilangan musim tanam.",
+        "Satgas Pangan akan memantau stok beras di 12 provinsi rawan banjir."
       ]
     },
     {
-      "id": 1103,
-      "category": "Top",
-      "title": "Trump diperkirakan bertemu Xi di Korea Selatan akhir Oktober",
-      "summary": "Pertemuan menyusul ketegangan dagang dan pembatasan ekspor rare earth.",
-      "source": "Reuters",
-      "publishedAt": "2025-10-14 09:05:00",
-      "accentColor": "#0EA5E9",
-      "tag": "geopolitics",
-      "heroImageUrl": "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=1200&q=80",
+      "id": 2201,
+      "category": "Olahraga",
+      "title": "Timnas U-23 Sabet Tiket Final Piala Asia Setelah Kalahkan Korea",
+      "summary": "Gol tunggal Marselino di babak tambahan membawa Indonesia menang 1-0 atas Korea Selatan.",
+      "source": "Bola.com",
+      "publishedAt": "2025-10-15 21:10",
+      "accentColor": "#22C55E",
+      "tag": "piala-asia-u23",
+      "heroImageUrl": "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=1200&q=80",
       "isFeatured": false,
       "content": [
-        "Staf kedua negara menyiapkan pembicaraan tingkat lanjut.",
-        "Pasar keuangan merespons volatil."
+        "Penampilan gemilang kiper Ernando Ari yang menepis penalti menjadi sorotan.",
+        "Pelatih Shin Tae-yong menargetkan gelar perdana dan tiket Olimpiade."
       ]
     },
     {
-      "id": 1104,
-      "category": "Top",
-      "title": "Windows 10 berakhir dukungan gratis per 14 Oktober 2025",
-      "summary": "PC tetap bisa dipakai, tetapi risiko keamanan meningkat tanpa patch reguler.",
+      "id": 2202,
+      "category": "Olahraga",
+      "title": "Jakarta Gelar Lari Malam Nusantara, 25 Ribu Peserta Padati Sudirman",
+      "summary": "Ajang lari bertema budaya tersebut menggabungkan musik daerah dan pasar UMKM di garis finish.",
+      "source": "CNN Indonesia",
+      "publishedAt": "2025-10-13 23:55",
+      "accentColor": "#22C55E",
+      "tag": "lari-nusantara",
+      "heroImageUrl": "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80",
+      "isFeatured": false,
+      "content": [
+        "Penyelenggara menyiapkan jalur khusus penyandang disabilitas dan komunitas lari anak.",
+        "Pemprov DKI mencatat transaksi UMKM mencapai Rp4,8 miliar sepanjang acara."
+      ]
+    },
+    {
+      "id": 2301,
+      "category": "Bisnis",
+      "title": "BUMN Konstruksi Bentuk Konsorsium Baja Nikel Untuk Proyek IKN",
+      "summary": "Holding BUMN menggandeng produsen daerah untuk memasok rangka baja tahan korosi.",
+      "source": "Investor Daily",
+      "publishedAt": "2025-10-14 10:15",
+      "accentColor": "#F59E0B",
+      "tag": "ikn",
+      "heroImageUrl": "https://images.unsplash.com/photo-1454165205744-3b78555e5572?auto=format&fit=crop&w=1200&q=80",
+      "isFeatured": false,
+      "content": [
+        "Nilai kontrak awal mencapai Rp12 triliun untuk pembangunan gedung pemerintahan tahap dua.",
+        "Konsorsium menjanjikan 60 persen komponen diproduksi di dalam negeri."
+      ]
+    },
+    {
+      "id": 2302,
+      "category": "Bisnis",
+      "title": "Penjualan Ritel September Tumbuh 8,2 Persen, Didorong Produk Rumah Tangga",
+      "summary": "Survei Bank Indonesia mencatat peningkatan permintaan elektronik dan perabot jelang liburan akhir tahun.",
+      "source": "Katadata",
+      "publishedAt": "2025-10-13 19:00",
+      "accentColor": "#F59E0B",
+      "tag": "ritel",
+      "heroImageUrl": "https://images.unsplash.com/photo-1514996937319-344454492b37?auto=format&fit=crop&w=1200&q=80",
+      "isFeatured": false,
+      "content": [
+        "Diskon belanja daring serta program cicilan nol persen disebut jadi penopang utama.",
+        "BI memproyeksi pertumbuhan ritel berlanjut seiring bonus akhir tahun dan belanja pemerintah."
+      ]
+    },
+    {
+      "id": 2401,
+      "category": "Hiburan",
+      "title": "Festival Film Bandung Hadirkan Fokus Animasi Lokal",
+      "summary": "Lima studio independen merilis film pendek yang mengangkat cerita rakyat Sunda.",
+      "source": "Detikcom",
+      "publishedAt": "2025-10-15 14:05",
+      "accentColor": "#EC4899",
+      "tag": "film-bandung",
+      "heroImageUrl": "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80",
+      "isFeatured": false,
+      "content": [
+        "Kurator festival menyediakan lokakarya teknik animasi 2D dan pemasaran konten digital.",
+        "Penonton anak-anak dibebaskan dari biaya tiket untuk slot penayangan siang."
+      ]
+    },
+    {
+      "id": 2402,
+      "category": "Hiburan",
+      "title": "Konser Amal Jazz for Hope Galang Dana Pendidikan Anak Laut",
+      "summary": "Acara di Surabaya menghadirkan kolaborasi musisi jazz dan orkestra tradisional Madura.",
+      "source": "Media Indonesia",
+      "publishedAt": "2025-10-14 22:10",
+      "accentColor": "#EC4899",
+      "tag": "jazz-for-hope",
+      "heroImageUrl": "https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?auto=format&fit=crop&w=1200&q=80",
+      "isFeatured": false,
+      "content": [
+        "Panitia menargetkan dana Rp5 miliar untuk membangun 20 rumah belajar apung.",
+        "Penjualan tiket daring meningkat dua kali lipat setelah kampanye di media sosial."
+      ]
+    },
+    {
+      "id": 2501,
+      "category": "Teknologi",
+      "title": "Lintasarta Resmi Aktifkan Pusat Data Hijau di Batam",
+      "summary": "Pusat data menggunakan pendinginan laut dan listrik dari panel surya terapung.",
+      "source": "DailySocial",
+      "publishedAt": "2025-10-15 07:30",
+      "accentColor": "#8B5CF6",
+      "tag": "pusat-data",
+      "heroImageUrl": "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1200&q=80",
+      "isFeatured": false,
+      "content": [
+        "Kapasitas awal 40 MW siap melayani startup dan lembaga keuangan yang butuh latensi rendah.",
+        "Perusahaan menargetkan sertifikasi netral karbon pada 2027."
+      ]
+    },
+    {
+      "id": 2502,
+      "category": "Teknologi",
+      "title": "Observatorium Nasional Rilis Data Satelit Cuaca Secara Terbuka",
+      "summary": "Data resolusi tinggi kini dapat diakses peneliti dan pengembang aplikasi mitigasi bencana.",
+      "source": "Kominfo",
+      "publishedAt": "2025-10-13 16:25",
+      "accentColor": "#8B5CF6",
+      "tag": "data-terbuka",
+      "heroImageUrl": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80",
+      "isFeatured": false,
+      "content": [
+        "Peluncuran portal dilengkapi dokumentasi API dan dashboard visualisasi curah hujan.",
+        "BMKG berharap kolaborasi startup dapat mempercepat peringatan dini banjir bandang."
+      ]
+    },
+    {
+      "id": 2601,
+      "category": "Kesehatan",
+      "title": "Vaksin Dengue Generasi Kedua Mulai Diedarkan di 10 Kota",
+      "summary": "Biofarma bekerja sama dengan fasilitas kesehatan daerah untuk program imunisasi pelajar SMP.",
+      "source": "Sehat Negeriku",
+      "publishedAt": "2025-10-14 09:00",
+      "accentColor": "#10B981",
+      "tag": "vaksin-dengue",
+      "heroImageUrl": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80",
+      "isFeatured": false,
+      "content": [
+        "Tahap awal menargetkan 280 ribu anak di wilayah dengan angka DBD tertinggi.",
+        "Ahli epidemiologi mengingatkan pentingnya menjaga kebersihan lingkungan sebagai langkah pendamping."
+      ]
+    },
+    {
+      "id": 2602,
+      "category": "Kesehatan",
+      "title": "Rumah Sakit Apung Nasional Selesaikan Misi Kesehatan di Seram Utara",
+      "summary": "Lebih dari 3.500 warga mengikuti pelayanan operasi minor, gizi, dan kesehatan ibu.",
+      "source": "Berita Satu",
+      "publishedAt": "2025-10-13 12:40",
+      "accentColor": "#10B981",
+      "tag": "layanan-kesehatan",
+      "heroImageUrl": "https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?auto=format&fit=crop&w=1200&q=80",
+      "isFeatured": false,
+      "content": [
+        "Program digelar bersama relawan kedokteran kampus dan TNI AL selama 12 hari.",
+        "Fokus layanan berikutnya diarahkan ke Kepulauan Talaud pada November."
+      ]
+    },
+    {
+      "id": 2701,
+      "category": "Sains",
+      "title": "LIPI Kembangkan Sensor Mikroplastik Untuk Sungai Padat Industri",
+      "summary": "Perangkat mampu mendeteksi partikel 10 mikron dengan pengiriman data real-time via IoT.",
+      "source": "Nature Indonesia",
+      "publishedAt": "2025-10-15 13:00",
+      "accentColor": "#06B6D4",
+      "tag": "mikroplastik",
+      "heroImageUrl": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1200&q=80",
+      "isFeatured": false,
+      "content": [
+        "Prototipe diuji di Sungai Citarum dengan akurasi 92 persen dibanding laboratorium.",
+        "Sensor akan diproduksi massal bersama mitra manufaktur di Bekasi."
+      ]
+    },
+    {
+      "id": 2702,
+      "category": "Sains",
+      "title": "Peneliti ITB Temukan Metode Simulasi Letusan Gunung Api Lebih Cepat",
+      "summary": "Algoritma baru memotong waktu komputasi hingga 40 persen untuk memprediksi sebaran awan panas.",
+      "source": "Sains Kompas",
+      "publishedAt": "2025-10-14 11:35",
+      "accentColor": "#06B6D4",
+      "tag": "vulkanologi",
+      "heroImageUrl": "https://images.unsplash.com/photo-1423666639041-f56000c27a9a?auto=format&fit=crop&w=1200&q=80",
+      "isFeatured": false,
+      "content": [
+        "Model digunakan untuk memetakan skenario erupsi Gunung Merapi dan Semeru.",
+        "BPPTKG menyebut metode ini bisa meningkatkan akurasi evakuasi warga rentan."
+      ]
+    },
+
+    {
+      "id": 2103,
+      "category": "Teratas",
+      "title": "Bandara Ibu Kota Nusantara Gelar Uji Coba Operasional Terbatas",
+      "summary": "Penerbangan kalibrasi dan prosedur darurat diuji menjelang pembukaan layanan komersial.",
+      "source": "Kompas",
+      "publishedAt": "2025-10-16 09:10",
+      "accentColor": "#0EA5E9",
+      "tag": "ikn-bandara",
+      "heroImageUrl": "https://picsum.photos/seed/ikn-bandara/1200/800",
+      "isFeatured": false,
+      "content": [
+        "Otoritas menilai kesiapan runway, navigasi, dan fasilitas penumpang.",
+        "Maskapai diminta menyusun rute perintis untuk fase awal."
+      ]
+    },
+    {
+      "id": 2104,
+      "category": "Teratas",
+      "title": "Pemerintah Tetapkan Cuti Bersama Akhir Tahun untuk Dorong Wisata",
+      "summary": "Kemenparekraf proyeksikan pergerakan 12 juta wisatawan domestik selama periode libur panjang.",
+      "source": "Tempo",
+      "publishedAt": "2025-10-16 07:20",
+      "accentColor": "#0EA5E9",
+      "tag": "libur-nataru",
+      "heroImageUrl": "https://picsum.photos/seed/libur-nataru/1200/800",
+      "isFeatured": false,
+      "content": [
+        "Daerah tujuan favorit menyiapkan paket event dan diskon hotel.",
+        "Korlantas menambah pos pantau untuk antisipasi kepadatan."
+      ]
+    },
+    {
+      "id": 2105,
+      "category": "Teratas",
+      "title": "PBB Serukan Aksi Global Percepat Adaptasi Iklim Perkotaan",
+      "summary": "Riset terbaru menyoroti kota-kota pesisir di Asia Tenggara sebagai prioritas mitigasi banjir rob.",
+      "source": "BBC",
+      "publishedAt": "2025-10-15 18:00",
+      "accentColor": "#0EA5E9",
+      "tag": "adaptasi-iklim",
+      "heroImageUrl": "https://picsum.photos/seed/adaptasi-iklim/1200/800",
+      "isFeatured": false,
+      "content": [
+        "Rekomendasi mencakup infrastruktur hijau dan sistem peringatan dini.",
+        "Pendanaan diarahkan pada proyek mikro di lingkungan padat penduduk."
+      ]
+    },
+    {
+      "id": 2106,
+      "category": "Teratas",
+      "title": "Kereta Cepat Tambah Jadwal Akhir Pekan, Kapasitas Naik 20%",
+      "summary": "Operator menyesuaikan frekuensi perjalanan rute Jakarta–Bandung jelang musim liburan.",
+      "source": "Detikcom",
+      "publishedAt": "2025-10-15 12:25",
+      "accentColor": "#0EA5E9",
+      "tag": "whoosh",
+      "heroImageUrl": "https://picsum.photos/seed/whoosh/1200/800",
+      "isFeatured": false,
+      "content": [
+        "Penambahan jadwal di jam padat pagi dan sore.",
+        "Promosi bundling tiket dan hotel diperluas ke aplikasi mitra."
+      ]
+    },
+    {
+      "id": 2107,
+      "category": "Teratas",
+      "title": "BNPB Perkuat Sistem Peringatan Dini Banjir di 30 Kabupaten",
+      "summary": "Pemasangan sensor tinggi muka air terhubung ke dashboard publik.",
+      "source": "Antara",
+      "publishedAt": "2025-10-14 20:00",
+      "accentColor": "#0EA5E9",
+      "tag": "peringatan-dini",
+      "heroImageUrl": "https://picsum.photos/seed/peringatan-dini/1200/800",
+      "isFeatured": false,
+      "content": [
+        "Relawan desa dilatih untuk respons cepat dan evakuasi.",
+        "Integrasi notifikasi ke aplikasi pesan singkat lokal."
+      ]
+    },
+    {
+      "id": 2108,
+      "category": "Teratas",
+      "title": "UNESCO Tambahkan Dua Situs Indonesia ke Daftar Warisan Dunia",
+      "summary": "Pengakuan mendorong konservasi dan potensi pariwisata berkelanjutan.",
       "source": "The Guardian",
-      "publishedAt": "2025-10-14 12:15:00",
+      "publishedAt": "2025-10-13 15:35",
       "accentColor": "#0EA5E9",
-      "tag": "windows10",
-      "heroImageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
+      "tag": "warisan-dunia",
+      "heroImageUrl": "https://picsum.photos/seed/unesco-ri/1200/800",
       "isFeatured": false,
       "content": [
-        "Microsoft mendorong migrasi ke Windows 11.",
-        "ESU tersedia berbayar untuk organisasi."
+        "Kementerian terkait menyiapkan rencana pengelolaan terpadu.",
+        "Komunitas lokal dilibatkan dalam paket edukasi pengunjung."
       ]
     },
 
     {
-      "id": 1201,
-      "category": "Business",
-      "title": "Wall Street futures melemah dibayangi tensi US–China",
-      "summary": "Saham teknologi tertekan; Eropa juga turun seiring sentimen global negatif.",
+      "id": 2203,
+      "category": "Olahraga",
+      "title": "Pelari Indonesia Pecahkan Rekor Nasional 10K di Seoul",
+      "summary": "Catatan waktu pribadi terbaik sekaligus rekor nasional baru di ajang jalan raya internasional.",
       "source": "Reuters",
-      "publishedAt": "2025-10-14 18:05:00",
-      "accentColor": "#F59E0B",
-      "tag": "futures",
-      "heroImageUrl": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
+      "publishedAt": "2025-10-16 06:45",
+      "accentColor": "#22C55E",
+      "tag": "lari-10k",
+      "heroImageUrl": "https://picsum.photos/seed/run-seoul/1200/800",
+      "isFeatured": true,
       "content": [
-        "Kontrak S&P 500 -0,9%; Nasdaq 100 -1,2% pra-pasar.",
-        "Investor menunggu awal musim laporan keuangan bank besar."
+        "Pelatih menargetkan kualifikasi ajang multi-event tahun depan.",
+        "Federasi siapkan pelatnas khusus nomor jalan raya."
       ]
     },
     {
-      "id": 1202,
-      "category": "Business",
-      "title": "Pasar global risk-off: saham turun, emas naik",
-      "summary": "Penguatan emas mencerminkan flight to safety di tengah ketidakpastian kebijakan.",
-      "source": "Reuters",
-      "publishedAt": "2025-10-14 18:10:00",
-      "accentColor": "#F59E0B",
-      "tag": "commodities",
-      "heroImageUrl": "https://images.unsplash.com/photo-1610375461246-83df859d7b38?auto=format&fit=crop&w=1200&q=80",
+      "id": 2204,
+      "category": "Olahraga",
+      "title": "Grand Prix Mandalika Sukses, Penonton Tembus 110 Ribu",
+      "summary": "Event balap motor dunia kembali dongkrak hunian hotel Lombok.",
+      "source": "CNBC Indonesia",
+      "publishedAt": "2025-10-15 19:30",
+      "accentColor": "#22C55E",
+      "tag": "gp-mandalika",
+      "heroImageUrl": "https://picsum.photos/seed/mandalika-gp/1200/800",
       "isFeatured": false,
       "content": [
-        "DAX dan Stoxx 600 ikut melemah.",
-        "Minyak bercampur seiring prospek permintaan."
+        "UMKM kuliner dan kriya catat lonjakan transaksi.",
+        "Penyelenggara evaluasi akses transportasi menuju sirkuit."
       ]
     },
     {
-      "id": 1203,
-      "category": "Business",
-      "title": "JPMorgan kalahkan ekspektasi pendapatan di Q3",
-      "summary": "Perdagangan dan investment banking menguat saat dealmaking pulih.",
+      "id": 2205,
+      "category": "Olahraga",
+      "title": "Tim Bola Basket Putri Raih Emas di Kejuaraan Asia Level B",
+      "summary": "Kemenangan dramatis lewat tembakan tiga angka di detik akhir.",
+      "source": "ESPN",
+      "publishedAt": "2025-10-14 21:10",
+      "accentColor": "#22C55E",
+      "tag": "basket-putri",
+      "heroImageUrl": "https://picsum.photos/seed/basket-putri/1200/800",
+      "isFeatured": false,
+      "content": [
+        "Program liga putri dipercepat untuk pembinaan atlet muda.",
+        "Sponsor baru masuk mendukung musim depan."
+      ]
+    },
+    {
+      "id": 2206,
+      "category": "Olahraga",
+      "title": "Indonesia Menang Tipis di Kualifikasi Piala Dunia Zona Asia",
+      "summary": "Gol penentu lahir dari skema bola mati pada menit akhir.",
+      "source": "AFC",
+      "publishedAt": "2025-10-14 18:40",
+      "accentColor": "#22C55E",
+      "tag": "kualifikasi-pildun",
+      "heroImageUrl": "https://picsum.photos/seed/kualifikasi-asia/1200/800",
+      "isFeatured": false,
+      "content": [
+        "Pelatih fokus peningkatan organisasi pertahanan.",
+        "Laga berikutnya digelar di kandang dengan kapasitas penuh."
+      ]
+    },
+    {
+      "id": 2207,
+      "category": "Olahraga",
+      "title": "Maraton Bali Perkenalkan Rute Pesisir Baru Ramah Penonton",
+      "summary": "Rute memadukan pemandangan pantai dan desa wisata.",
+      "source": "Kompas",
+      "publishedAt": "2025-10-13 07:55",
+      "accentColor": "#22C55E",
+      "tag": "maraton-bali",
+      "heroImageUrl": "https://picsum.photos/seed/bali-marathon/1200/800",
+      "isFeatured": false,
+      "content": [
+        "Warga lokal dilibatkan sebagai marshal dan pemandu.",
+        "Pembalap kursi roda mendapatkan wave start khusus."
+      ]
+    },
+
+    {
+      "id": 2303,
+      "category": "Bisnis",
+      "title": "IHSG Menguat Didukung Sektor Perbankan dan Konsumer",
+      "summary": "Aliran dana asing kembali masuk seiring meredanya volatilitas global.",
       "source": "Bloomberg",
-      "publishedAt": "2025-10-14 17:47:00",
+      "publishedAt": "2025-10-16 10:20",
       "accentColor": "#F59E0B",
-      "tag": "earnings",
-      "heroImageUrl": "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1200&q=80",
+      "tag": "ihsg",
+      "heroImageUrl": "https://picsum.photos/seed/ihsg-green/1200/800",
       "isFeatured": false,
       "content": [
-        "Pendapatan pasar dan fee bank investasi naik yoy.",
-        "Manajemen berhati-hati terhadap volatil geopolitik."
+        "Kenaikan saham big cap mendorong kapitalisasi pasar ke rekor baru.",
+        "Analis melihat ruang penguatan lanjutan jika inflasi terkendali."
       ]
     },
     {
-      "id": 1204,
-      "category": "Business",
-      "title": "ECB sinyalkan jeda: inflasi di target, risiko undershoot dipantau",
-      "summary": "Akun pertemuan terbaru menunjukkan ruang ‘wait-and-see’ lebih panjang.",
-      "source": "Reuters",
-      "publishedAt": "2025-10-09 16:30:00",
+      "id": 2304,
+      "category": "Bisnis",
+      "title": "Nikkei Asia: Produsen Baterai Siapkan Pabrik Baru di Indonesia",
+      "summary": "Fasilitas akan memasok kendaraan listrik untuk pasar Asia Tenggara.",
+      "source": "Nikkei Asia",
+      "publishedAt": "2025-10-16 05:50",
       "accentColor": "#F59E0B",
-      "tag": "ecb",
-      "heroImageUrl": "https://images.unsplash.com/photo-1554224155-3a589877462f?auto=format&fit=crop&w=1200&q=80",
+      "tag": "ekosistem-ev",
+      "heroImageUrl": "https://picsum.photos/seed/ev-battery/1200/800",
       "isFeatured": false,
       "content": [
-        "Inflasi inti stabil; pasar mem-price in tak ada pemotongan lanjutan 2025.",
-        "Risiko pertumbuhan lemah tetap diperhatikan."
+        "Insentif fiskal dan ketersediaan nikel menjadi daya tarik utama.",
+        "Pabrik diproyeksi menyerap puluhan ribu tenaga kerja."
       ]
     },
     {
-      "id": 1205,
-      "category": "Business",
-      "title": "Bitcoin terkoreksi dari rekor; volatilitas meningkat pasca tensi dagang",
-      "summary": "BTC sempat sentuh ~$125k pekan lalu, kini bergerak di kisaran $112k–$116k.",
-      "source": "Reuters / Barron's",
-      "publishedAt": "2025-10-14 16:20:00",
+      "id": 2305,
+      "category": "Bisnis",
+      "title": "Startup Logistik Raih Pendanaan Seri B untuk Perluasan Gudang Dingin",
+      "summary": "Pendanaan difokuskan pada jaringan cold chain bahan pangan.",
+      "source": "Tech in Asia",
+      "publishedAt": "2025-10-15 13:40",
       "accentColor": "#F59E0B",
-      "tag": "crypto",
-      "heroImageUrl": "https://images.unsplash.com/photo-1621416894569-0f39a9b6e5e2?auto=format&fit=crop&w=1200&q=80",
+      "tag": "logistik-dingin",
+      "heroImageUrl": "https://picsum.photos/seed/cold-chain/1200/800",
       "isFeatured": false,
       "content": [
-        "Aksi jual besar pasca retaliasi China memicu flight to quality.",
-        "Analis melihat leverage washout dan naiknya hedging."
+        "Mitra ritel modern siapkan kontrak jangka panjang.",
+        "Ekspansi tahap pertama menyasar Jawa dan Sumatera."
       ]
     },
     {
-      "id": 1206,
-      "category": "Business",
-      "title": "Broadcom siap luncurkan chip jaringan baru, saingi Nvidia",
-      "summary": "Produk networking generasi baru incar workload AI berskala masif.",
-      "source": "Reuters",
-      "publishedAt": "2025-10-14 18:25:00",
+      "id": 2306,
+      "category": "Bisnis",
+      "title": "Harga Minyak Melemah, Tekanan pada Subsidi Energi Berkurang",
+      "summary": "Pemerintah meninjau ulang asumsi makro APBN jelang akhir tahun.",
+      "source": "CNBC",
+      "publishedAt": "2025-10-15 09:05",
       "accentColor": "#F59E0B",
-      "tag": "semiconductors",
-      "heroImageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
+      "tag": "harga-minyak",
+      "heroImageUrl": "https://picsum.photos/seed/oil-market/1200/800",
       "isFeatured": false,
       "content": [
-        "Mengusung throughput tinggi sebagai alternatif InfiniBand.",
-        "Menggoda hyperscaler dan AI labs."
+        "Analis memperkirakan kisaran harga stabil dalam jangka pendek.",
+        "Sektor transportasi dan manufaktur berpotensi diuntungkan."
       ]
     },
     {
-      "id": 1207,
-      "category": "Business",
-      "title": "Samsung jadi mitra foundry Nvidia untuk peluang chip AI",
-      "summary": "Kolaborasi manufaktur tambah kapasitas rantai pasok akselerator AI.",
-      "source": "Korea JoongAng Daily",
-      "publishedAt": "2025-10-14 19:09:00",
+      "id": 2307,
+      "category": "Bisnis",
+      "title": "UMKM Expo 2025 Catat Transaksi Rekor di Jakarta Convention Center",
+      "summary": "Produk kriya dan kuliner mendominasi penjualan sepanjang pameran.",
+      "source": "Okezone",
+      "publishedAt": "2025-10-13 16:30",
       "accentColor": "#F59E0B",
-      "tag": "foundry",
-      "heroImageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
+      "tag": "umkm-expo",
+      "heroImageUrl": "https://picsum.photos/seed/umkm-expo/1200/800",
       "isFeatured": false,
       "content": [
-        "Menyusul presentasi produk besar di GTC sebelumnya.",
-        "Menambah opsi di luar TSMC untuk node canggih."
-      ]
-    },
-    {
-      "id": 1208,
-      "category": "Business",
-      "title": "ECB tahan suku bunga; inflasi zona euro naik tipis di September",
-      "summary": "Data headline 2,2% yoy, core 2,3% jaga argumen ‘tahan dulu’.",
-      "source": "Reuters",
-      "publishedAt": "2025-10-01 14:16:00",
-      "accentColor": "#F59E0B",
-      "tag": "inflation",
-      "heroImageUrl": "https://images.unsplash.com/photo-1508385082359-f38ae991e8f2?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Pasar tak lagi mem-price in pemangkasan tambahan 2025.",
-        "Risiko pertumbuhan tetap jadi bahasan."
-      ]
-    },
-    {
-      "id": 1209,
-      "category": "Business",
-      "title": "Tesla: ekspektasi pengiriman Q3 dan paket kompensasi Musk disorot",
-      "summary": "Estimasi 441,5 ribu unit; perdebatan soal target dan valuasi berlanjut.",
-      "source": "Reuters",
-      "publishedAt": "2025-10-01 09:40:00",
-      "accentColor": "#F59E0B",
-      "tag": "autos",
-      "heroImageUrl": "https://images.unsplash.com/photo-153998579-5?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Kredit EV AS berakhir memicu rush pembelian akhir kuartal.",
-        "Paket kompensasi Musk soroti insentif jangka panjang."
+        "Kurasi produk menekankan bahan lokal dan desain ramah lingkungan.",
+        "Platform pembayaran digital memudahkan transaksi pelaku usaha."
       ]
     },
 
     {
-      "id": 1301,
-      "category": "Tech",
-      "title": "Nvidia DGX Spark 'personal AI supercomputer' mulai dijual 15 Okt",
-      "summary": "Form factor kecil dengan performa kelas data center; target peneliti dan developer.",
-      "source": "The Verge / NVIDIA Newsroom",
-      "publishedAt": "2025-10-14 08:10:00",
-      "accentColor": "#8B5CF6",
-      "tag": "hardware",
-      "heroImageUrl": "https://images.unsplash.com/photo-1518779578993-ec3579fee39f?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Mengusung Grace Blackwell Superchip dan memori 128GB.",
-        "Vendor OEM besar siap rilis varian masing-masing."
-      ]
-    },
-    {
-      "id": 1302,
-      "category": "Tech",
-      "title": "Google izinkan sembunyikan hasil sponsor—setelah tampil",
-      "summary": "Perubahan kontrol visibilitas ads di hasil pencarian menuai pro–kontra.",
-      "source": "The Verge",
-      "publishedAt": "2025-10-13 13:30:00",
-      "accentColor": "#8B5CF6",
-      "tag": "search",
-      "heroImageUrl": "https://images.unsplash.com/photo-1551817958-20204b1710d3?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Opsi privasi/UX baru diluncurkan bertahap.",
-        "Pengguna tetap melihat sponsor sebelum menyembunyikannya."
-      ]
-    },
-    {
-      "id": 1303,
-      "category": "Tech",
-      "title": "Instagram setel akun remaja jadi 'PG-13' secara default",
-      "summary": "Pengetatan kontrol konten untuk keamanan dan kesejahteraan remaja.",
-      "source": "The Verge (Archive)",
-      "publishedAt": "2025-10-01 10:00:00",
-      "accentColor": "#8B5CF6",
-      "tag": "social",
-      "heroImageUrl": "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Kebijakan baru batasi exposure konten dewasa.",
-        "Kontrol orang tua turut diperluas."
-      ]
-    },
-    {
-      "id": 1304,
-      "category": "Tech",
-      "title": "Amazon lanjutkan uji drone delivery di Arizona",
-      "summary": "Setelah jeda investigasi, pengiriman Prime Air kembali terbang terbatas.",
-      "source": "The Verge (Archive)",
-      "publishedAt": "2025-10-16 09:00:00",
-      "accentColor": "#8B5CF6",
-      "tag": "drones",
-      "heroImageUrl": "https://images.unsplash.com/photo-1508612761958-e931d843bddb?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Program diuji dengan rute dan muatan terbatas.",
-        "Keselamatan dan regulasi tetap jadi sorotan."
-      ]
-    },
-    {
-      "id": 1305,
-      "category": "Tech",
-      "title": "Nvidia umumkan chip Rubin CPX untuk video & generative software",
-      "summary": "Silicon baru targetkan beban kerja multimodal berskala besar.",
-      "source": "Reuters",
-      "publishedAt": "2025-09-09 11:15:00",
-      "accentColor": "#8B5CF6",
-      "tag": "gpu",
-      "heroImageUrl": "https://images.unsplash.com/photo-1518779578993-ec3579fee39f?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Integrasi decode/encode video + inference dalam satu sistem.",
-        "Rilis diperkirakan 2026."
-      ]
-    },
-    {
-      "id": 1306,
-      "category": "Tech",
-      "title": "NVIDIA × Intel kolaborasi CPU kustom untuk infrastruktur AI",
-      "summary": "NVLink dan x86 kustom untuk platform pusat data serta PC AI.",
-      "source": "NVIDIA Newsroom",
-      "publishedAt": "2025-09-18 09:00:00",
-      "accentColor": "#8B5CF6",
-      "tag": "partnership",
-      "heroImageUrl": "https://images.unsplash.com/photo-1527409335569-f0e5c91fa707?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Fokus konektivitas mulus CPU–GPU untuk throughput tinggi.",
-        "Produk personal AI turut disinggung."
-      ]
-    },
-
-    {
-      "id": 1401,
-      "category": "Sport",
-      "title": "NLCS G1: Snell gemilang, Dodgers taklukkan Brewers 2–1",
-      "summary": "8 inning nyaris sempurna; drama 8–6–2 double play warnai partai pembuka.",
-      "source": "AP / ESPN",
-      "publishedAt": "2025-10-14 11:00:00",
-      "accentColor": "#14B8A6",
-      "tag": "mlb",
-      "heroImageUrl": "https://images.unsplash.com/photo-1517783999520-f068d7431a60?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Freddie Freeman homeran; Brewers nyaris bangkit di inning 9.",
-        "Playoff highlight: double play 8–6–2 pertama di sejarah MLB postseason."
-      ]
-    },
-    {
-      "id": 1402,
-      "category": "Sport",
-      "title": "ALCS: Mariners unggul 2–0 atas Blue Jays",
-      "summary": "Seattle ambil kendali seri; World Series berth kian dekat.",
-      "source": "SB Nation / ESPN",
-      "publishedAt": "2025-10-14 10:20:00",
-      "accentColor": "#14B8A6",
-      "tag": "mlb-playoffs",
-      "heroImageUrl": "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Jadwal LCS berlanjut hingga 21 Oktober bila diperlukan.",
-        "Pitching Seattle dominan dua gim awal."
-      ]
-    },
-    {
-      "id": 1403,
-      "category": "Sport",
-      "title": "NFL Week 10: Giants tundukkan Eagles 34–17; rangkuman skor",
-      "summary": "Cam Skattebo cetak 3 TD; update skor dan highlights akhir pekan.",
-      "source": "ESPN",
-      "publishedAt": "2025-10-12 21:30:00",
-      "accentColor": "#14B8A6",
-      "tag": "nfl",
-      "heroImageUrl": "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Giants tampil efektif offense & defense.",
-        "Rekap skor lengkap, statistik kunci, dan pemain terbaik."
-      ]
-    },
-    {
-      "id": 1404,
-      "category": "Sport",
-      "title": "UEFA Champions League: jadwal & skor pekan depan",
-      "summary": "Pertandingan hari Selasa–Kamis dengan laga unggulan di Eropa.",
-      "source": "ESPN",
-      "publishedAt": "2025-10-14 09:40:00",
-      "accentColor": "#14B8A6",
-      "tag": "ucl",
-      "heroImageUrl": "https://images.unsplash.com/photo-1518599807935-37015b9cefcb?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Barcelona vs Olympiacos termasuk partai sorotan.",
-        "Cek jam tayang dan venue resmi."
-      ]
-    },
-    {
-      "id": 1405,
-      "category": "Sport",
-      "title": "Liga Champions akan buka musim dengan laga khusus juara bertahan (mulai 2027)",
-      "summary": "Kesepakatan komersial baru menyertakan paket streaming premium global.",
-      "source": "AP",
-      "publishedAt": "2025-10-14 13:20:00",
-      "accentColor": "#14B8A6",
-      "tag": "media-rights",
-      "heroImageUrl": "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Target pendapatan >€5 miliar per tahun untuk kompetisi klub UEFA.",
-        "36 tim dan pekan pembuka tiga hari."
-      ]
-    },
-    {
-      "id": 1406,
-      "category": "Sport",
-      "title": "UWCL: Barcelona melibas Bayern 7–1 pada fase liga",
-      "summary": "Pina brace menutup pesta gol Blaugrana di menit akhir.",
-      "source": "ESPN",
-      "publishedAt": "2025-10-07 22:10:00",
-      "accentColor": "#14B8A6",
-      "tag": "uwcl",
-      "heroImageUrl": "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Alexia, Pajor, Brugts, Paralluelo juga mencetak gol.",
-        "Start meyakinkan sang juara bertahan."
-      ]
-    },
-
-    {
-      "id": 1501,
-      "category": "Entertainment",
-      "title": "‘Tron: Ares’ debut di puncak namun di bawah ekspektasi ($33,5 juta)",
-      "summary": "Sequel Disney berkinerja moderat meski skala produksi besar.",
-      "source": "AP / Variety / The Numbers",
-      "publishedAt": "2025-10-13 09:30:00",
-      "accentColor": "#EF4444",
-      "tag": "box-office",
-      "heroImageUrl": "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Persaingan ketat dengan rilis lain dan penonton keluarga.",
-        "Performa pekan kedua jadi kunci word of mouth."
-      ]
-    },
-    {
-      "id": 1502,
-      "category": "Entertainment",
-      "title": "‘Chainsaw Man: Reze Arc’ mendekati ₹5,5 crore di India",
-      "summary": "Lonjakan akhir pekan memperkuat tren positif film anime tersebut.",
-      "source": "Times of India",
-      "publishedAt": "2025-10-14 11:50:00",
-      "accentColor": "#EF4444",
-      "tag": "anime",
-      "heroImageUrl": "https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Performa weekday stabil, akhir pekan meningkat.",
-        "Daya tarik IP mendorong okupansi layar."
-      ]
-    },
-    {
-      "id": 1503,
-      "category": "Entertainment",
-      "title": "‘Sunny Sanskari Ki Tulsi Kumari’ lewati ₹50 crore; ‘Kantara’ capai ₹450 crore",
-      "summary": "Rilis lokal menunjukkan ketahanan penonton domestik.",
-      "source": "Times of India",
-      "publishedAt": "2025-10-14 11:40:00",
-      "accentColor": "#EF4444",
-      "tag": "bollywood",
-      "heroImageUrl": "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Dua rilis bersamaan, performa kontras sesuai ekspektasi skala produksi.",
-        "Momentum pekan kedua jadi penentu."
-      ]
-    },
-    {
-      "id": 1504,
-      "category": "Entertainment",
-      "title": "Taylor Swift ‘Showgirl’ pimpin akhir pekan dengan $15,8 juta di hari Jumat",
-      "summary": "Film konser menjaga pasar tetap ramai jelang musim liburan.",
+      "id": 2403,
+      "category": "Hiburan",
+      "title": "Film Aksi Lokal Tembus 5 Juta Penonton dalam 10 Hari",
+      "summary": "Kampanye digital dan test screening disebut kunci keberhasilan.",
       "source": "Variety",
-      "publishedAt": "2025-10-04 12:00:00",
-      "accentColor": "#EF4444",
-      "tag": "music-film",
-      "heroImageUrl": "https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1200&q=80",
+      "publishedAt": "2025-10-16 08:40",
+      "accentColor": "#EC4899",
+      "tag": "box-office-id",
+      "heroImageUrl": "https://picsum.photos/seed/box-office-id/1200/800",
       "isFeatured": false,
       "content": [
-        "Nostalgia dan basis penggemar besar dorong penjualan tiket.",
-        "Persaingan dengan rilis horor dan keluarga."
+        "Studio mengumumkan rencana sekuel tahun depan.",
+        "Layar tambahan dibuka di jaringan bioskop daerah."
+      ]
+    },
+    {
+      "id": 2404,
+      "category": "Hiburan",
+      "title": "Festival Musik Nusantara Hadirkan Kolaborasi Pop dan Etnik",
+      "summary": "Penonton dimanjakan paduan alat musik tradisional dan aransemen modern.",
+      "source": "Billboard",
+      "publishedAt": "2025-10-15 20:10",
+      "accentColor": "#EC4899",
+      "tag": "musik-nusantara",
+      "heroImageUrl": "https://picsum.photos/seed/musik-nusantara/1200/800",
+      "isFeatured": false,
+      "content": [
+        "Panggung ramah disabilitas dengan interpreter bahasa isyarat.",
+        "Merchandise kolaborasi perajin lokal laris manis."
+      ]
+    },
+    {
+      "id": 2405,
+      "category": "Hiburan",
+      "title": "Serial Thriller Asia Tenggara Masuk 10 Besar Global Platform Streaming",
+      "summary": "Cerita diangkat dari kasus kriminal nyata yang dibungkus fiksi.",
+      "source": "The Hollywood Reporter",
+      "publishedAt": "2025-10-15 10:05",
+      "accentColor": "#EC4899",
+      "tag": "thriller-asean",
+      "heroImageUrl": "https://picsum.photos/seed/asean-thriller/1200/800",
+      "isFeatured": false,
+      "content": [
+        "Tim produksi umumkan musim kedua dengan lokasi syuting baru.",
+        "Kritikus memuji penokohan dan tata kamera yang matang."
+      ]
+    },
+    {
+      "id": 2406,
+      "category": "Hiburan",
+      "title": "Museum Kota Buka Pameran Seni Digital Interaktif",
+      "summary": "Pengunjung bisa berinteraksi lewat sensor gerak dan proyeksi imersif.",
+      "source": "Jakarta Post",
+      "publishedAt": "2025-10-14 13:25",
+      "accentColor": "#EC4899",
+      "tag": "seni-digital",
+      "heroImageUrl": "https://picsum.photos/seed/seni-digital/1200/800",
+      "isFeatured": false,
+      "content": [
+        "Edukator menyiapkan tur khusus untuk pelajar.",
+        "Karya menampilkan tema kota masa depan berkelanjutan."
+      ]
+    },
+    {
+      "id": 2407,
+      "category": "Hiburan",
+      "title": "Industri Gim Lokal Rilis Judul Baru Bertema Folklore",
+      "summary": "Studio indie memadukan puzzle eksplorasi dan musik tradisional.",
+      "source": "IGN",
+      "publishedAt": "2025-10-13 11:40",
+      "accentColor": "#EC4899",
+      "tag": "gim-folklore",
+      "heroImageUrl": "https://picsum.photos/seed/gim-folklore/1200/800",
+      "isFeatured": false,
+      "content": [
+        "Demo mencatat unduhan tinggi di platform PC.",
+        "Rencana port ke konsol diumumkan awal tahun depan."
       ]
     },
 
     {
-      "id": 1601,
-      "category": "Health",
-      "title": "WHO tingkatkan sistem intelijen kesehatan publik global",
-      "summary": "Peningkatan deteksi dini ancaman kesehatan lintas negara.",
-      "source": "WHO",
-      "publishedAt": "2025-10-13 16:00:00",
-      "accentColor": "#10B981",
-      "tag": "global-health",
-      "heroImageUrl": "https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&w=1200&q=80",
+      "id": 2503,
+      "category": "Teknologi",
+      "title": "Operator Seluler Uji 5G Advanced di Tiga Kota Besar",
+      "summary": "Kecepatan puncak meningkat dan latensi lebih rendah untuk gim serta AR.",
+      "source": "The Verge",
+      "publishedAt": "2025-10-16 09:55",
+      "accentColor": "#8B5CF6",
+      "tag": "5g-advanced",
+      "heroImageUrl": "https://picsum.photos/seed/5g-advanced/1200/800",
       "isFeatured": false,
       "content": [
-        "Lebih baik dalam menyaring sinyal wabah dan misinformasi.",
-        "Kolaborasi dengan mitra nasional dan regional diperluas."
+        "Uji coba melibatkan kampus dan pelaku industri kreatif.",
+        "Rencana komersialisasi bertahap tahun depan."
       ]
     },
     {
-      "id": 1602,
-      "category": "Health",
-      "title": "WHO: resistansi antibiotik meluas di seluruh dunia",
-      "summary": "Bakteri umum menunjukkan penurunan respons terhadap terapi lini pertama.",
-      "source": "WHO",
-      "publishedAt": "2025-10-13 18:10:00",
-      "accentColor": "#10B981",
-      "tag": "amr",
-      "heroImageUrl": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
+      "id": 2504,
+      "category": "Teknologi",
+      "title": "Pusat Riset AI Lintas Kampus Luncurkan Program Beasiswa",
+      "summary": "Fokus pada computer vision untuk pertanian presisi dan mitigasi bencana.",
+      "source": "IEEE Spectrum",
+      "publishedAt": "2025-10-16 08:05",
+      "accentColor": "#8B5CF6",
+      "tag": "riset-ai",
+      "heroImageUrl": "https://picsum.photos/seed/ai-scholarship/1200/800",
+      "isFeatured": true,
       "content": [
-        "WHO serukan stewardship dan R&D antibiotik baru.",
-        "Negara perlu perkuat surveilans dan pelaporan."
+        "Peserta mendapat akses komputasi GPU dan mentor industri.",
+        "Kolaborasi dengan startup untuk pilot project lapangan."
       ]
     },
     {
-      "id": 1603,
-      "category": "Health",
-      "title": "Peringatan WHO: obat cair oral tercemar di Asia Tenggara",
-      "summary": "Produk substandar memicu risiko keamanan pasien; penarikan diwanti-wanti.",
-      "source": "WHO",
-      "publishedAt": "2025-10-13 20:20:00",
-      "accentColor": "#10B981",
-      "tag": "drug-safety",
-      "heroImageUrl": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80",
+      "id": 2505,
+      "category": "Teknologi",
+      "title": "Aplikasi Dompet Digital Tambah Fitur Tap to Pay NFC",
+      "summary": "Transaksi ritel harian makin ringkas tanpa perangkat tambahan.",
+      "source": "Gizmodo",
+      "publishedAt": "2025-10-15 17:50",
+      "accentColor": "#8B5CF6",
+      "tag": "tap-to-pay",
+      "heroImageUrl": "https://picsum.photos/seed/tap-to-pay/1200/800",
       "isFeatured": false,
       "content": [
-        "Regulator diminta melacak batch dan distribusi.",
-        "Fasilitas kesehatan diminta melapor efek samping."
+        "Peluncuran bertahap untuk perangkat Android terbaru.",
+        "Kemitraan dengan jaringan ritel modern diperluas."
       ]
     },
     {
-      "id": 1604,
-      "category": "Health",
-      "title": "Musim influenza & COVID-19: WHO Eropa ingatkan vaksinasi",
-      "summary": "Musim gugur berpotensi lonjakan; vaksin tetap proteksi terbaik.",
-      "source": "WHO Europe",
-      "publishedAt": "2025-10-13 15:45:00",
-      "accentColor": "#10B981",
-      "tag": "vaccination",
-      "heroImageUrl": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80",
+      "id": 2506,
+      "category": "Teknologi",
+      "title": "Regulator Terbitkan Pedoman Etika Pengembangan AI",
+      "summary": "Aturan menekankan transparansi dataset dan uji bias sebelum rilis.",
+      "source": "Reuters",
+      "publishedAt": "2025-10-15 10:30",
+      "accentColor": "#8B5CF6",
+      "tag": "etika-ai",
+      "heroImageUrl": "https://picsum.photos/seed/ai-ethics/1200/800",
       "isFeatured": false,
       "content": [
-        "Kelompok risiko diutamakan: lansia, ibu hamil, komorbid.",
-        "Himbauan perilaku pencegahan tetap relevan."
+        "Perusahaan diberi masa transisi untuk menyesuaikan proses.",
+        "Sanksi administratif diterapkan bagi pelanggaran berat."
+      ]
+    },
+    {
+      "id": 2507,
+      "category": "Teknologi",
+      "title": "Komunitas Open Source Rilis Framework Backend Ringan",
+      "summary": "Performa tinggi dengan jejak memori kecil untuk microservice.",
+      "source": "Hacker News",
+      "publishedAt": "2025-10-14 09:45",
+      "accentColor": "#8B5CF6",
+      "tag": "open-source",
+      "heroImageUrl": "https://picsum.photos/seed/lightweight-framework/1200/800",
+      "isFeatured": false,
+      "content": [
+        "Dukungan plugin autentikasi dan observability bawaan.",
+        "Dokumentasi lengkap dengan contoh proyek produksi."
       ]
     },
 
     {
-      "id": 1701,
-      "category": "Science",
-      "title": "Perjanjian plastik dunia menghadapi krisis—bisakah diselamatkan?",
-      "summary": "Mandeknya negosiasi memicu kekhawatiran target pengurangan plastik.",
+      "id": 2603,
+      "category": "Kesehatan",
+      "title": "Kemenkes Luncurkan Aplikasi Buku KIA Digital Nasional",
+      "summary": "Pemantauan tumbuh kembang balita kini terintegrasi di puskesmas.",
+      "source": "Kemenkes",
+      "publishedAt": "2025-10-16 07:10",
+      "accentColor": "#10B981",
+      "tag": "kia-digital",
+      "heroImageUrl": "https://picsum.photos/seed/kia-digital/1200/800",
+      "isFeatured": false,
+      "content": [
+        "Fitur pengingat imunisasi dan konsultasi gizi tersedia.",
+        "Data tersinkron ke dashboard kabupaten/kota."
+      ]
+    },
+    {
+      "id": 2604,
+      "category": "Kesehatan",
+      "title": "WHO Rekomendasikan Strategi Vaksin Flu Musiman di Tropis",
+      "summary": "Penjadwalan dosis disesuaikan pola pergerakan virus lintas khatulistiwa.",
+      "source": "WHO",
+      "publishedAt": "2025-10-15 08:00",
+      "accentColor": "#10B981",
+      "tag": "vaksin-flu",
+      "heroImageUrl": "https://picsum.photos/seed/flu-shot/1200/800",
+      "isFeatured": false,
+      "content": [
+        "Negara tropis diminta memperkuat surveilans genomik.",
+        "Fokus proteksi pada kelompok rentan dan nakes."
+      ]
+    },
+    {
+      "id": 2605,
+      "category": "Kesehatan",
+      "title": "Program Posyandu Remaja Perkuat Layanan Kesehatan Mental",
+      "summary": "Konseling dasar dan rujukan profesional disediakan secara berjenjang.",
+      "source": "Sehat Negeriku",
+      "publishedAt": "2025-10-13 10:35",
+      "accentColor": "#10B981",
+      "tag": "posyandu-remaja",
+      "heroImageUrl": "https://picsum.photos/seed/youth-health/1200/800",
+      "isFeatured": false,
+      "content": [
+        "Relawan dilatih teknik komunikasi non-stigmatis.",
+        "Kolaborasi sekolah untuk skrining dini."
+      ]
+    },
+
+    {
+      "id": 2703,
+      "category": "Sains",
+      "title": "Teleskop Radio Asia Tenggara Deteksi Sinyal Cepat FRB Baru",
+      "summary": "Pengamatan kolaboratif menambah katalog ledakan radio cepat.",
       "source": "Nature",
-      "publishedAt": "2025-10-13 09:10:00",
-      "accentColor": "#22D3EE",
-      "tag": "environment",
-      "heroImageUrl": "https://images.unsplash.com/photo-1520975693416-0f2d04f6d3d1?auto=format&fit=crop&w=1200&q=80",
+      "publishedAt": "2025-10-16 04:40",
+      "accentColor": "#06B6D4",
+      "tag": "frb",
+      "heroImageUrl": "https://picsum.photos/seed/frb-signal/1200/800",
       "isFeatured": false,
       "content": [
-        "Perbedaan pandangan negara produsen & konsumen.",
-        "Ilmuwan dorong aturan global yang mengikat."
+        "Data dibuka untuk analisis komunitas astronomi global.",
+        "Model asal-usul magnetar kembali menguat."
       ]
     },
     {
-      "id": 1702,
-      "category": "Science",
-      "title": "Titip poin iklim pertama tercapai: terumbu karang hadapi risiko kolaps",
-      "summary": "Laporan ilmiah luas menyebut penurunan bisa tak terbalik tanpa penurunan suhu cepat.",
-      "source": "Times of India",
-      "publishedAt": "2025-10-14 10:10:00",
-      "accentColor": "#22D3EE",
-      "tag": "climate",
-      "heroImageUrl": "https://images.unsplash.com/photo-1544551763-7ef4200c2702?auto=format&fit=crop&w=1200&q=80",
+      "id": 2704,
+      "category": "Sains",
+      "title": "Tim Peneliti UGM Kembangkan Bio-plastik dari Rumput Laut",
+      "summary": "Material terurai cepat dan cocok untuk kemasan pangan.",
+      "source": "Mongabay",
+      "publishedAt": "2025-10-15 14:50",
+      "accentColor": "#06B6D4",
+      "tag": "bioplastik",
+      "heroImageUrl": "https://picsum.photos/seed/bioplastik/1200/800",
       "isFeatured": false,
       "content": [
-        "Pemutihan masif dan stres panas makin sering.",
-        "Dampak ke biodiversitas & mata pencaharian pesisir."
+        "Uji kualitas menunjukkan ketahanan baik pada suhu ruang.",
+        "Skala produksi pilot disiapkan dengan mitra pesisir."
       ]
     },
     {
-      "id": 1703,
-      "category": "Science",
-      "title": "Hobi kreatif dapat perlambat penuaan otak di level molekuler",
-      "summary": "Temuan baru mengaitkan aktivitas kreatif dengan biomarker penuaan.",
-      "source": "Nature",
-      "publishedAt": "2025-10-03 08:30:00",
-      "accentColor": "#22D3EE",
-      "tag": "neuroscience",
-      "heroImageUrl": "https://images.unsplash.com/photo-1553530979-7ee52f94f341?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Aktivitas seperti menari/tari tango dikaitkan manfaat kognitif.",
-        "Studi observasional dukung intervensi gaya hidup."
-      ]
-    },
-    {
-      "id": 1704,
-      "category": "Science",
-      "title": "Z-RNA aktifkan sensor imun ZBP1 saat infeksi virus",
-      "summary": "Studi baru jelaskan jalur respons imun bawaan pada sel inang.",
-      "source": "Nature",
-      "publishedAt": "2025-10-13 12:00:00",
-      "accentColor": "#22D3EE",
-      "tag": "immunology",
-      "heroImageUrl": "https://images.unsplash.com/photo-1581594693700-889ae8bfb33b?auto=format&fit=crop&w=1200&q=80",
-      "isFeatured": false,
-      "content": [
-        "Temuan dapat arahkan terapi baru melawan infeksi.",
-        "Peran konfigurasi Z-RNA jadi sorotan."
-      ]
-    },
-    {
-      "id": 1705,
-      "category": "Science",
-      "title": "Langit Oktober: supermoon & puncak Orionid",
-      "summary": "Panduan pengamatan bulan super 6 Okt dan meteor Draconid–Orionid.",
+      "id": 2705,
+      "category": "Sains",
+      "title": "Misi Sampler Asteroid Umumkan Temuan Unsur Volatil",
+      "summary": "Analisis awal mengindikasikan keberadaan air terikat mineral.",
       "source": "NASA",
-      "publishedAt": "2025-09-30 08:00:00",
-      "accentColor": "#22D3EE",
-      "tag": "skywatching",
-      "heroImageUrl": "https://images.unsplash.com/photo-1520975693416-0f2d04f6d3d1?auto=format&fit=crop&w=1200&q=80",
+      "publishedAt": "2025-10-14 08:20",
+      "accentColor": "#06B6D4",
+      "tag": "asteroid-sample",
+      "heroImageUrl": "https://picsum.photos/seed/asteroid-sample/1200/800",
       "isFeatured": false,
       "content": [
-        "Orionid memuncak 21 Okt, periode 26 Sep–22 Nov.",
-        "Tips lokasi gelap dan waktu terbaik mengamati."
+        "Temuan penting untuk memahami awal tata surya.",
+        "Sampel dibagi untuk laboratorium internasional."
       ]
     },
     {
-      "id": 1706,
-      "category": "Science",
-      "title": "Catatan langit: Ayo, LIGO!—gelombang gravitasi jadi sorotan",
-      "summary": "Edukasi publik soal deteksi merger bintang neutron & black hole.",
-      "source": "NASA",
-      "publishedAt": "2025-10-07 09:00:00",
-      "accentColor": "#22D3EE",
-      "tag": "gravitational-waves",
-      "heroImageUrl": "https://images.unsplash.com/photo-1473929734674-159c1fdfb985?auto=format&fit=crop&w=1200&q=80",
+      "id": 2706,
+      "category": "Sains",
+      "title": "Model Iklim Baru Prediksi Penurunan Ekstrem Gelombang Panas Kota",
+      "summary": "Kombinasi atap sejuk dan ruang hijau kurangi suhu hingga 2°C.",
+      "source": "Science",
+      "publishedAt": "2025-10-13 09:15",
+      "accentColor": "#06B6D4",
+      "tag": "model-iklim",
+      "heroImageUrl": "https://picsum.photos/seed/cool-roofs/1200/800",
       "isFeatured": false,
       "content": [
-        "Bagaimana LIGO/Virgo/KAGRA memburu sinyal halus di alam semesta.",
-        "Peran komunitas edukasi astronomi lokal."
+        "Studi lintas kota menilai efektivitas desain urban.",
+        "Rekomendasi tersusun untuk kebijakan adaptasi."
       ]
     }
   ],
   "bookmarked_article_ids": [],
   "search_suggestions": [
-    "Gaza ceasefire",
-    "US–China tariffs",
-    "Bitcoin crash",
-    "DGX Spark",
-    "ECB rates",
-    "NLCS Dodgers Brewers",
-    "UEFA streaming 2027",
-    "Windows 10 end of support",
-    "WHO antibiotic resistance",
-    "Coral reefs tipping point"
+    "Transisi energi",
+    "Liga 1",
+    "Nilai rupiah",
+    "Festival film",
+    "Startup AI",
+    "Pusat data hijau",
+    "Vaksin dengue",
+    "Cuaca ekstrem"
   ]
 }
