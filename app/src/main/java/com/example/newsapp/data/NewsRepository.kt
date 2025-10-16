@@ -1,4 +1,4 @@
-﻿package com.example.newsapp.data
+package com.example.newsapp.data
 
 import android.content.Context
 import android.graphics.Color
@@ -9,6 +9,11 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 object NewsRepository {
+
+    fun invalidateCache() {
+        cachedData = null
+        articleIndex = emptyMap()
+    }
 
     private const val DATA_FILE_NAME = "news_data.json"
     @Volatile
@@ -182,3 +187,5 @@ object NewsRepository {
         NewsCategory(6, "Health")
     )
 }
+
+

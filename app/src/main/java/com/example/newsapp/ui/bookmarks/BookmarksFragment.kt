@@ -11,9 +11,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.databinding.FragmentBookmarksBinding
 import com.example.newsapp.model.NewsArticle
-import com.example.newsapp.ui.news.ArticleAdapter
-import com.example.newsapp.navigation.ArticleNavigator
 import com.example.newsapp.R
+import com.example.newsapp.navigation.ArticleNavigator
+import com.example.newsapp.ui.detail.ArticleDetailFragment
+import com.example.newsapp.ui.news.ArticleAdapter
 
 class BookmarksFragment : Fragment() {
 
@@ -63,10 +64,15 @@ class BookmarksFragment : Fragment() {
             onArticleClick = { article ->
                 articleNavigator?.openArticleDetail(article.id)
             },
-            onBookmarkToggle = { _, isBookmarked ->
+            onBookmarkToggle = { article, isBookmarked ->
                 renderBookmarks(NewsRepository.getBookmarks(requireContext()))
                 val messageRes = if (isBookmarked) R.string.bookmark_added else R.string.bookmark_removed
                 Toast.makeText(requireContext(), getString(messageRes), Toast.LENGTH_SHORT).show()
+                ArticleDetailFragment.dispatchBookmarkResult(
+                    parentFragmentManager,
+                    article.id,
+                    isBookmarked
+                )
             }
         )
         adapter = articleAdapter

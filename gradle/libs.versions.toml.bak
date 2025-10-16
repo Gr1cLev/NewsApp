@@ -1,5 +1,4 @@
 [versions]
-coil = "2.6.0"
 agp = "8.13.0"
 kotlin = "2.0.21"
 coreKtx = "1.17.0"
@@ -18,7 +17,6 @@ cardview = "1.0.0"
 coroutines = "1.9.0"
 
 [libraries]
-coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -37,4 +35,3 @@ kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-

@@ -95,9 +95,14 @@ class NewsFragment : Fragment() {
             onArticleClick = { article ->
                 articleNavigator?.openArticleDetail(article.id)
             },
-            onBookmarkToggle = { _, isBookmarked ->
+            onBookmarkToggle = { article, isBookmarked ->
                 val messageRes = if (isBookmarked) R.string.bookmark_added else R.string.bookmark_removed
                 Toast.makeText(requireContext(), getString(messageRes), Toast.LENGTH_SHORT).show()
+                ArticleDetailFragment.dispatchBookmarkResult(
+                    parentFragmentManager,
+                    article.id,
+                    isBookmarked
+                )
             }
         )
         categoryAdapter = CategoryAdapter(newsData.categories) { category ->

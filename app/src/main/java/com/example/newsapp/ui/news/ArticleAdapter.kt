@@ -1,6 +1,7 @@
 package com.example.newsapp.ui.news
 
 import android.graphics.drawable.GradientDrawable
+import coil.load
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -63,12 +64,30 @@ class ArticleAdapter(
             articleTimestamp.text = article.publishedAt
             updateBookmarkIcon()
 
+            article.heroImageUrl?.let { url ->
+            articleImage.isVisible = true
+            articleImage.load(url) {
+                crossfade(true)
+                placeholder(R.drawable.bg_article_image_placeholder)
+                error(R.drawable.bg_article_image_placeholder)
+            }
+            articleAccent.background = GradientDrawable(
+                GradientDrawable.Orientation.BL_TR,
+                intArrayOf(article.accentColor, lightenColor(article.accentColor))
+            ).apply {
+                cornerRadius = articleAccent.radius(18f)
+                alpha = 64
+            }
+        } ?: run {
+            articleImage.setImageDrawable(null)
+            articleImage.isVisible = false
             articleAccent.background = GradientDrawable(
                 GradientDrawable.Orientation.BL_TR,
                 intArrayOf(article.accentColor, lightenColor(article.accentColor))
             ).apply {
                 cornerRadius = articleAccent.radius(18f)
             }
+        }
 
             bookmarkToggle.setOnClickListener {
                 val currentArticle = boundArticle ?: return@setOnClickListener
@@ -107,4 +126,7 @@ class ArticleAdapter(
         override fun areContentsTheSame(oldItem: NewsArticle, newItem: NewsArticle): Boolean = oldItem == newItem
     }
 }
+
+
+
 

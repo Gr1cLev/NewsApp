@@ -1,4 +1,4 @@
-﻿package com.example.newsapp
+package com.example.newsapp
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -7,6 +7,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
+import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.data.ProfileRepository
 import com.example.newsapp.data.UserPreferences
 import com.example.newsapp.databinding.ActivityMainBinding
@@ -39,6 +40,7 @@ class MainActivity : AppCompatActivity(), ArticleNavigator, ProfileNavigator, Au
         }
         AppCompatDelegate.setDefaultNightMode(nightMode)
         super.onCreate(savedInstanceState)
+        NewsRepository.invalidateCache()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -205,3 +207,5 @@ class MainActivity : AppCompatActivity(), ArticleNavigator, ProfileNavigator, Au
         private const val REGISTER_FRAGMENT_TAG = "register_fragment"
     }
 }
+
+

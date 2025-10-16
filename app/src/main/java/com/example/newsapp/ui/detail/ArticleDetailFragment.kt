@@ -2,12 +2,14 @@ package com.example.newsapp.ui.detail
 
 import android.content.res.ColorStateList
 import android.graphics.drawable.GradientDrawable
+import coil.load
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.core.graphics.ColorUtils
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -82,6 +84,7 @@ class ArticleDetailFragment : Fragment() {
 
         isBookmarked = NewsRepository.isArticleBookmarked(requireContext(), article.id)
         applyHeroBackground(article.accentColor)
+        renderHeroImage(article)
         renderAiTags(article)
         setupActions(article)
     }
@@ -111,13 +114,7 @@ class ArticleDetailFragment : Fragment() {
     }
 
     private fun notifyBookmarkChanged(articleId: Int) {
-        parentFragmentManager.setFragmentResult(
-            BOOKMARK_RESULT_KEY,
-            bundleOf(
-                EXTRA_ARTICLE_ID to articleId,
-                EXTRA_IS_BOOKMARKED to isBookmarked
-            )
-        )
+        dispatchBookmarkResult(parentFragmentManager, articleId, isBookmarked)
     }
 
     private fun renderAiTags(article: NewsArticle) = with(binding) {
@@ -182,11 +179,40 @@ class ArticleDetailFragment : Fragment() {
         binding.categoryChip.setPadding(16.dp(), 6.dp(), 16.dp(), 6.dp())
     }
 
+    private fun renderHeroImage(article: NewsArticle) = with(binding.heroImage) {
+        val heroUrl = article.heroImageUrl
+        if (heroUrl.isNullOrBlank()) {
+            setImageDrawable(null)
+            isVisible = false
+            return@with
+        }
+        isVisible = true
+        load(heroUrl) {
+            crossfade(true)
+            placeholder(R.drawable.bg_detail_placeholder)
+            error(R.drawable.bg_detail_placeholder)
+        }
+    }
+
     companion object {
         private const val ARG_ARTICLE_ID = "arg_article_id"
         const val BOOKMARK_RESULT_KEY = "bookmark_result"
         const val EXTRA_ARTICLE_ID = "extra_article_id"
         const val EXTRA_IS_BOOKMARKED = "extra_is_bookmarked"
+
+        fun dispatchBookmarkResult(
+            fragmentManager: androidx.fragment.app.FragmentManager,
+            articleId: Int,
+            isBookmarked: Boolean
+        ) {
+            fragmentManager.setFragmentResult(
+                BOOKMARK_RESULT_KEY,
+                bundleOf(
+                    EXTRA_ARTICLE_ID to articleId,
+                    EXTRA_IS_BOOKMARKED to isBookmarked
+                )
+            )
+        }
 
         fun newInstance(articleId: Int): ArticleDetailFragment {
             return ArticleDetailFragment().apply {
@@ -199,3 +225,6 @@ class ArticleDetailFragment : Fragment() {
 
     private fun Int.dp(): Int = (this * resources.displayMetrics.density).toInt()
 }
+
+
+
