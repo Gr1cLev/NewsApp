@@ -60,6 +60,11 @@ class ArticleDetailFragment : Fragment() {
         _binding = null
     }
 
+    override fun onStop() {
+        super.onStop()
+        article?.let { notifyBookmarkChanged(it.id) }
+    }
+
     private fun setupToolbar() = with(binding.detailToolbar) {
         setNavigationOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
