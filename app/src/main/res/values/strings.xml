@@ -84,8 +84,8 @@
     <string name="auth_login_subtitle">Masuk dengan kredensial yang terdaftar.</string>
     <string name="auth_login_button">Masuk</string>
     <string name="auth_login_register_prompt">Belum punya akun? Daftar</string>
-    <string name="auth_register_title">Gabung BeritaKini</string>
-    <string name="auth_register_subtitle">Buat akun untuk menyinkronkan preferensi.</string>
+    <string name="auth_register_title">Gabung NewsApp</string>
+    <string name="auth_register_subtitle">Buat akun untuk mendapatkan berita sesuai preferensi anda.</string>
     <string name="auth_register_button">Daftar</string>
     <string name="auth_register_login_prompt">Sudah punya akun? Masuk</string>
     <string name="action_logout">Keluar</string>

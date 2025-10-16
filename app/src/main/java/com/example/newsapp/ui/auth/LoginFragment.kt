@@ -12,6 +12,10 @@ import com.example.newsapp.R
 import com.example.newsapp.data.ProfileRepository
 import com.example.newsapp.databinding.FragmentLoginBinding
 import com.example.newsapp.navigation.AuthNavigator
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.datasource.RawResourceDataSource
+import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,6 +24,7 @@ class LoginFragment : Fragment() {
 
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
+    private var player: ExoPlayer? = null
 
     private val authNavigator: AuthNavigator?
         get() = activity as? AuthNavigator
@@ -35,12 +40,24 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initializeBackground()
         binding.buttonLogin.setOnClickListener { attemptLogin() }
         binding.linkRegister.setOnClickListener { authNavigator?.openRegister() }
     }
 
+    override fun onResume() {
+        super.onResume()
+        player?.play()
+    }
+
+    override fun onPause() {
+        player?.pause()
+        super.onPause()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        releasePlayer()
         _binding = null
     }
 
@@ -94,6 +111,27 @@ class LoginFragment : Fragment() {
         buttonLogin.isEnabled = !loading
         emailLayout.isEnabled = !loading
         passwordLayout.isEnabled = !loading
+    }
+
+    private fun initializeBackground() {
+        val context = requireContext()
+        val backgroundPlayer = ExoPlayer.Builder(context)
+            .build()
+            .apply {
+                repeatMode = Player.REPEAT_MODE_ALL
+                volume = 0f
+                val uri = RawResourceDataSource.buildRawResourceUri(R.raw.auth_background)
+                setMediaItem(MediaItem.fromUri(uri))
+                prepare()
+                playWhenReady = true
+            }
+        binding.backgroundPlayer.player = backgroundPlayer
+        player = backgroundPlayer
+    }
+
+    private fun releasePlayer() {
+        player?.release()
+        player = null
     }
 
     private fun isEmailValid(email: String): Boolean {
