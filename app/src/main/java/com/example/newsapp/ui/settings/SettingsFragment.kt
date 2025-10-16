@@ -18,6 +18,7 @@ import com.example.newsapp.databinding.ViewSettingsExpandableBinding
 import com.example.newsapp.navigation.AuthNavigator
 import com.example.newsapp.ui.profile.ProfileFragment
 import com.example.newsapp.navigation.ProfileNavigator
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -52,9 +53,7 @@ class SettingsFragment : Fragment() {
             profileNavigator?.openEditProfile()
         }
 
-        binding.buttonLogout.setOnClickListener {
-            performLogout()
-        }
+        binding.buttonLogout.setOnClickListener { showLogoutConfirmation() }
     }
 
     override fun onDestroyView() {
@@ -106,6 +105,20 @@ class SettingsFragment : Fragment() {
             binding.contentText.isVisible = expanding
             binding.headerIcon.rotation = if (expanding) 180f else 0f
         }
+    }
+
+    private fun showLogoutConfirmation() {
+        if (!isAdded) return
+        MaterialAlertDialogBuilder(requireContext())
+            .setMessage(R.string.logout_confirm_message)
+            .setPositiveButton(R.string.logout_confirm_yes) { dialog, _ ->
+                dialog.dismiss()
+                performLogout()
+            }
+            .setNegativeButton(R.string.logout_confirm_no) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun performLogout() {
