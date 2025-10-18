@@ -13,6 +13,8 @@ object NewsRepository {
     fun invalidateCache() {
         cachedData = null
         articleIndex = emptyMap()
+        bookmarkIds.clear()
+        cachedBookmarkProfileId = null
     }
 
     private const val DATA_FILE_NAME = "news_data.json"
@@ -20,6 +22,8 @@ object NewsRepository {
     private var cachedData: NewsData? = null
     private val bookmarkIds = mutableSetOf<Int>()
     private var articleIndex: Map<Int, NewsArticle> = emptyMap()
+    @Volatile
+    private var cachedBookmarkProfileId: String? = null
 
     fun getNewsData(context: Context): NewsData = getData(context)
 
@@ -49,7 +53,9 @@ object NewsRepository {
     }
 
     fun toggleBookmark(context: Context, articleId: Int): Boolean {
-        ensureData(context)
+        val appContext = context.applicationContext
+        ensureData(appContext)
+        val profileId = resolveProfileId(appContext)
         val isBookmarked = if (bookmarkIds.contains(articleId)) {
             bookmarkIds.remove(articleId)
             false
@@ -57,27 +63,33 @@ object NewsRepository {
             bookmarkIds.add(articleId)
             true
         }
+        BookmarkRepository.persistBookmarks(appContext, profileId, bookmarkIds)
         refreshCachedBookmarks()
         return isBookmarked
     }
 
     private fun getData(context: Context): NewsData {
         val existing = cachedData
-        if (existing != null) return existing
+        if (existing != null) {
+            ensureBookmarksLoaded(context)
+            return cachedData ?: existing
+        }
 
         return synchronized(this) {
             val doubleCheck = cachedData
             if (doubleCheck != null) {
-                doubleCheck
+                ensureBookmarksLoaded(context)
+                cachedData ?: doubleCheck
             } else {
                 val parsed = loadData(context.applicationContext)
                 cachedData = parsed
-                parsed
+                ensureBookmarksLoaded(context)
+                cachedData ?: parsed
             }
         }
     }
 
-    private fun ensureData(context: Context): NewsData = getData(context)
+    private fun ensureData(context: Context): NewsData = getData(context.applicationContext)
 
     private fun loadData(context: Context): NewsData {
         val jsonString = context.assets.open(DATA_FILE_NAME).bufferedReader().use { it.readText() }
@@ -115,6 +127,31 @@ object NewsRepository {
 
     private fun recomputeBookmarks(): List<NewsArticle> =
         bookmarkIds.mapNotNull { articleIndex[it] }
+
+    private fun resolveProfileId(context: Context): String {
+        val profile = ProfileRepository.getActiveProfile(context)
+        return profile?.id ?: BookmarkRepository.GUEST_PROFILE_ID
+    }
+
+    private fun ensureBookmarksLoaded(context: Context) {
+        val appContext = context.applicationContext
+        val profileId = resolveProfileId(appContext)
+        if (profileId == cachedBookmarkProfileId && cachedData != null) {
+            return
+        }
+        val defaults = if (cachedBookmarkProfileId == null) bookmarkIds.toSet() else emptySet()
+        val stored = BookmarkRepository.readBookmarks(appContext, profileId)
+        bookmarkIds.clear()
+        when {
+            stored.isNotEmpty() -> bookmarkIds.addAll(stored)
+            defaults.isNotEmpty() -> {
+                bookmarkIds.addAll(defaults)
+                BookmarkRepository.persistBookmarks(appContext, profileId, defaults)
+            }
+        }
+        cachedBookmarkProfileId = profileId
+        refreshCachedBookmarks()
+    }
 
     private fun JSONArray?.toCategoryList(): List<NewsCategory> = this?.let { array ->
         buildList(array.length()) {

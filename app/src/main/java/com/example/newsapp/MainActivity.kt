@@ -159,6 +159,7 @@ class MainActivity : AppCompatActivity(), ArticleNavigator, ProfileNavigator, Au
     override fun openLogin() {
         lifecycleScope.launch {
             withContext(Dispatchers.Main) {
+                NewsRepository.invalidateCache()
                 supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
                 currentItemId = R.id.navigation_news
                 showAuthScreen(LoginFragment(), LOGIN_FRAGMENT_TAG)
@@ -173,6 +174,7 @@ class MainActivity : AppCompatActivity(), ArticleNavigator, ProfileNavigator, Au
     override fun onAuthenticationSuccess() {
         lifecycleScope.launch {
             withContext(Dispatchers.Main) {
+                NewsRepository.invalidateCache()
                 supportFragmentManager.findFragmentById(R.id.authContainer)?.let {
                     supportFragmentManager.beginTransaction()
                         .remove(it)
