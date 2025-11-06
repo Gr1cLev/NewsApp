@@ -685,6 +685,7 @@ private fun FeaturedArticleCard(
     article: NewsArticle,
     onClick: () -> Unit
 ) {
+    val context = LocalContext.current
     ElevatedCard(
         onClick = onClick,
         shape = RoundedCornerShape(24.dp),
@@ -693,25 +694,46 @@ private fun FeaturedArticleCard(
     ) {
         Box {
             val accent = Color(article.accentColor)
+
+            if (!article.heroImageUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(article.heroImageUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = article.title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(accent)
+                )
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
                         Brush.verticalGradient(
                             listOf(
-                                accent.copy(alpha = 0.35f),
-                                accent.copy(alpha = 0.9f)
+                                Color.Black.copy(alpha = 0.2f),
+                                accent.copy(alpha = 0.88f)
                             )
                         )
                     )
             )
+
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
+                    .align(Alignment.BottomStart)
                     .padding(20.dp),
-                verticalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
                         text = article.tag.uppercase(Locale.getDefault()),
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
@@ -728,8 +750,8 @@ private fun FeaturedArticleCard(
                 Text(
                     text = article.summary,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.8f),
-                    maxLines = 4,
+                    color = Color.White.copy(alpha = 0.85f),
+                    maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
             }
@@ -745,10 +767,14 @@ private fun ArticleCard(
     onBookmarkToggle: () -> Unit,
     onClick: () -> Unit
 ) {
+    val cardBackground = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f)
     Card(
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(
+            containerColor = cardBackground,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
@@ -763,8 +789,8 @@ private fun ArticleCard(
                         .data(article.heroImageUrl)
                         .crossfade(true)
                         .build(),
-                    placeholder = ColorPainter(MaterialTheme.colorScheme.surfaceVariant),
-                    error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant),
+                    placeholder = ColorPainter(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+                    error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
                     contentDescription = article.title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
