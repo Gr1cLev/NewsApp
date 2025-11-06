@@ -50,6 +50,12 @@
     <string name="settings_night_mode_hint">Beralih antara tema terang dan gelap.</string>
     <string name="settings_notifications_hint">Atur pengingat harian dan ringkasan utama.</string>
     <string name="settings_help_section">Bantuan</string>
+    <string name="settings_hero_title">Sesuaikan pengalamanmu</string>
+    <string name="settings_hero_message">Sesuaikan notifikasi dan tema agar pengalaman membaca makin nyaman.</string>
+    <string name="settings_chip_theme_dark">Tema: Gelap</string>
+    <string name="settings_chip_theme_light">Tema: Terang</string>
+    <string name="settings_chip_notification_on">Notifikasi: Aktif</string>
+    <string name="settings_chip_notification_off">Notifikasi: Mati</string>
     <string name="settings_faq">Pertanyaan umum</string>
     <string name="settings_contact">Hubungi kami</string>
     <string name="settings_about">Tentang aplikasi</string>
