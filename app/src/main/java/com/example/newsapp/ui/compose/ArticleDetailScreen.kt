@@ -1,6 +1,8 @@
 package com.example.newsapp.ui.compose
 
+import android.graphics.BitmapFactory
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -29,9 +32,11 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,6 +50,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -107,86 +114,100 @@ fun ArticleDetailScreen(
     }
 
     val currentArticle = article!!
+    val detailSurfaceColor = MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
-        TopAppBar(
-            title = {},
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.content_desc_back)
-                    )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Transparent,
-                navigationIconContentColor = MaterialTheme.colorScheme.onSurface
-            )
-        )
-
-        HeroHeader(article = currentArticle)
-
+    DetailBackground {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    text = currentArticle.tag.uppercase(Locale.getDefault()),
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.primary
+            TopAppBar(
+                title = {},
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.content_desc_back)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
-                Text(
-                    text = currentArticle.title,
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
-                )
-                Text(
-                    text = "${currentArticle.publishedAt} • ${currentArticle.source}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            )
 
-            AiInsightSection(article = currentArticle)
+            HeroHeader(article = currentArticle)
 
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                val paragraphs = currentArticle.content.takeIf { it.isNotEmpty() }
-                    ?: listOf(currentArticle.summary)
-                paragraphs.forEach { paragraph ->
-                    Text(
-                        text = paragraph,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 32.dp),
+                color = detailSurfaceColor,
+                shape = RoundedCornerShape(28.dp),
+                tonalElevation = 6.dp,
+                shadowElevation = 12.dp
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 26.dp, vertical = 30.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(
+                            text = currentArticle.tag.uppercase(Locale.getDefault()),
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = currentArticle.title,
+                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
+                        )
+                        Text(
+                            text = "${currentArticle.publishedAt} • ${currentArticle.source}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    AiInsightSection(article = currentArticle)
+
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        val paragraphs = currentArticle.content.takeIf { it.isNotEmpty() }
+                            ?: listOf(currentArticle.summary)
+                        paragraphs.forEach { paragraph ->
+                            Text(
+                                text = paragraph,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+
+                    ActionRow(
+                        isBookmarked = isBookmarked,
+                        onBookmarkToggle = {
+                            coroutineScope.launch {
+                                val bookmarked = withContext(Dispatchers.IO) {
+                                    NewsRepository.toggleBookmark(context, currentArticle.id)
+                                }
+                                isBookmarked = bookmarked
+                                onBookmarkChanged()
+                                Toast.makeText(
+                                    context,
+                                    context.getString(
+                                        if (bookmarked) R.string.bookmark_added else R.string.bookmark_removed
+                                    ),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
                     )
                 }
             }
-
-            ActionRow(
-                isBookmarked = isBookmarked,
-                onBookmarkToggle = {
-                    coroutineScope.launch {
-                        val bookmarked = withContext(Dispatchers.IO) {
-                            NewsRepository.toggleBookmark(context, currentArticle.id)
-                        }
-                        isBookmarked = bookmarked
-                        onBookmarkChanged()
-                        Toast.makeText(
-                            context,
-                            context.getString(
-                                if (bookmarked) R.string.bookmark_added else R.string.bookmark_removed
-                            ),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            )
         }
     }
 }
@@ -351,4 +372,48 @@ private fun generateAiTags(article: NewsArticle): List<String> {
         tags += "Ulasan mendalam"
     }
     return tags.distinct().take(5)
+}
+
+@Composable
+private fun DetailBackground(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    val context = LocalContext.current
+    val backdrop = remember {
+        try {
+            context.resources.openRawResource(R.raw.imagebghome).use { stream ->
+                BitmapFactory.decodeStream(stream)
+            }
+        } catch (error: Exception) {
+            null
+        }
+    }
+    val baseColor = MaterialTheme.colorScheme.background
+
+    Box(modifier = modifier.fillMaxSize()) {
+        if (backdrop != null) {
+            Image(
+                bitmap = backdrop.asImageBitmap(),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                alpha = 0.16f
+            )
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            baseColor.copy(alpha = 0.92f),
+                            baseColor.copy(alpha = 0.86f),
+                            baseColor.copy(alpha = 0.94f)
+                        )
+                    )
+                )
+        )
+        content()
+    }
 }
