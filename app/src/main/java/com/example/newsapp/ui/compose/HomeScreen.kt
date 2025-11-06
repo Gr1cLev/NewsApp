@@ -63,21 +63,29 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import android.net.Uri
+import androidx.annotation.RawRes
+import androidx.compose.ui.graphics.asImageBitmap
+import android.graphics.BitmapFactory
+import com.example.newsapp.data.UserPreferences
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import java.io.InputStream
 import com.example.newsapp.R
 import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.data.ProfileRepository
-import com.example.newsapp.data.UserPreferences
 import com.example.newsapp.model.NewsArticle
 import com.example.newsapp.model.NewsCategory
 import com.example.newsapp.model.NewsData
@@ -143,6 +151,7 @@ fun HomeScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = Color.Transparent, // Membuat Scaffold transparan
         topBar = {
             HomeTopBar(
                 tab = selectedTab,
@@ -283,30 +292,30 @@ private fun NewsTab(
     onBookmarkToggle: (NewsArticle) -> Unit,
     onArticleClick: (NewsArticle) -> Unit
 ) {
-    if (newsData == null) {
-        LoadingState(modifier)
-        return
-    }
-
-    var selectedCategory by remember(newsData) {
-        mutableStateOf(newsData.categories.firstOrNull()?.name ?: "Semua")
-    }
-
-    val filteredArticles = remember(selectedCategory, newsData) {
-        if (selectedCategory.equals("Semua", ignoreCase = true)) {
-            newsData.articles
-        } else {
-            newsData.articles.filter { it.category.equals(selectedCategory, ignoreCase = true) }
+    TransparentBackground(modifier = modifier) {
+        if (newsData == null) {
+            LoadingState(Modifier)
+            return@TransparentBackground
         }
-    }
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        contentPadding = PaddingValues(vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
+        var selectedCategory by remember(newsData) {
+            mutableStateOf(newsData.categories.firstOrNull()?.name ?: "Semua")
+        }
+
+        val filteredArticles = remember(selectedCategory, newsData) {
+            if (selectedCategory.equals("Semua", ignoreCase = true)) {
+                newsData.articles
+            } else {
+                newsData.articles.filter { it.category.equals(selectedCategory, ignoreCase = true) }
+            }
+        }
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(vertical = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
         if (newsData.featuredArticles.isNotEmpty()) {
             item { SectionTitle("Sorotan Utama") }
             item {
@@ -338,6 +347,7 @@ private fun NewsTab(
                 onClick = { onArticleClick(article) }
             )
         }
+        }
     }
 }
 
@@ -368,13 +378,14 @@ private fun SearchTab(
         }
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(18.dp)
-    ) {
+    TransparentBackground(modifier = modifier) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(18.dp)
+        ) {
         Spacer(modifier = Modifier.height(16.dp))
         SearchField(
             value = query,
@@ -428,6 +439,7 @@ private fun SearchTab(
         }
 
         Spacer(modifier = Modifier.height(32.dp))
+        }
     }
 }
 
@@ -438,26 +450,27 @@ private fun BookmarksTab(
     onArticleClick: (NewsArticle) -> Unit,
     onRemoveBookmark: (NewsArticle) -> Unit
 ) {
-    if (bookmarks.isEmpty()) {
-        Box(
-            modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Belum ada artikel tersimpan.",
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+    TransparentBackground(modifier = modifier) {
+        if (bookmarks.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Belum ada artikel tersimpan.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            return@TransparentBackground
         }
-        return
-    }
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        contentPadding = PaddingValues(vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(vertical = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
         items(bookmarks) { article ->
             ArticleCard(
                 article = article,
@@ -466,6 +479,7 @@ private fun BookmarksTab(
                 onBookmarkToggle = { onRemoveBookmark(article) },
                 onClick = { onArticleClick(article) }
             )
+        }
         }
     }
 }
@@ -478,48 +492,49 @@ private fun ProfileTab(
     onOpenSettings: () -> Unit,
     onRequireAuthentication: () -> Unit
 ) {
-    if (!profileLoaded) {
-        Box(
-            modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-        return
-    }
-
-    if (profile == null) {
-        Box(
-            modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+    TransparentBackground(modifier = modifier) {
+        if (!profileLoaded) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Masuk untuk mengakses profil Anda.",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                TextButton(onClick = onRequireAuthentication) {
-                    Text("Masuk")
+                CircularProgressIndicator()
+            }
+            return@TransparentBackground
+        }
+
+        if (profile == null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = "Masuk untuk mengakses profil Anda.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    TextButton(onClick = onRequireAuthentication) {
+                        Text("Masuk")
+                    }
                 }
             }
+            return@TransparentBackground
         }
-        return
-    }
 
-    val context = LocalContext.current
-    val notificationsEnabled = UserPreferences.isNotificationsEnabled(context)
-    val nightModeEnabled = UserPreferences.isNightModeEnabled(context)
+        val context = LocalContext.current
+        val notificationsEnabled = UserPreferences.isNotificationsEnabled(context)
+        val nightModeEnabled = UserPreferences.isNightModeEnabled(context)
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 32.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -591,6 +606,7 @@ private fun ProfileTab(
                 )
             }
         }
+        }
     }
 }
 
@@ -615,6 +631,9 @@ private fun CategoryRow(
     selected: String,
     onSelect: (NewsCategory) -> Unit
 ) {
+    // Menggunakan MaterialTheme untuk deteksi dark mode yang lebih reliable dan reactive
+    val isDarkMode = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    
     LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         items(categories) { category ->
             val isSelected = category.name.equals(selected, ignoreCase = true)
@@ -622,10 +641,22 @@ private fun CategoryRow(
                 onClick = { onSelect(category) },
                 label = { Text(category.name) },
                 colors = AssistChipDefaults.assistChipColors(
-                    containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                    else MaterialTheme.colorScheme.surfaceVariant,
-                    labelColor = if (isSelected) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurfaceVariant
+                    containerColor = if (isSelected) {
+                        // Untuk dark mode: gunakan primary dengan opacity lebih tinggi agar kontras dengan overlay hitam
+                        // Untuk light mode: tetap menggunakan opacity rendah
+                        if (isDarkMode) {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                        } else {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                        }
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    },
+                    labelColor = if (isSelected) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
                 )
             )
         }
@@ -840,6 +871,65 @@ private fun SearchField(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun TransparentBackground(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    val context = LocalContext.current
+    // Menggunakan MaterialTheme untuk deteksi dark mode yang lebih reliable dan reactive
+    val isDarkMode = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    
+    Box(modifier = modifier.fillMaxSize()) {
+        // Background image dengan transparansi - menggunakan BitmapFactory untuk raw resource
+        val bitmap = remember {
+            try {
+                context.resources.openRawResource(R.raw.imagebghome).use { inputStream ->
+                    BitmapFactory.decodeStream(inputStream)
+                }
+            } catch (e: Exception) {
+                null
+            }
+        }
+        
+        if (bitmap != null) {
+            androidx.compose.foundation.Image(
+                bitmap = bitmap.asImageBitmap(),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .alpha(0.4f), // Alpha 40% untuk visibilitas yang baik
+            )
+        } else {
+            // Fallback jika gambar tidak bisa dimuat
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f))
+            )
+        }
+        
+        // Overlay transparan dengan warna sesuai tema
+        // Light mode: putih transparan, Dark mode: hitam transparan
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    if (isDarkMode) {
+                        // Dark mode: hitam transparan dengan opacity lebih tinggi
+                        Color.Black.copy(alpha = 0.65f)
+                    } else {
+                        // Light mode: putih transparan
+                        Color.White.copy(alpha = 0.55f)
+                    }
+                )
+        )
+        // Konten di atas background
+        content()
     }
 }
 
