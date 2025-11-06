@@ -43,6 +43,8 @@
 
     <!-- Settings -->
     <string name="title_settings">Pengaturan</string>
+    <string name="settings_preferences_section">Preferensi</string>
+    <string name="settings_information_section">Informasi</string>
     <string name="settings_night_mode">Mode gelap</string>
     <string name="settings_notifications">Notifikasi</string>
     <string name="settings_night_mode_hint">Beralih antara tema terang dan gelap.</string>
@@ -73,6 +75,7 @@
     <!-- Content descriptions -->
     <string name="content_desc_email">Alamat email</string>
     <string name="content_desc_article_image">Gambar artikel</string>
+    <string name="content_desc_back">Kembali</string>
     <string name="content_desc_bookmark">Tombol simpan</string>
 
     <!-- Profile auth -->
@@ -101,6 +104,7 @@
     <string name="toast_login_success">Selamat datang kembali, %1$s!</string>
     <string name="toast_register_success">Akun untuk %1$s berhasil dibuat.</string>
     <string name="toast_logout_success">Anda telah keluar.</string>
+    <string name="article_ai_section_title">Insight AI</string>
     <string name="ai_tags_title">Pilihan untuk Anda</string>
     <string name="action_add_bookmark">Simpan artikel</string>
     <string name="action_remove_bookmark">Hapus dari simpanan</string>
@@ -111,6 +115,7 @@
     <string name="ai_tag_featured">Sorotan pilihan</string>
     <string name="ai_tag_morning_brief">Ringkas pagi</string>
     <string name="ai_tag_fan_favorite">Favorit penggemar</string>
+    <string name="logout_confirm_title">Keluar akun</string>
     <string name="logout_confirm_message">Anda yakin ingin keluar dari akun ini?</string>
     <string name="logout_confirm_yes">Ya</string>
     <string name="logout_confirm_no">Tidak</string>
