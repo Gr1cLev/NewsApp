@@ -38,6 +38,10 @@ class NewsViewModel @Inject constructor(
     private val _isFetchingCategory = MutableStateFlow(false)
     val isFetchingCategory: StateFlow<Boolean> = _isFetchingCategory.asStateFlow()
 
+    // Refresh state for pull-to-refresh
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
     init {
         loadNews()
     }
@@ -66,8 +70,28 @@ class NewsViewModel @Inject constructor(
      * Refresh news data (pull-to-refresh)
      */
     fun refreshNews() {
-        newsRepository.invalidateCache()
-        loadNews()
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            try {
+                newsRepository.invalidateCache()
+                val newsData = newsRepository.getNewsData()
+                _uiState.value = NewsUiState.Success(
+                    articles = newsData.articles,
+                    featuredArticles = newsData.featuredArticles,
+                    categories = newsData.categories
+                )
+                // Refresh current category articles
+                if (_selectedCategory.value.equals("All", ignoreCase = true)) {
+                    _categoryArticles.value = newsData.articles
+                } else {
+                    selectCategory(_selectedCategory.value)
+                }
+            } catch (e: Exception) {
+                _uiState.value = NewsUiState.Error(e.message ?: "Unknown error")
+            } finally {
+                _isRefreshing.value = false
+            }
+        }
     }
 
     /**
