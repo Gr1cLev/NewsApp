@@ -37,6 +37,7 @@ private object AppDestination {
 
 @Composable
 fun NewsApp(
+    newsRepository: NewsRepository,
     isDarkTheme: Boolean,
     onThemeChanged: (Boolean) -> Unit
 ) {
@@ -74,7 +75,7 @@ fun NewsApp(
                     navController.navigate(AppDestination.Register)
                 },
                 onAuthenticated = {
-                    NewsRepository.invalidateCache()
+                    newsRepository.invalidateCache()
                     bookmarksVersion++
                     profileVersion++
                     navController.navigate(AppDestination.Home) {
@@ -92,7 +93,7 @@ fun NewsApp(
                     navController.popBackStack()
                 },
                 onRegistered = {
-                    NewsRepository.invalidateCache()
+                    newsRepository.invalidateCache()
                     bookmarksVersion++
                     profileVersion++
                     navController.navigate(AppDestination.Home) {
@@ -106,6 +107,7 @@ fun NewsApp(
 
         composable(AppDestination.Home) {
             HomeScreen(
+                newsRepository = newsRepository,
                 bookmarksVersion = bookmarksVersion,
                 profileVersion = profileVersion,
                 onOpenArticle = { articleId ->
@@ -134,6 +136,7 @@ fun NewsApp(
             val articleId = backStackEntry.arguments?.getInt("articleId") ?: return@composable
             ArticleDetailScreen(
                 articleId = articleId,
+                newsRepository = newsRepository,
                 onBack = { navController.popBackStack() },
                 onBookmarkChanged = {
                     bookmarksVersion++
@@ -146,7 +149,7 @@ fun NewsApp(
                 onBack = { navController.popBackStack() },
                 onEditProfile = { navController.navigate(AppDestination.EditProfile) },
                 onLogout = {
-                    NewsRepository.invalidateCache()
+                    newsRepository.invalidateCache()
                     bookmarksVersion++
                     profileVersion++
                     navController.navigate(AppDestination.Login) {

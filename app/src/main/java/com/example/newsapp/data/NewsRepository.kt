@@ -1,14 +1,33 @@
 package com.example.newsapp.data
 
 import android.content.Context
-import android.graphics.Color
+import android.util.Log
 import com.example.newsapp.model.NewsArticle
 import com.example.newsapp.model.NewsCategory
 import com.example.newsapp.model.NewsData
-import org.json.JSONArray
-import org.json.JSONObject
+import com.example.newsapp.network.NewsApiService
+import com.example.newsapp.network.mapper.NewsMapper
+import com.example.newsapp.network.mapper.NewsMapper.toNewsArticle
+import com.example.newsapp.util.Resource
+import com.example.newsapp.util.safeApiCall
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-object NewsRepository {
+/**
+ * Repository - 100% API NewsAPI.org
+ * No local JSON fallback
+ */
+@Singleton
+class NewsRepository @Inject constructor(
+    private val context: Context,
+    private val newsApiService: NewsApiService
+) {
+    
+    companion object {
+        private const val TAG = "NewsRepository"
+    }
 
     fun invalidateCache() {
         cachedData = null
@@ -17,44 +36,183 @@ object NewsRepository {
         cachedBookmarkProfileId = null
     }
 
-    private const val DATA_FILE_NAME = "news_data.json"
+    
     @Volatile
     private var cachedData: NewsData? = null
     private val bookmarkIds = mutableSetOf<Int>()
     private var articleIndex: Map<Int, NewsArticle> = emptyMap()
     @Volatile
     private var cachedBookmarkProfileId: String? = null
+    
+    /**
+     * Fetch articles dari network (NewsAPI)
+     * 5 artikel pertama akan di-set sebagai featured
+     */
+    suspend fun fetchArticlesFromNetwork(
+        category: String? = null,
+        country: String = "id"
+    ): Resource<List<NewsArticle>> = withContext(Dispatchers.IO) {
+        safeApiCall {
+            val apiCategory = NewsMapper.mapUiCategoryToApiCategory(category ?: "")
+            val response = newsApiService.getTopHeadlines(
+                country = country,
+                category = apiCategory,
+                pageSize = 50
+            )
+            
+            if (response.isSuccessful && response.body() != null) {
+                // Determine display category: use requested category or "General" for "All"/"Top"
+                val displayCategory = when {
+                    category.isNullOrEmpty() -> "General"
+                    category.equals("All", ignoreCase = true) -> "General"
+                    category.equals("Top", ignoreCase = true) -> "General"
+                    else -> category
+                }
+                
+                val articles = response.body()!!.articles.mapIndexed { index, dto ->
+                    dto.toNewsArticle(
+                        id = System.currentTimeMillis().toInt() + index,
+                        category = displayCategory,
+                        isFeatured = index < 5 // 5 artikel pertama = featured
+                    )
+                }
+                Log.d(TAG, "✅ Fetched ${articles.size} articles (category: $displayCategory, featured: ${articles.count { it.isFeatured }})")
+                articles
+            } else {
+                throw Exception("API Error: ${response.code()} - ${response.message()}")
+            }
+        }
+    }
+    
+    /**
+     * Search articles dari network
+     */
+    suspend fun searchArticles(query: String, category: String = "General"): Resource<List<NewsArticle>> = withContext(Dispatchers.IO) {
+        safeApiCall {
+            val response = newsApiService.searchEverything(
+                query = query,
+                language = "en", // Change to English for more results
+                pageSize = 50
+            )
+            
+            if (response.isSuccessful && response.body() != null) {
+                val articles = response.body()!!.articles.mapIndexed { index, dto ->
+                    dto.toNewsArticle(
+                        id = System.currentTimeMillis().toInt() + index,
+                        category = category,
+                        isFeatured = index < 5 // 5 pertama = featured
+                    )
+                }
+                Log.d(TAG, "Search returned ${articles.size} articles")
+                articles
+            } else {
+                throw Exception("Search Error: ${response.code()}")
+            }
+        }
+    }
 
-    fun getNewsData(context: Context): NewsData = getData(context)
+    /**
+     * Get news data - WAJIB dari API (no fallback)
+     * Cache hasil untuk performa
+     */
+    suspend fun getNewsData(): NewsData {
+        // Check cache first
+        val existing = cachedData
+        if (existing != null) {
+            Log.d(TAG, "Using cached data")
+            ensureBookmarksLoaded()
+            return existing
+        }
+        
+        // Fetch dari API - COBA BEBERAPA COUNTRY
+        Log.d(TAG, "Fetching fresh data from API...")
+        
+        // Try Indonesia first with All category
+        var networkResult = fetchArticlesFromNetwork(category = "All", country = "id")
+        
+        // If Indonesia returns 0, try US
+        if (networkResult is Resource.Success && networkResult.data.isEmpty()) {
+            Log.w(TAG, "⚠️ Indonesia returned 0 articles, trying US...")
+            networkResult = fetchArticlesFromNetwork(category = "All", country = "us")
+        }
+        
+        // If still 0, try general search
+        if (networkResult is Resource.Success && networkResult.data.isEmpty()) {
+            Log.w(TAG, "⚠️ US also returned 0, trying general search...")
+            networkResult = searchArticles("breaking news OR trending", category = "General")
+        }
+        
+        return when (networkResult) {
+            is Resource.Success -> {
+                val allArticles = networkResult.data
+                val featured = allArticles.filter { it.isFeatured }
+                
+                Log.d(TAG, "✅ API Success: ${allArticles.size} articles, ${featured.size} featured")
+                
+                val newsData = NewsData(
+                    categories = defaultCategories(),
+                    featuredArticles = featured,
+                    articles = allArticles,
+                    bookmarkedArticles = emptyList(),
+                    searchSuggestions = allArticles.take(10).map { it.title }
+                )
+                
+                // Cache
+                cachedData = newsData
+                articleIndex = allArticles.associateBy { it.id }
+                ensureBookmarksLoaded()
+                
+                cachedData ?: newsData
+            }
+            is Resource.Error -> {
+                Log.e(TAG, "❌ API Failed: ${networkResult.message}")
+                throw Exception("Failed to fetch news: ${networkResult.message}")
+            }
+            is Resource.Loading -> {
+                throw Exception("Loading state tidak valid di sini")
+            }
+        }
+    }
 
-    fun getCategories(context: Context): List<NewsCategory> =
-        getData(context).categories
+    fun getCategories(): List<NewsCategory> =
+        cachedData?.categories ?: defaultCategories()
 
-    fun getFeaturedArticles(context: Context): List<NewsArticle> =
-        getData(context).featuredArticles
+    fun getFeaturedArticles(): List<NewsArticle> =
+        cachedData?.featuredArticles ?: emptyList()
 
-    fun getArticles(context: Context): List<NewsArticle> =
-        getData(context).articles
+    fun getArticles(): List<NewsArticle> =
+        cachedData?.articles ?: emptyList()
 
-    fun getBookmarks(context: Context): List<NewsArticle> =
-        ensureData(context).bookmarkedArticles
+    fun getBookmarks(): List<NewsArticle> {
+        if (cachedData == null) return emptyList()
+        ensureBookmarksLoaded()
+        return cachedData?.bookmarkedArticles ?: emptyList()
+    }
 
-    fun getArticleById(context: Context, articleId: Int): NewsArticle? {
-        ensureData(context)
+    suspend fun getArticleById(articleId: Int): NewsArticle? {
+        // If articleIndex is empty, try to load data first
+        if (articleIndex.isEmpty() && cachedData == null) {
+            try {
+                getNewsData()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to load data for getArticleById: ${e.message}")
+                return null
+            }
+        }
         return articleIndex[articleId]
     }
 
-    fun getSearchSuggestions(context: Context): List<String> =
-        getData(context).searchSuggestions
+    fun getSearchSuggestions(): List<String> =
+        cachedData?.searchSuggestions ?: emptyList()
 
-    fun isArticleBookmarked(context: Context, articleId: Int): Boolean {
-        ensureData(context)
+    fun isArticleBookmarked(articleId: Int): Boolean {
+        ensureBookmarksLoaded()
         return bookmarkIds.contains(articleId)
     }
 
-    fun toggleBookmark(context: Context, articleId: Int): Boolean {
+    fun toggleBookmark(articleId: Int): Boolean {
         val appContext = context.applicationContext
-        ensureData(appContext)
+        ensureBookmarksLoaded()
         val profileId = resolveProfileId(appContext)
         val isBookmarked = if (bookmarkIds.contains(articleId)) {
             bookmarkIds.remove(articleId)
@@ -68,58 +226,7 @@ object NewsRepository {
         return isBookmarked
     }
 
-    private fun getData(context: Context): NewsData {
-        val existing = cachedData
-        if (existing != null) {
-            ensureBookmarksLoaded(context)
-            return cachedData ?: existing
-        }
-
-        return synchronized(this) {
-            val doubleCheck = cachedData
-            if (doubleCheck != null) {
-                ensureBookmarksLoaded(context)
-                cachedData ?: doubleCheck
-            } else {
-                val parsed = loadData(context.applicationContext)
-                cachedData = parsed
-                ensureBookmarksLoaded(context)
-                cachedData ?: parsed
-            }
-        }
-    }
-
-    private fun ensureData(context: Context): NewsData = getData(context.applicationContext)
-
-    private fun loadData(context: Context): NewsData {
-        val jsonString = context.assets.open(DATA_FILE_NAME).bufferedReader().use { it.readText() }
-        return parseJson(jsonString)
-    }
-
-    private fun parseJson(rawJson: String): NewsData {
-        val root = JSONObject(rawJson)
-
-        val articles = root.optJSONArray("articles").toArticleList()
-        val categories = root.optJSONArray("categories").toCategoryList()
-        val featuredArticles = root.optJSONArray("featured_articles").toArticleList()
-
-        val bookmarkIds = root.optJSONArray("bookmarked_article_ids").toIntList()
-        val articlePool = (articles + featuredArticles).associateBy { it.id }
-        articleIndex = articlePool
-        this.bookmarkIds.clear()
-        this.bookmarkIds.addAll(bookmarkIds)
-        val bookmarks = recomputeBookmarks()
-
-        val suggestions = root.optJSONArray("search_suggestions").toStringList()
-
-        return NewsData(
-            categories = if (categories.isNotEmpty()) categories else defaultCategories(),
-            featuredArticles = if (featuredArticles.isNotEmpty()) featuredArticles else articles.take(3),
-            articles = articles,
-            bookmarkedArticles = bookmarks,
-            searchSuggestions = suggestions
-        )
-    }
+    // ===== Private Helper Methods =====
 
     private fun refreshCachedBookmarks() {
         cachedData = cachedData?.copy(bookmarkedArticles = recomputeBookmarks())
@@ -133,7 +240,7 @@ object NewsRepository {
         return profile?.id ?: BookmarkRepository.GUEST_PROFILE_ID
     }
 
-    private fun ensureBookmarksLoaded(context: Context) {
+    private fun ensureBookmarksLoaded() {
         val appContext = context.applicationContext
         val profileId = resolveProfileId(appContext)
         if (profileId == cachedBookmarkProfileId && cachedData != null) {
@@ -153,76 +260,15 @@ object NewsRepository {
         refreshCachedBookmarks()
     }
 
-    private fun JSONArray?.toCategoryList(): List<NewsCategory> = this?.let { array ->
-        buildList(array.length()) {
-            for (index in 0 until array.length()) {
-                val obj = array.optJSONObject(index) ?: continue
-                add(
-                    NewsCategory(
-                        id = obj.optInt("id", index),
-                        name = obj.optString("name", "Category")
-                    )
-                )
-            }
-        }
-    } ?: emptyList()
-
-    private fun JSONArray?.toArticleList(): List<NewsArticle> = this?.let { array ->
-        buildList(array.length()) {
-            for (index in 0 until array.length()) {
-                val obj = array.optJSONObject(index) ?: continue
-                add(parseArticle(obj))
-            }
-        }
-    } ?: emptyList()
-
-    private fun JSONArray?.toIntList(): List<Int> = this?.let { array ->
-        buildList(array.length()) {
-            for (index in 0 until array.length()) {
-                add(array.optInt(index))
-            }
-        }
-    } ?: emptyList()
-
-    private fun JSONArray?.toStringList(): List<String> = this?.let { array ->
-        buildList(array.length()) {
-            for (index in 0 until array.length()) {
-                val value = array.optString(index)
-                if (!value.isNullOrBlank()) add(value)
-            }
-        }
-    } ?: emptyList()
-
-    private fun parseArticle(obj: JSONObject): NewsArticle {
-        val colorString = obj.optString("accentColor", "#00AEEF")
-        val accentColor = runCatching { Color.parseColor(colorString) }.getOrDefault(Color.parseColor("#00AEEF"))
-        val heroImageUrl = obj.optString("heroImageUrl").takeIf { it.isNotBlank() }
-        val tagValue = obj.optString("tag").takeIf { it.isNotBlank() }
-
-        return NewsArticle(
-            id = obj.optInt("id"),
-            category = obj.optString("category"),
-            title = obj.optString("title"),
-            summary = obj.optString("summary"),
-            source = obj.optString("source"),
-            publishedAt = obj.optString("publishedAt"),
-            accentColor = accentColor,
-            heroImageUrl = heroImageUrl,
-            tag = tagValue ?: obj.optString("category"),
-            isFeatured = obj.optBoolean("isFeatured", false),
-            content = obj.optJSONArray("content").toStringList()
-        )
-    }
-
     private fun defaultCategories(): List<NewsCategory> = listOf(
-        NewsCategory(0, "Semua"),
-        NewsCategory(1, "Teratas"),
-        NewsCategory(2, "Olahraga"),
-        NewsCategory(3, "Bisnis"),
-        NewsCategory(4, "Hiburan"),
-        NewsCategory(5, "Teknologi"),
-        NewsCategory(6, "Kesehatan"),
-        NewsCategory(7, "Sains")
+        NewsCategory(0, "All"),
+        NewsCategory(1, "Top"),
+        NewsCategory(2, "Sports"),
+        NewsCategory(3, "Business"),
+        NewsCategory(4, "Entertainment"),
+        NewsCategory(5, "Technology"),
+        NewsCategory(6, "Health"),
+        NewsCategory(7, "Science")
     )
 }
 

@@ -3,126 +3,129 @@
     <string name="app_name">NewsApp</string>
 
     <!-- Bottom navigation -->
-    <string name="nav_news">Berita</string>
-    <string name="nav_search">Cari</string>
-    <string name="nav_bookmarks">Tersimpan</string>
-    <string name="nav_profile">Profil</string>
+    <string name="nav_news">News</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_bookmarks">Saved</string>
+    <string name="nav_profile">Profile</string>
 
     <!-- Search -->
-    <string name="title_search">Pencarian</string>
-    <string name="hint_search">Coba &quot;Berita dunia&quot; atau &quot;Teknologi&quot;</string>
-    <string name="title_suggestions">Pencarian disarankan</string>
-    <string name="title_results">Hasil</string>
-    <string name="empty_search_state">Belum ada artikel yang cocok. Coba kata kunci lainnya.</string>
+    <string name="title_search">Search</string>
+    <string name="hint_search">Try \"World news\" or \"Technology\"</string>
+    <string name="title_suggestions">Suggested searches</string>
+    <string name="title_results">Results</string>
+    <string name="empty_search_state">No matching articles found. Try different keywords.</string>
 
     <!-- Bookmarks -->
-    <string name="title_bookmarks">Tersimpan</string>
-    <string name="empty_bookmarks_title">Belum ada artikel tersimpan</string>
-    <string name="empty_bookmarks_body">Ketuk ikon simpan di berita untuk membacanya nanti.</string>
+    <string name="title_bookmarks">Saved</string>
+    <string name="empty_bookmarks_title">No saved articles yet</string>
+    <string name="empty_bookmarks_body">Tap the bookmark icon on articles to read them later.</string>
 
     <!-- Profile -->
-    <string name="title_profile">Profil</string>
-    <string name="profile_first_name_default">Rina</string>
-    <string name="profile_last_name_default">Anggraini</string>
-    <string name="profile_email_default">rina.anggraini@example.com</string>
-    <string name="profile_quick_stats">Statistik singkat</string>
-    <string name="profile_stat_bookmarks">Disimpan</string>
-    <string name="profile_stat_topics">Topik</string>
-    <string name="profile_stat_following">Mengikuti</string>
-    <string name="profile_preferences">Preferensi</string>
-    <string name="profile_pref_notifications_title">Notifikasi</string>
-    <string name="profile_pref_notifications_on">Notifikasi aktif</string>
-    <string name="profile_pref_notifications_off">Notifikasi nonaktif</string>
-    <string name="profile_pref_reading_title">Mode baca</string>
-    <string name="profile_pref_reading_on">Mode gelap aktif</string>
-    <string name="profile_pref_reading_off">Mode gelap nonaktif</string>
-    <string name="action_settings">Pengaturan</string>
-    <string name="action_edit_profile">Ubah Profil</string>
-    <string name="toast_article_not_found">Artikel sudah tidak tersedia.</string>
-    <string name="detail_meta_format">Terbit %1$s &#8226; %2$s</string>
+    <string name="title_profile">Profile</string>
+    <string name="profile_first_name_default">John</string>
+    <string name="profile_last_name_default">Doe</string>
+    <string name="profile_email_default">john.doe@example.com</string>
+    <string name="profile_quick_stats">Quick stats</string>
+    <string name="profile_stat_bookmarks">Saved</string>
+    <string name="profile_stat_topics">Topics</string>
+    <string name="profile_stat_following">Following</string>
+    <string name="profile_preferences">Preferences</string>
+    <string name="profile_pref_notifications_title">Notifications</string>
+    <string name="profile_pref_notifications_on">Notifications enabled</string>
+    <string name="profile_pref_notifications_off">Notifications disabled</string>
+    <string name="profile_pref_reading_title">Reading mode</string>
+    <string name="profile_pref_reading_on">Dark mode enabled</string>
+    <string name="profile_pref_reading_off">Dark mode disabled</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_edit_profile">Edit Profile</string>
+    <string name="toast_article_not_found">Article is no longer available.</string>
+    <string name="detail_meta_format">Published %1$s &#8226; %2$s</string>
 
     <!-- Settings -->
-    <string name="title_settings">Pengaturan</string>
-    <string name="settings_preferences_section">Preferensi</string>
-    <string name="settings_information_section">Informasi</string>
-    <string name="settings_night_mode">Mode gelap</string>
-    <string name="settings_notifications">Notifikasi</string>
-    <string name="settings_night_mode_hint">Beralih antara tema terang dan gelap.</string>
-    <string name="settings_notifications_hint">Atur pengingat harian dan ringkasan utama.</string>
-    <string name="settings_help_section">Bantuan</string>
-    <string name="settings_hero_title">Sesuaikan pengalamanmu</string>
-    <string name="settings_hero_message">Sesuaikan notifikasi dan tema agar pengalaman membaca makin nyaman.</string>
-    <string name="settings_chip_theme_dark">Tema: Gelap</string>
-    <string name="settings_chip_theme_light">Tema: Terang</string>
-    <string name="settings_chip_notification_on">Notifikasi: Aktif</string>
-    <string name="settings_chip_notification_off">Notifikasi: Mati</string>
-    <string name="settings_faq">Pertanyaan umum</string>
-    <string name="settings_contact">Hubungi kami</string>
-    <string name="settings_about">Tentang aplikasi</string>
-    <string name="settings_faq_content">Temukan jawaban cepat soal preferensi, masalah masuk, dan pengaturan notifikasi.</string>
-    <string name="settings_contact_content">Email support@newsapp.local atau telepon +62 21 555 0190 setiap hari kerja 09.00-18.00 WIB.</string>
-    <string name="settings_about_content">BeritaKini menyajikan tajuk tepercaya, mengirim peringatan pintar, dan menyinkronkan riwayat baca Anda di berbagai perangkat.</string>
-    <string name="settings_edit_profile">Ubah profil</string>
+    <string name="title_settings">Settings</string>
+    <string name="settings_preferences_section">Preferences</string>
+    <string name="settings_information_section">Information</string>
+    <string name="settings_night_mode">Dark mode</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_night_mode_hint">Switch between light and dark themes.</string>
+    <string name="settings_notifications_hint">Set daily reminders and news briefings.</string>
+    <string name="settings_help_section">Help</string>
+    <string name="settings_hero_title">Customize your experience</string>
+    <string name="settings_hero_message">Adjust notifications and theme for a more comfortable reading experience.</string>
+    <string name="settings_chip_theme_dark">Theme: Dark</string>
+    <string name="settings_chip_theme_light">Theme: Light</string>
+    <string name="settings_chip_notification_on">Notifications: On</string>
+    <string name="settings_chip_notification_off">Notifications: Off</string>
+    <string name="settings_faq">FAQ</string>
+    <string name="settings_contact">Contact us</string>
+    <string name="settings_about">About app</string>
+    <string name="settings_faq_content">Find quick answers about preferences, login issues, and notification settings.</string>
+    <string name="settings_contact_content">Email support@newsapp.local or call +1 (555) 123-4567 on weekdays 9AM-6PM EST.</string>
+    <string name="settings_about_content">NewsApp delivers trusted headlines, sends smart alerts, and syncs your reading history across devices.</string>
+    <string name="settings_edit_profile">Edit profile</string>
 
     <!-- Edit profile -->
-    <string name="title_edit_profile">Ubah profil</string>
-    <string name="hint_first_name">Nama depan</string>
-    <string name="hint_last_name">Nama belakang</string>
+    <string name="title_edit_profile">Edit profile</string>
+    <string name="hint_first_name">First name</string>
+    <string name="hint_last_name">Last name</string>
     <string name="hint_email">Email</string>
-    <string name="hint_password">Kata sandi</string>
-    <string name="action_save">Simpan</string>
-    <string name="toast_profile_saved">Profil diperbarui</string>
+    <string name="hint_password">Password</string>
+    <string name="action_save">Save</string>
+    <string name="toast_profile_saved">Profile updated</string>
 
-    <string name="error_required_field">Bagian ini wajib diisi</string>
+    <string name="error_required_field">This field is required</string>
     <!-- Detail -->
-    <string name="bookmark_added">Disimpan ke daftar</string>
-    <string name="bookmark_removed">Dihapus dari daftar</string>
+    <string name="bookmark_added">Added to saved</string>
+    <string name="bookmark_removed">Removed from saved</string>
 
     <!-- Content descriptions -->
-    <string name="content_desc_email">Alamat email</string>
-    <string name="content_desc_article_image">Gambar artikel</string>
-    <string name="content_desc_back">Kembali</string>
-    <string name="content_desc_bookmark">Tombol simpan</string>
+    <string name="content_desc_email">Email address</string>
+    <string name="content_desc_article_image">Article image</string>
+    <string name="content_desc_back">Back</string>
+    <string name="content_desc_bookmark">Bookmark button</string>
 
     <!-- Profile auth -->
-    <string name="profile_guest_label">Tamu</string>
-    <string name="profile_guest_email_placeholder">Masuk untuk personalisasi pengalaman Anda.</string>
+    <string name="profile_guest_label">Guest</string>
+    <string name="profile_guest_email_placeholder">Sign in to personalize your experience.</string>
 
     <!-- Authentication -->
-    <string name="auth_login_title">Selamat datang kembali</string>
-    <string name="auth_login_subtitle">Masuk dengan kredensial yang terdaftar.</string>
-    <string name="auth_login_button">Masuk</string>
-    <string name="auth_login_register_prompt">Belum punya akun? Daftar</string>
-    <string name="auth_register_title">Gabung NewsApp</string>
-    <string name="auth_register_subtitle">Buat akun untuk mendapatkan berita sesuai preferensi anda.</string>
-    <string name="auth_register_button">Daftar</string>
-    <string name="auth_register_login_prompt">Sudah punya akun? Masuk</string>
-    <string name="action_logout">Keluar</string>
+    <string name="auth_login_title">Welcome back</string>
+    <string name="auth_login_subtitle">Sign in with your registered credentials.</string>
+    <string name="auth_login_button">Sign In</string>
+    <string name="auth_login_register_prompt">Don\'t have an account? Sign Up</string>
+    <string name="auth_register_title">Join NewsApp</string>
+    <string name="auth_register_subtitle">Create an account to get personalized news.</string>
+    <string name="auth_register_button">Sign Up</string>
+    <string name="auth_register_login_prompt">Already have an account? Sign In</string>
+    <string name="action_logout">Logout</string>
 
     <!-- Errors & toasts -->
-    <string name="error_invalid_email">Masukkan email yang valid.</string>
-    <string name="error_invalid_credentials">Email atau kata sandi salah.</string>
-    <string name="error_email_exists">Email sudah terdaftar.</string>
-    <string name="error_password_too_short">Kata sandi minimal 3 karakter.</string>
-    <string name="error_profile_missing">Profil tidak ditemukan. Silakan masuk kembali.</string>
-    <string name="error_profile_update_failed">Profil belum dapat diperbarui saat ini.</string>
-    <string name="error_generic">Terjadi kesalahan. Coba lagi.</string>
-    <string name="toast_login_success">Selamat datang kembali, %1$s!</string>
-    <string name="toast_register_success">Akun untuk %1$s berhasil dibuat.</string>
-    <string name="toast_logout_success">Anda telah keluar.</string>
-    <string name="article_ai_section_title">Insight AI</string>
-    <string name="ai_tags_title">Pilihan untuk Anda</string>
-    <string name="action_add_bookmark">Simpan artikel</string>
-    <string name="action_remove_bookmark">Hapus dari simpanan</string>
-    <string name="action_download_news">Unduh berita</string>
-    <string name="toast_download_unavailable">Fitur unduh offline belum tersedia. Nantikan ya!</string>
-    <string name="title_recommended">Rekomendasi untuk Anda</string>
-    <string name="ai_tag_trending">Sedang tren</string>
-    <string name="ai_tag_featured">Sorotan pilihan</string>
-    <string name="ai_tag_morning_brief">Ringkas pagi</string>
-    <string name="ai_tag_fan_favorite">Favorit penggemar</string>
-    <string name="logout_confirm_title">Keluar akun</string>
-    <string name="logout_confirm_message">Anda yakin ingin keluar dari akun ini?</string>
-    <string name="logout_confirm_yes">Ya</string>
-    <string name="logout_confirm_no">Tidak</string>
+    <string name="error_invalid_email">Please enter a valid email.</string>
+    <string name="error_invalid_credentials">Invalid email or password.</string>
+    <string name="error_email_exists">Email is already registered.</string>
+    <string name="error_password_too_short">Password must be at least 3 characters.</string>
+    <string name="error_profile_missing">Profile not found. Please sign in again.</string>
+    <string name="error_profile_update_failed">Unable to update profile at this time.</string>
+    <string name="error_generic">An error occurred. Please try again.</string>
+    <string name="toast_login_success">Welcome back, %1$s!</string>
+    <string name="toast_register_success">Account for %1$s created successfully.</string>
+    <string name="toast_logout_success">You have been logged out.</string>
+    <string name="article_ai_section_title">AI Insights</string>
+    <string name="ai_tags_title">Picked for You</string>
+    <string name="action_add_bookmark">Save article</string>
+    <string name="action_remove_bookmark">Remove from saved</string>
+    <string name="action_download_news">Download news</string>
+    <string name="toast_download_unavailable">Offline download feature coming soon!</string>
+    <string name="title_recommended">Recommended for You</string>
+    <string name="ai_tag_trending">Trending</string>
+    <string name="ai_tag_featured">Featured</string>
+    <string name="ai_tag_morning_brief">Morning Brief</string>
+    <string name="ai_tag_fan_favorite">Fan Favorite</string>
+    <string name="logout_confirm_title">Logout</string>
+    <string name="logout_confirm_message">Are you sure you want to logout?</string>
+    <string name="logout_confirm_yes">Yes</string>
+    <string name="logout_confirm_no">No</string>
+    
+    <!-- OAuth - Placeholder, will be auto-generated by google-services.json -->
+    <string name="default_web_client_id" translatable="false">YOUR_WEB_CLIENT_ID_HERE</string>
 </resources>

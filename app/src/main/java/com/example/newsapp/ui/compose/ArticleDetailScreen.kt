@@ -72,6 +72,7 @@ import java.util.Locale
 @Composable
 fun ArticleDetailScreen(
     articleId: Int,
+    newsRepository: NewsRepository,
     onBack: () -> Unit,
     onBookmarkChanged: () -> Unit
 ) {
@@ -80,13 +81,13 @@ fun ArticleDetailScreen(
     val coroutineScope = rememberCoroutineScope()
 
     val article by produceState<NewsArticle?>(initialValue = null, articleId) {
-        value = withContext(Dispatchers.IO) { NewsRepository.getArticleById(context, articleId) }
+        value = withContext(Dispatchers.IO) { newsRepository.getArticleById(articleId) }
     }
 
     LaunchedEffect(article) {
         article?.let {
             isBookmarked = withContext(Dispatchers.IO) {
-                NewsRepository.isArticleBookmarked(context, it.id)
+                newsRepository.isArticleBookmarked(it.id)
             }
         }
     }
@@ -192,7 +193,7 @@ fun ArticleDetailScreen(
                         onBookmarkToggle = {
                             coroutineScope.launch {
                                 val bookmarked = withContext(Dispatchers.IO) {
-                                    NewsRepository.toggleBookmark(context, currentArticle.id)
+                                    newsRepository.toggleBookmark(currentArticle.id)
                                 }
                                 isBookmarked = bookmarked
                                 onBookmarkChanged()
@@ -355,16 +356,16 @@ private fun generateAiTags(article: NewsArticle): List<String> {
     val tags = mutableListOf<String>()
     tags += "Sedang tren"
     when (article.category.lowercase(Locale.getDefault())) {
-        "olahraga", "sport" -> {
+        "sports", "sport" -> {
             tags += listOf("Favorit fans", "Analisis laga")
         }
-        "bisnis", "business" -> {
+        "business" -> {
             tags += listOf("Briefing pagi", "Radar pasar")
         }
-        "teknologi", "tech" -> {
-            tags += listOf("Detak inovasi", "Sorotan fitur")
+        "technology", "tech" -> {
+            tags += listOf("Innovation pulse", "Feature spotlight")
         }
-        else -> tags += "Sorotan khusus"
+        else -> tags += "Special highlight"
     }
     if (article.summary.contains("analysis", ignoreCase = true) ||
         article.summary.contains("analisis", ignoreCase = true)

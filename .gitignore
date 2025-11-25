@@ -12,4 +12,42 @@
 /captures
 .externalNativeBuild
 .cxx
+
+# API Keys & Secrets
 local.properties
+*.properties
+!gradle.properties
+!gradle-wrapper.properties
+
+# Firebase
+app/google-services.json
+google-services.json
+
+# Build outputs
+/app/build/
+/build/
+*.apk
+*.ap_
+*.aab
+
+# Android Studio
+/.idea/*
+!/.idea/codeStyles
+!/.idea/inspectionProfiles
+!/.idea/runConfigurations
+*.iws
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# Logs
+*.log
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Test files
+test_api.md

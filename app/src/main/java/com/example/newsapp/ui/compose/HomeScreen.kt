@@ -1,5 +1,6 @@
 package com.example.newsapp.ui.compose
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -36,6 +37,7 @@ import androidx.compose.material.icons.outlined.PersonOutline
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -52,8 +54,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -73,12 +77,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import android.net.Uri
 import androidx.annotation.RawRes
 import androidx.compose.ui.graphics.asImageBitmap
 import android.graphics.BitmapFactory
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.newsapp.data.UserPreferences
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -90,6 +96,12 @@ import com.example.newsapp.model.NewsArticle
 import com.example.newsapp.model.NewsCategory
 import com.example.newsapp.model.NewsData
 import com.example.newsapp.model.UserProfile
+import com.example.newsapp.viewmodel.AuthState
+import com.example.newsapp.viewmodel.BookmarkViewModel
+import com.example.newsapp.viewmodel.NewsUiState
+import com.example.newsapp.viewmodel.NewsViewModel
+import com.example.newsapp.viewmodel.ProfileViewModel
+import com.example.newsapp.viewmodel.SearchViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -114,6 +126,7 @@ private enum class HomeTab(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    newsRepository: NewsRepository,
     bookmarksVersion: Int,
     profileVersion: Int,
     onOpenArticle: (Int) -> Unit,
@@ -121,41 +134,57 @@ fun HomeScreen(
     onRequireAuthentication: () -> Unit,
     onBookmarksUpdated: () -> Unit
 ) {
+    // Get ViewModels
+    val newsViewModel: NewsViewModel = hiltViewModel()
+    val searchViewModel: SearchViewModel = hiltViewModel()
+    val bookmarkViewModel: BookmarkViewModel = hiltViewModel()
+    val profileViewModel: ProfileViewModel = hiltViewModel()
+    
     val context = LocalContext.current
     var selectedTab by rememberSaveable { mutableStateOf(HomeTab.News) }
     val coroutineScope = rememberCoroutineScope()
 
-    val newsData by produceState<NewsData?>(initialValue = null, bookmarksVersion) {
-        value = withContext(Dispatchers.IO) { NewsRepository.getNewsData(context) }
-    }
-    val bookmarks by produceState<List<NewsArticle>>(initialValue = emptyList(), bookmarksVersion) {
-        value = withContext(Dispatchers.IO) { NewsRepository.getBookmarks(context) }
-    }
-    val profileState by produceState(initialValue = ProfileLoadState(loaded = false, profile = null), profileVersion) {
-        val result = withContext(Dispatchers.IO) { ProfileRepository.getActiveProfile(context) }
-        value = ProfileLoadState(loaded = true, profile = result)
-    }
-    val profileLoaded = profileState.loaded
-    val profile = profileState.profile
-    val suggestions by produceState<List<String>>(initialValue = emptyList()) {
-        value = withContext(Dispatchers.IO) { NewsRepository.getSearchSuggestions(context) }
+    // Collect states from ViewModels
+    val newsUiState by newsViewModel.uiState.collectAsState()
+    val selectedCategory by newsViewModel.selectedCategory.collectAsState()
+    val categoryArticles by newsViewModel.categoryArticles.collectAsState()
+    val isFetchingCategory by newsViewModel.isFetchingCategory.collectAsState()
+    val isRefreshing by newsViewModel.isRefreshing.collectAsState()
+    
+    val searchQuery by searchViewModel.searchQuery.collectAsState()
+    val searchResults by searchViewModel.searchResults.collectAsState()
+    val suggestions by searchViewModel.suggestions.collectAsState()
+    
+    val bookmarkedArticles by bookmarkViewModel.bookmarkedArticles.collectAsState()
+    val bookmarkedIds by bookmarkViewModel.bookmarkedIds.collectAsState()
+    
+    val authState by profileViewModel.authState.collectAsState()
+    val userProfile by profileViewModel.userProfile.collectAsState()
+
+    // Refresh bookmarks when version changes
+    LaunchedEffect(bookmarksVersion) {
+        bookmarkViewModel.refresh()
     }
 
-    LaunchedEffect(profileVersion, profileLoaded, profile) {
-        if (profileLoaded && profile == null) {
+    // Refresh profile when version changes
+    LaunchedEffect(profileVersion) {
+        profileViewModel.refresh()
+    }
+    
+    // Handle auth state - redirect if not authenticated
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Guest && selectedTab == HomeTab.Profile) {
             onRequireAuthentication()
         }
     }
 
-    val bookmarkedIds = remember(bookmarks) { bookmarks.mapTo(mutableSetOf()) { it.id } }
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = Color.Transparent, // Membuat Scaffold transparan
+        containerColor = Color.Transparent,
         topBar = {
             HomeTopBar(
                 tab = selectedTab,
-                profile = profile,
+                profile = userProfile,
                 onOpenSettings = onOpenSettings
             )
         },
@@ -177,74 +206,122 @@ fun HomeScreen(
             }
         }
     ) { innerPadding ->
-        when (selectedTab) {
-            HomeTab.News -> NewsTab(
-                modifier = Modifier.padding(innerPadding),
-                newsData = newsData,
-                bookmarkedIds = bookmarkedIds,
-                onBookmarkToggle = { article ->
-                    coroutineScope.launch {
-                        val isBookmarked = withContext(Dispatchers.IO) {
-                            NewsRepository.toggleBookmark(context, article.id)
-                        }
-                        onBookmarksUpdated()
-                        Toast.makeText(
-                            context,
-                            context.getString(if (isBookmarked) R.string.bookmark_added else R.string.bookmark_removed),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                },
-                onArticleClick = { onOpenArticle(it.id) }
-            )
-
-            HomeTab.Search -> SearchTab(
-                modifier = Modifier.padding(innerPadding),
-                articles = newsData?.articles.orEmpty(),
-                suggestions = suggestions,
-                bookmarkedIds = bookmarkedIds,
-                onBookmarkToggle = { article ->
-                    coroutineScope.launch {
-                        val isBookmarked = withContext(Dispatchers.IO) {
-                            NewsRepository.toggleBookmark(context, article.id)
-                        }
-                        onBookmarksUpdated()
-                        Toast.makeText(
-                            context,
-                            context.getString(if (isBookmarked) R.string.bookmark_added else R.string.bookmark_removed),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                },
-                onArticleClick = { onOpenArticle(it.id) }
-            )
-
-            HomeTab.Bookmarks -> BookmarksTab(
-                modifier = Modifier.padding(innerPadding),
-                bookmarks = bookmarks,
-                onArticleClick = { onOpenArticle(it.id) },
-                onRemoveBookmark = { article ->
-                    coroutineScope.launch {
-                        val isBookmarked = withContext(Dispatchers.IO) {
-                            NewsRepository.toggleBookmark(context, article.id)
-                        }
-                        onBookmarksUpdated()
-                        Toast.makeText(
-                            context,
-                            context.getString(if (isBookmarked) R.string.bookmark_added else R.string.bookmark_removed),
-                            Toast.LENGTH_SHORT
-                        ).show()
+        // Handle UI state from ViewModel
+        when (val state = newsUiState) {
+            is NewsUiState.Loading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator()
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Loading news...")
                     }
                 }
-            )
-
-            HomeTab.Profile -> ProfileTab(
-                modifier = Modifier.padding(innerPadding),
-                profile = profile,
-                profileLoaded = profileLoaded,
-                onOpenSettings = onOpenSettings,
-                onRequireAuthentication = onRequireAuthentication
-            )
+            }
+            is NewsUiState.Error -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "❌ Error",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = state.message,
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = {
+                            newsViewModel.refreshNews()
+                            bookmarkViewModel.refresh()
+                        }) {
+                            Text("Try Again")
+                        }
+                    }
+                }
+            }
+            is NewsUiState.Success -> {
+                // Render content based on selected tab
+                when (selectedTab) {
+                    HomeTab.News -> NewsTab(
+                        modifier = Modifier.padding(innerPadding),
+                        newsViewModel = newsViewModel,
+                        newsData = state,
+                        categoryArticles = categoryArticles,
+                        selectedCategory = selectedCategory,
+                        isFetchingCategory = isFetchingCategory,
+                        isRefreshing = isRefreshing,
+                        bookmarkedIds = bookmarkedIds,
+                        onBookmarkToggle = { article ->
+                            coroutineScope.launch {
+                                bookmarkViewModel.toggleBookmark(article.id)
+                                onBookmarksUpdated()
+                                Toast.makeText(
+                                    context,
+                                    context.getString(
+                                        if (bookmarkViewModel.isArticleBookmarked(article.id))
+                                            R.string.bookmark_added
+                                        else
+                                            R.string.bookmark_removed
+                                    ),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        },
+                        onArticleClick = { onOpenArticle(it.id) }
+                    )
+                    HomeTab.Search -> SearchTab(
+                        modifier = Modifier.padding(innerPadding),
+                        searchViewModel = searchViewModel,
+                        searchQuery = searchQuery,
+                        searchResults = searchResults,
+                        allArticles = state.articles,
+                        bookmarkedIds = bookmarkedIds,
+                        onBookmarkToggle = { article ->
+                            coroutineScope.launch {
+                                bookmarkViewModel.toggleBookmark(article.id)
+                                onBookmarksUpdated()
+                                Toast.makeText(
+                                    context,
+                                    context.getString(
+                                        if (bookmarkViewModel.isArticleBookmarked(article.id))
+                                            R.string.bookmark_added
+                                        else
+                                            R.string.bookmark_removed
+                                    ),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        },
+                        onArticleClick = { onOpenArticle(it.id) }
+                    )
+                    HomeTab.Bookmarks -> BookmarksTab(
+                        modifier = Modifier.padding(innerPadding),
+                        bookmarkViewModel = bookmarkViewModel,
+                        bookmarks = bookmarkedArticles,
+                        onArticleClick = { onOpenArticle(it.id) }
+                    )
+                    HomeTab.Profile -> ProfileTab(
+                        modifier = Modifier.padding(innerPadding),
+                        profileViewModel = profileViewModel,
+                        authState = authState,
+                        onOpenSettings = onOpenSettings,
+                        onRequireAuthentication = onRequireAuthentication
+                    )
+                }
+            }
         }
     }
 }
@@ -284,69 +361,68 @@ private fun HomeTopBar(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NewsTab(
     modifier: Modifier,
-    newsData: NewsData?,
+    newsViewModel: NewsViewModel,
+    newsData: NewsUiState.Success,
+    categoryArticles: List<NewsArticle>,
+    selectedCategory: String,
+    isFetchingCategory: Boolean,
+    isRefreshing: Boolean,
     bookmarkedIds: Set<Int>,
     onBookmarkToggle: (NewsArticle) -> Unit,
     onArticleClick: (NewsArticle) -> Unit
 ) {
-    TransparentBackground(modifier = modifier) {
-        if (newsData == null) {
-            LoadingState(Modifier)
-            return@TransparentBackground
-        }
+    PullToRefreshBox(
+        isRefreshing = isRefreshing || isFetchingCategory,
+        onRefresh = { newsViewModel.refreshNews() },
+        modifier = modifier
+    ) {
+        TransparentBackground(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                contentPadding = PaddingValues(vertical = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Featured articles (only on "All" category)
+                if (newsData.featuredArticles.isNotEmpty() && selectedCategory.equals("All", ignoreCase = true)) {
+                    item { SectionTitle("Featured") }
+                    item {
+                        FeaturedCarousel(
+                            articles = newsData.featuredArticles,
+                            onArticleClick = onArticleClick
+                        )
+                    }
+                }
 
-        var selectedCategory by remember(newsData) {
-            mutableStateOf(newsData.categories.firstOrNull()?.name ?: "Semua")
-        }
+                // Category tabs
+                if (newsData.categories.isNotEmpty()) {
+                    item {
+                        CategoryRow(
+                            categories = newsData.categories,
+                            selected = selectedCategory,
+                            onSelect = { newsViewModel.selectCategory(it.name) }
+                        )
+                    }
+                }
 
-        val filteredArticles = remember(selectedCategory, newsData) {
-            if (selectedCategory.equals("Semua", ignoreCase = true)) {
-                newsData.articles
-            } else {
-                newsData.articles.filter { it.category.equals(selectedCategory, ignoreCase = true) }
+                item { SectionTitle("For You") }
+
+                // Articles list
+                items(categoryArticles) { article ->
+                    ArticleCard(
+                        article = article,
+                        isBookmarked = bookmarkedIds.contains(article.id),
+                        showCategory = true,
+                        onBookmarkToggle = { onBookmarkToggle(article) },
+                        onClick = { onArticleClick(article) }
+                    )
+                }
             }
-        }
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-        if (newsData.featuredArticles.isNotEmpty()) {
-            item { SectionTitle("Sorotan Utama") }
-            item {
-                FeaturedCarousel(
-                    articles = newsData.featuredArticles,
-                    onArticleClick = onArticleClick
-                )
-            }
-        }
-
-        if (newsData.categories.isNotEmpty()) {
-            item {
-                CategoryRow(
-                    categories = newsData.categories,
-                    selected = selectedCategory,
-                    onSelect = { selectedCategory = it.name }
-                )
-            }
-        }
-
-        item { SectionTitle("Untuk Anda") }
-
-        items(filteredArticles) { article ->
-            ArticleCard(
-                article = article,
-                isBookmarked = bookmarkedIds.contains(article.id),
-                showCategory = true,
-                onBookmarkToggle = { onBookmarkToggle(article) },
-                onClick = { onArticleClick(article) }
-            )
-        }
         }
     }
 }
@@ -354,27 +430,20 @@ private fun NewsTab(
 @Composable
 private fun SearchTab(
     modifier: Modifier,
-    articles: List<NewsArticle>,
-    suggestions: List<String>,
+    searchViewModel: SearchViewModel,
+    searchQuery: String,
+    searchResults: List<NewsArticle>,
+    allArticles: List<NewsArticle>,
     bookmarkedIds: Set<Int>,
     onBookmarkToggle: (NewsArticle) -> Unit,
     onArticleClick: (NewsArticle) -> Unit
 ) {
-    var query by rememberSaveable { mutableStateOf("") }
-    val trimmedQuery = query.trim()
-    val results = remember(trimmedQuery, articles) {
-        if (trimmedQuery.isBlank()) emptyList() else {
-            articles.filter {
-                it.title.contains(trimmedQuery, ignoreCase = true) ||
-                    it.summary.contains(trimmedQuery, ignoreCase = true) ||
-                    it.category.contains(trimmedQuery, ignoreCase = true)
-            }
-        }
-    }
+    val trimmedQuery = searchQuery.trim()
+    val results = searchResults
 
-    val recommendations = remember(articles) {
-        articles.filter { it.category.equals("Olahraga", ignoreCase = true) }.ifEmpty {
-            articles.take(5)
+    val recommendations = remember(allArticles) {
+        allArticles.filter { it.category.equals("Sports", ignoreCase = true) }.ifEmpty {
+            allArticles.take(5)
         }
     }
 
@@ -388,9 +457,9 @@ private fun SearchTab(
         ) {
         Spacer(modifier = Modifier.height(16.dp))
         SearchField(
-            value = query,
-            onValueChange = { query = it },
-            suggestions = suggestions
+            value = searchQuery,
+            onValueChange = { searchViewModel.onSearchQueryChange(it) },
+            suggestions = emptyList()
         )
 
         AnimatedVisibility(
@@ -418,7 +487,7 @@ private fun SearchTab(
             exit = fadeOut()
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                SectionTitle("Hasil untuk \"$trimmedQuery\"")
+                SectionTitle("Results for \"$trimmedQuery\"")
                 if (results.isEmpty()) {
                     Text(
                         text = "Belum ada berita yang cocok.",
@@ -446,9 +515,9 @@ private fun SearchTab(
 @Composable
 private fun BookmarksTab(
     modifier: Modifier,
+    bookmarkViewModel: BookmarkViewModel,
     bookmarks: List<NewsArticle>,
-    onArticleClick: (NewsArticle) -> Unit,
-    onRemoveBookmark: (NewsArticle) -> Unit
+    onArticleClick: (NewsArticle) -> Unit
 ) {
     TransparentBackground(modifier = modifier) {
         if (bookmarks.isEmpty()) {
@@ -476,7 +545,7 @@ private fun BookmarksTab(
                 article = article,
                 isBookmarked = true,
                 showCategory = true,
-                onBookmarkToggle = { onRemoveBookmark(article) },
+                onBookmarkToggle = { bookmarkViewModel.toggleBookmark(article.id) },
                 onClick = { onArticleClick(article) }
             )
         }
@@ -487,42 +556,44 @@ private fun BookmarksTab(
 @Composable
 private fun ProfileTab(
     modifier: Modifier,
-    profile: UserProfile?,
-    profileLoaded: Boolean,
+    profileViewModel: ProfileViewModel,
+    authState: AuthState,
     onOpenSettings: () -> Unit,
     onRequireAuthentication: () -> Unit
 ) {
     TransparentBackground(modifier = modifier) {
-        if (!profileLoaded) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-            return@TransparentBackground
-        }
-
-        if (profile == null) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+        when (authState) {
+            is AuthState.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "Masuk untuk mengakses profil Anda.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    TextButton(onClick = onRequireAuthentication) {
-                        Text("Masuk")
+                    CircularProgressIndicator()
+                }
+                return@TransparentBackground
+            }
+            is AuthState.Guest -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = "Sign in to access your profile.",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        TextButton(onClick = onRequireAuthentication) {
+                            Text("Sign In")
+                        }
                     }
                 }
+                return@TransparentBackground
             }
-            return@TransparentBackground
-        }
+            is AuthState.Authenticated -> {
+                val profile = authState.profile
 
         val context = LocalContext.current
         val notificationsEnabled = UserPreferences.isNotificationsEnabled(context)
@@ -600,12 +671,14 @@ private fun ProfileTab(
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
                 Text(
-                    text = "Atur preferensi, ubah profil, atau keluar akun.",
+                    text = "Manage preferences, edit profile, or sign out.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
+        }
+            }
         }
     }
 }
