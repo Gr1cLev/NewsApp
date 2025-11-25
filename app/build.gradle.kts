@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
-    id("com.google.gms.google-services") apply false // Apply manually after google-services.json added
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -100,6 +100,9 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.messaging)
+    
+    // Google Play Services
+    implementation(libs.play.services.auth)
     
     // Room
     implementation(libs.room.runtime)

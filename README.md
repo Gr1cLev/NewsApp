@@ -12,6 +12,8 @@ Modern Android news application built with Jetpack Compose, implementing MVVM ar
 - 🎨 Material Design 3 UI
 - 🔄 Pull-to-refresh
 - 📱 Offline support with local caching
+- 🤖 **ML-powered personalized recommendations** (Phase 1 completed)
+- 📊 **Firebase Analytics tracking** (Phase 1 completed)
 
 ## 🏗️ Architecture
 
@@ -29,6 +31,8 @@ Modern Android news application built with Jetpack Compose, implementing MVVM ar
 - **DI**: Hilt 2.51.1
 - **Networking**: Retrofit 2.11.0 + OkHttp 4.12.0
 - **JSON**: Moshi 1.15.1
+- **Firebase**: Firestore + Authentication + Analytics
+- **Database**: Room 2.6.1 (for local caching)
 - **Image Loading**: Coil
 - **Video Player**: ExoPlayer (Media3)
 - **Build**: Gradle Kotlin DSL
@@ -60,7 +64,14 @@ Modern Android news application built with Jetpack Compose, implementing MVVM ar
      ```
    - See `API_KEY_SETUP.md` for detailed instructions
 
-3. **Build & Run**
+3. **Setup Firebase** (Required for ML features!)
+   - Follow instructions in `FIREBASE_SETUP.md`
+   - Download `google-services.json` from Firebase Console
+   - Place in `app/` directory
+   - Enable Authentication, Firestore, Analytics
+   - See `FIRESTORE_STRUCTURE.md` for database schema
+
+4. **Build & Run**
    ```bash
    ./gradlew clean build
    ```
@@ -75,31 +86,40 @@ Modern Android news application built with Jetpack Compose, implementing MVVM ar
 | [IMPLEMENTATION_STEP_1-3.md](IMPLEMENTATION_STEP_1-3.md) | Technical implementation details |
 | [CONTOH_PENGGUNAAN.md](CONTOH_PENGGUNAAN.md) | Usage examples & code samples |
 | [KESIMPULAN_STEP_1-3.md](KESIMPULAN_STEP_1-3.md) | Summary of completed work |
+| [FIREBASE_SETUP.md](FIREBASE_SETUP.md) | **Firebase configuration guide** |
+| [FIRESTORE_STRUCTURE.md](FIRESTORE_STRUCTURE.md) | **Database schema & relationships** |
 
 ## 🔐 Security
 
 - ✅ API keys stored in `local.properties` (gitignored)
 - ✅ BuildConfig for compile-time secrets
-- ✅ Password encryption with Security Crypto (planned)
+- ✅ Firebase Security Rules for user data protection
+- ✅ User authentication with Firebase Auth
+- ✅ Encrypted Firestore data per user
 - ✅ HTTPS only connections
+- 🔄 Password encryption with Security Crypto (planned)
 
 ## 🎯 Current Status
 
-### ✅ Completed (Step 1-3)
+### ✅ Completed (Step 1-4)
 - [x] Hilt Dependency Injection
 - [x] Retrofit + API integration setup
 - [x] Network layer with error handling
 - [x] Secure API key management
 - [x] Resource wrapper for state management
+- [x] ViewModels with StateFlow
+- [x] Pull-to-refresh functionality
+- [x] **Firebase setup (Auth, Firestore, Analytics)**
+- [x] **3 Firestore collections with relationships**
+- [x] **User interaction tracking**
+- [x] **Analytics event logging**
 
-### 🚧 In Progress (Step 4-6)
-- [ ] ViewModels implementation
-- [ ] Room database for local cache
-- [ ] Firebase integration (Firestore, Auth, FCM)
-- [ ] Password encryption
-- [ ] Advanced search filters
-- [ ] Collections/Custom bookmarks
-- [ ] Error handling UI improvements
+### 🚧 In Progress (Step 5-6)
+- [ ] Login/Register UI screens
+- [ ] Google Sign-In integration
+- [ ] ML model development (data collection phase)
+- [ ] Room database for offline caching
+- [ ] Personalized recommendations UI
 
 ### 📋 Planned Features
 - [ ] OAuth2 login (Google, Facebook)

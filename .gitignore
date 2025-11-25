@@ -19,6 +19,10 @@ local.properties
 !gradle.properties
 !gradle-wrapper.properties
 
+# Firebase
+app/google-services.json
+google-services.json
+
 # Build outputs
 /app/build/
 /build/

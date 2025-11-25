@@ -317,7 +317,8 @@ fun HomeScreen(
                         modifier = Modifier.padding(innerPadding),
                         profileViewModel = profileViewModel,
                         authState = authState,
-                        onOpenSettings = onOpenSettings
+                        onOpenSettings = onOpenSettings,
+                        onRequireAuthentication = onRequireAuthentication
                     )
                 }
             }
@@ -557,7 +558,8 @@ private fun ProfileTab(
     modifier: Modifier,
     profileViewModel: ProfileViewModel,
     authState: AuthState,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    onRequireAuthentication: () -> Unit
 ) {
     TransparentBackground(modifier = modifier) {
         when (authState) {
@@ -583,7 +585,7 @@ private fun ProfileTab(
                             text = "Sign in to access your profile.",
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        TextButton(onClick = { /* Navigate to login */ }) {
+                        TextButton(onClick = onRequireAuthentication) {
                             Text("Sign In")
                         }
                     }

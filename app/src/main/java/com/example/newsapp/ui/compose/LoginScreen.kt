@@ -1,12 +1,17 @@
 package com.example.newsapp.ui.compose
 
+import android.app.Activity
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RawRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
@@ -19,9 +24,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -36,8 +46,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -55,6 +67,13 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.example.newsapp.R
 import com.example.newsapp.data.ProfileRepository
+import com.example.newsapp.data.firebase.FirebaseAuthRepository
+import com.example.newsapp.di.FirebaseEntryPoint
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -72,6 +91,52 @@ fun LoginScreen(
     var isLoading by remember { mutableStateOf(false) }
     var toastMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
+
+    // Get FirebaseAuthRepository from Hilt
+    val firebaseAuthRepository = remember {
+        val appContext = context.applicationContext
+        EntryPointAccessors.fromApplication(
+            appContext,
+            FirebaseEntryPoint::class.java
+        ).firebaseAuthRepository()
+    }
+
+    // Google Sign-In setup
+    val googleSignInClient = remember {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(context.getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+        GoogleSignIn.getClient(context, gso)
+    }
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                account.idToken?.let { idToken ->
+                    scope.launch {
+                        isLoading = true
+                        val authResult = firebaseAuthRepository.signInWithGoogle(idToken)
+                        isLoading = false
+                        authResult.onSuccess {
+                            toastMessage = "Login dengan Google berhasil!"
+                            onAuthenticated()
+                        }.onFailure { error ->
+                            toastMessage = "Google Sign-In gagal: ${error.message}"
+                        }
+                    }
+                } ?: run {
+                    toastMessage = "ID Token tidak ditemukan"
+                }
+            } catch (e: ApiException) {
+                toastMessage = "Google Sign-In gagal: ${e.message}"
+            }
+        }
+    }
 
     toastMessage?.let { message ->
         LaunchedEffect(message) {
@@ -94,10 +159,22 @@ fun LoginScreen(
         return emailValid && password.isNotBlank()
     }
 
-    fun attemptLogin() {
+    fun attemptEmailLogin() {
         if (!validateForm()) return
         scope.launch {
             isLoading = true
+            
+            // Try Firebase Auth first
+            val firebaseResult = firebaseAuthRepository.signInWithEmail(email.trim(), password)
+            
+            if (firebaseResult.isSuccess) {
+                isLoading = false
+                toastMessage = "Login berhasil!"
+                onAuthenticated()
+                return@launch
+            }
+            
+            // Fallback to ProfileRepository for backward compatibility
             val result = withContext(Dispatchers.IO) {
                 ProfileRepository.authenticate(context, email.trim(), password)
             }
@@ -118,12 +195,31 @@ fun LoginScreen(
         }
     }
 
+    fun attemptAnonymousLogin() {
+        scope.launch {
+            isLoading = true
+            val result = firebaseAuthRepository.signInAnonymously()
+            isLoading = false
+            result.onSuccess {
+                toastMessage = "Masuk sebagai Guest berhasil!"
+                onAuthenticated()
+            }.onFailure { error ->
+                toastMessage = "Anonymous login gagal: ${error.message}"
+            }
+        }
+    }
+
+    fun attemptGoogleSignIn() {
+        val signInIntent = googleSignInClient.signInIntent
+        googleSignInLauncher.launch(signInIntent)
+    }
+
     AuthBackgroundLayout(
         title = context.getString(R.string.auth_login_title),
         subtitle = context.getString(R.string.auth_login_subtitle),
         actionText = context.getString(R.string.auth_login_button),
         footerText = context.getString(R.string.auth_login_register_prompt),
-        onPrimaryAction = ::attemptLogin,
+        onPrimaryAction = ::attemptEmailLogin,
         onSecondaryAction = onNavigateToRegister,
         isActionEnabled = !isLoading,
         isLoading = isLoading
@@ -164,6 +260,58 @@ fun LoginScreen(
                 isError = passwordError != null,
                 supportingText = passwordError
             )
+
+            // Divider with "atau" text
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Divider(modifier = Modifier.weight(1f))
+                Text(
+                    text = "atau",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Divider(modifier = Modifier.weight(1f))
+            }
+
+            // Google Sign-In Button
+            OutlinedButton(
+                onClick = ::attemptGoogleSignIn,
+                enabled = !isLoading,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                contentPadding = PaddingValues(vertical = 12.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_google),
+                    contentDescription = "Google",
+                    modifier = Modifier.size(20.dp),
+                    tint = Color.Unspecified
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                Text("Masuk dengan Google")
+            }
+
+            // Anonymous Mode Button
+            OutlinedButton(
+                onClick = ::attemptAnonymousLogin,
+                enabled = !isLoading,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                contentPadding = PaddingValues(vertical = 12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Guest",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                Text("Lanjutkan sebagai Guest")
+            }
         }
     }
 }

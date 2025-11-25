@@ -189,7 +189,16 @@ class NewsRepository @Inject constructor(
         return cachedData?.bookmarkedArticles ?: emptyList()
     }
 
-    fun getArticleById(articleId: Int): NewsArticle? {
+    suspend fun getArticleById(articleId: Int): NewsArticle? {
+        // If articleIndex is empty, try to load data first
+        if (articleIndex.isEmpty() && cachedData == null) {
+            try {
+                getNewsData()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to load data for getArticleById: ${e.message}")
+                return null
+            }
+        }
         return articleIndex[articleId]
     }
 
