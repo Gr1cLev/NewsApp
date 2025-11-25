@@ -1,5 +1,6 @@
 package com.example.newsapp.ui.compose
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -36,6 +37,7 @@ import androidx.compose.material.icons.outlined.PersonOutline
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -73,6 +75,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import android.net.Uri
@@ -114,6 +117,7 @@ private enum class HomeTab(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    newsRepository: NewsRepository,
     bookmarksVersion: Int,
     profileVersion: Int,
     onOpenArticle: (Int) -> Unit,
@@ -124,12 +128,26 @@ fun HomeScreen(
     val context = LocalContext.current
     var selectedTab by rememberSaveable { mutableStateOf(HomeTab.News) }
     val coroutineScope = rememberCoroutineScope()
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
 
     val newsData by produceState<NewsData?>(initialValue = null, bookmarksVersion) {
-        value = withContext(Dispatchers.IO) { NewsRepository.getNewsData(context) }
+        isLoading = true
+        value = try {
+            val data = withContext(Dispatchers.IO) { newsRepository.getNewsData() }
+            android.util.Log.d("HomeScreen", "✅ Data loaded: ${data.articles.size} articles")
+            isLoading = false
+            errorMessage = null
+            data
+        } catch (e: Exception) {
+            android.util.Log.e("HomeScreen", "❌ Error loading data: ${e.message}", e)
+            isLoading = false
+            errorMessage = e.message
+            null
+        }
     }
     val bookmarks by produceState<List<NewsArticle>>(initialValue = emptyList(), bookmarksVersion) {
-        value = withContext(Dispatchers.IO) { NewsRepository.getBookmarks(context) }
+        value = withContext(Dispatchers.IO) { newsRepository.getBookmarks() }
     }
     val profileState by produceState(initialValue = ProfileLoadState(loaded = false, profile = null), profileVersion) {
         val result = withContext(Dispatchers.IO) { ProfileRepository.getActiveProfile(context) }
@@ -138,7 +156,7 @@ fun HomeScreen(
     val profileLoaded = profileState.loaded
     val profile = profileState.profile
     val suggestions by produceState<List<String>>(initialValue = emptyList()) {
-        value = withContext(Dispatchers.IO) { NewsRepository.getSearchSuggestions(context) }
+        value = newsData?.searchSuggestions ?: emptyList()
     }
 
     LaunchedEffect(profileVersion, profileLoaded, profile) {
@@ -177,15 +195,67 @@ fun HomeScreen(
             }
         }
     ) { innerPadding ->
+        // Show loading indicator
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Memuat berita...")
+                }
+            }
+            return@Scaffold
+        }
+        
+        // Show error message
+        if (errorMessage != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "❌ Error",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = errorMessage ?: "Unknown error",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = {
+                        newsRepository.invalidateCache()
+                        // Trigger reload by changing version
+                        onBookmarksUpdated()
+                    }) {
+                        Text("Try Again")
+                    }
+                }
+            }
+            return@Scaffold
+        }
+        
         when (selectedTab) {
             HomeTab.News -> NewsTab(
                 modifier = Modifier.padding(innerPadding),
+                newsRepository = newsRepository,
                 newsData = newsData,
                 bookmarkedIds = bookmarkedIds,
                 onBookmarkToggle = { article ->
                     coroutineScope.launch {
                         val isBookmarked = withContext(Dispatchers.IO) {
-                            NewsRepository.toggleBookmark(context, article.id)
+                            newsRepository.toggleBookmark(article.id)
                         }
                         onBookmarksUpdated()
                         Toast.makeText(
@@ -206,7 +276,7 @@ fun HomeScreen(
                 onBookmarkToggle = { article ->
                     coroutineScope.launch {
                         val isBookmarked = withContext(Dispatchers.IO) {
-                            NewsRepository.toggleBookmark(context, article.id)
+                            newsRepository.toggleBookmark(article.id)
                         }
                         onBookmarksUpdated()
                         Toast.makeText(
@@ -226,7 +296,7 @@ fun HomeScreen(
                 onRemoveBookmark = { article ->
                     coroutineScope.launch {
                         val isBookmarked = withContext(Dispatchers.IO) {
-                            NewsRepository.toggleBookmark(context, article.id)
+                            newsRepository.toggleBookmark(article.id)
                         }
                         onBookmarksUpdated()
                         Toast.makeText(
@@ -287,6 +357,7 @@ private fun HomeTopBar(
 @Composable
 private fun NewsTab(
     modifier: Modifier,
+    newsRepository: NewsRepository,
     newsData: NewsData?,
     bookmarkedIds: Set<Int>,
     onBookmarkToggle: (NewsArticle) -> Unit,
@@ -299,16 +370,37 @@ private fun NewsTab(
         }
 
         var selectedCategory by remember(newsData) {
-            mutableStateOf(newsData.categories.firstOrNull()?.name ?: "Semua")
+            mutableStateOf(newsData.categories.firstOrNull()?.name ?: "All")
         }
-
-        val filteredArticles = remember(selectedCategory, newsData) {
-            if (selectedCategory.equals("Semua", ignoreCase = true)) {
-                newsData.articles
+        
+        // State for category-specific articles
+        var categoryArticles by remember { mutableStateOf<List<NewsArticle>>(newsData.articles) }
+        var isFetchingCategory by remember { mutableStateOf(false) }
+        
+        // Fetch articles when category changes
+        LaunchedEffect(selectedCategory) {
+            if (selectedCategory.equals("All", ignoreCase = true)) {
+                categoryArticles = newsData.articles
             } else {
-                newsData.articles.filter { it.category.equals(selectedCategory, ignoreCase = true) }
+                isFetchingCategory = true
+                try {
+                    val result = newsRepository.fetchArticlesFromNetwork(
+                        category = selectedCategory,
+                        country = "us"
+                    )
+                    if (result is com.example.newsapp.util.Resource.Success) {
+                        categoryArticles = result.data
+                    }
+                } catch (e: Exception) {
+                    Log.e("HomeScreen", "Failed to fetch $selectedCategory: ${e.message}")
+                } finally {
+                    isFetchingCategory = false
+                }
             }
         }
+
+        val filteredArticles = remember(categoryArticles) { categoryArticles }
+        
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -316,8 +408,8 @@ private fun NewsTab(
             contentPadding = PaddingValues(vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-        if (newsData.featuredArticles.isNotEmpty()) {
-            item { SectionTitle("Sorotan Utama") }
+        if (newsData.featuredArticles.isNotEmpty() && selectedCategory.equals("All", ignoreCase = true)) {
+            item { SectionTitle("Featured") }
             item {
                 FeaturedCarousel(
                     articles = newsData.featuredArticles,
@@ -336,16 +428,29 @@ private fun NewsTab(
             }
         }
 
-        item { SectionTitle("Untuk Anda") }
-
-        items(filteredArticles) { article ->
-            ArticleCard(
-                article = article,
-                isBookmarked = bookmarkedIds.contains(article.id),
-                showCategory = true,
-                onBookmarkToggle = { onBookmarkToggle(article) },
-                onClick = { onArticleClick(article) }
-            )
+        item { SectionTitle("For You") }
+        
+        if (isFetchingCategory) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+        } else {
+            items(filteredArticles) { article ->
+                ArticleCard(
+                    article = article,
+                    isBookmarked = bookmarkedIds.contains(article.id),
+                    showCategory = true,
+                    onBookmarkToggle = { onBookmarkToggle(article) },
+                    onClick = { onArticleClick(article) }
+                )
+            }
         }
         }
     }
@@ -373,7 +478,7 @@ private fun SearchTab(
     }
 
     val recommendations = remember(articles) {
-        articles.filter { it.category.equals("Olahraga", ignoreCase = true) }.ifEmpty {
+        articles.filter { it.category.equals("Sports", ignoreCase = true) }.ifEmpty {
             articles.take(5)
         }
     }
@@ -418,7 +523,7 @@ private fun SearchTab(
             exit = fadeOut()
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                SectionTitle("Hasil untuk \"$trimmedQuery\"")
+                SectionTitle("Results for \"$trimmedQuery\"")
                 if (results.isEmpty()) {
                     Text(
                         text = "Belum ada berita yang cocok.",
@@ -513,7 +618,7 @@ private fun ProfileTab(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        text = "Masuk untuk mengakses profil Anda.",
+                        text = "Sign in to access your profile.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     TextButton(onClick = onRequireAuthentication) {
@@ -600,7 +705,7 @@ private fun ProfileTab(
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
                 Text(
-                    text = "Atur preferensi, ubah profil, atau keluar akun.",
+                    text = "Manage preferences, edit profile, or sign out.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
