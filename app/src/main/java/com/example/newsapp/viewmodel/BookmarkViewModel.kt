@@ -4,6 +4,8 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.newsapp.data.NewsRepository
+import com.example.newsapp.data.firebase.FirebaseAuthRepository
+import com.example.newsapp.data.firebase.UserInteractionRepository
 import com.example.newsapp.model.NewsArticle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +20,9 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class BookmarkViewModel @Inject constructor(
-    private val newsRepository: NewsRepository
+    private val newsRepository: NewsRepository,
+    private val firebaseAuthRepository: FirebaseAuthRepository,
+    private val userInteractionRepository: UserInteractionRepository
 ) : ViewModel() {
 
     // Bookmarked articles
@@ -61,6 +65,29 @@ class BookmarkViewModel @Inject constructor(
         var isBookmarked = false
         viewModelScope.launch {
             isBookmarked = newsRepository.toggleBookmark(articleId)
+            
+            // Track bookmark action in Firebase with full article info
+            val userId = firebaseAuthRepository.getCurrentUserId()
+            if (userId != null) {
+                android.util.Log.d("BookmarkViewModel", "Tracking bookmark for article $articleId, isBookmarked=$isBookmarked")
+                
+                // Get article info for analytics
+                val article = newsRepository.getArticleById(articleId)
+                if (article != null) {
+                    userInteractionRepository.trackBookmark(
+                        articleId = articleId.toString(),
+                        isBookmarked = isBookmarked,
+                        title = article.title,
+                        category = article.category
+                    )
+                    android.util.Log.d("BookmarkViewModel", "Bookmark tracked with article info")
+                } else {
+                    android.util.Log.w("BookmarkViewModel", "Article not found in repository for ID: $articleId")
+                }
+            } else {
+                android.util.Log.w("BookmarkViewModel", "User not authenticated, skipping Firebase tracking")
+            }
+            
             // Reload bookmarks to update UI
             loadBookmarks()
         }

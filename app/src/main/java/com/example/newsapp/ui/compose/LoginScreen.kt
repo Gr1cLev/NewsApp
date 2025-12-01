@@ -271,7 +271,7 @@ fun LoginScreen(
             ) {
                 Divider(modifier = Modifier.weight(1f))
                 Text(
-                    text = "atau",
+                    text = "or",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

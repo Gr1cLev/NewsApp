@@ -101,14 +101,14 @@ fun ArticleDetailScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Artikel tidak ditemukan.",
+                text = "Article not found.",
                 style = MaterialTheme.typography.bodyLarge
             )
             FilledTonalButton(
                 modifier = Modifier.padding(top = 16.dp),
                 onClick = onBack
             ) {
-                Text("Kembali")
+                Text("Go Back")
             }
         }
         return
