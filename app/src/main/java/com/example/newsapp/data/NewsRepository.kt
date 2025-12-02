@@ -76,6 +76,14 @@ class NewsRepository @Inject constructor(
                         isFeatured = index < 5 // 5 artikel pertama = featured
                     )
                 }
+                
+                // Update articleIndex with fetched articles
+                val currentIndex = articleIndex.toMutableMap()
+                articles.forEach { article ->
+                    currentIndex[article.id] = article
+                }
+                articleIndex = currentIndex
+                
                 Log.d(TAG, "✅ Fetched ${articles.size} articles (category: $displayCategory, featured: ${articles.count { it.isFeatured }})")
                 articles
             } else {

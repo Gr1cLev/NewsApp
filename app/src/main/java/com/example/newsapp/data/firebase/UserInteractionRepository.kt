@@ -16,7 +16,8 @@ import javax.inject.Singleton
 @Singleton
 class UserInteractionRepository @Inject constructor(
     private val firestore: FirebaseFirestore,
-    private val authRepository: FirebaseAuthRepository
+    private val authRepository: FirebaseAuthRepository,
+    private val analyticsTracker: FirebaseAnalyticsTracker
 ) {
     
     /**
@@ -31,6 +32,8 @@ class UserInteractionRepository @Inject constructor(
         return try {
             val userId = authRepository.getCurrentUserId() 
                 ?: return Result.failure(Exception("User not authenticated"))
+            
+            android.util.Log.d("UserInteraction", "Tracking article click: articleId=$articleId, title=$title, userId=$userId")
             
             val articleRef = firestore
                 .collection("user_interactions")
@@ -64,8 +67,15 @@ class UserInteractionRepository @Inject constructor(
                 articleRef.set(interaction).await()
             }
             
+            android.util.Log.d("UserInteraction", "Firestore article click saved successfully")
+            
+            // Track in Firebase Analytics
+            analyticsTracker.trackArticleClick(articleId, title, category, source)
+            android.util.Log.d("UserInteraction", "Analytics article click tracked")
+            
             Result.success(Unit)
         } catch (e: Exception) {
+            android.util.Log.e("UserInteraction", "Error tracking article click: ${e.message}", e)
             Result.failure(e)
         }
     }
@@ -88,8 +98,10 @@ class UserInteractionRepository @Inject constructor(
                         "timeSpentReading" to FieldValue.increment(durationSeconds),
                         "updatedAt" to FieldValue.serverTimestamp()
                     )
-                )
-                .await()
+                ).await()
+            
+            // Track in Firebase Analytics
+            analyticsTracker.trackArticleReadComplete(articleId, durationSeconds)
             
             Result.success(Unit)
         } catch (e: Exception) {
@@ -100,10 +112,17 @@ class UserInteractionRepository @Inject constructor(
     /**
      * Track bookmark action
      */
-    suspend fun trackBookmark(articleId: String, isBookmarked: Boolean): Result<Unit> {
+    suspend fun trackBookmark(
+        articleId: String, 
+        isBookmarked: Boolean,
+        title: String? = null,
+        category: String? = null
+    ): Result<Unit> {
         return try {
             val userId = authRepository.getCurrentUserId() 
                 ?: return Result.failure(Exception("User not authenticated"))
+            
+            android.util.Log.d("UserInteraction", "Tracking bookmark: articleId=$articleId, isBookmarked=$isBookmarked, userId=$userId, title=$title, category=$category")
             
             val updates = mutableMapOf<String, Any>(
                 "isBookmarked" to isBookmarked,
@@ -122,8 +141,19 @@ class UserInteractionRepository @Inject constructor(
                 .update(updates)
                 .await()
             
+            android.util.Log.d("UserInteraction", "Firestore bookmark updated successfully")
+            
+            // Track in Firebase Analytics if we have article info
+            if (title != null && category != null) {
+                analyticsTracker.trackArticleBookmark(articleId, title, category, isBookmarked)
+                android.util.Log.d("UserInteraction", "Analytics bookmark tracked")
+            } else {
+                android.util.Log.w("UserInteraction", "Skipping analytics - missing title or category")
+            }
+            
             Result.success(Unit)
         } catch (e: Exception) {
+            android.util.Log.e("UserInteraction", "Error tracking bookmark: ${e.message}", e)
             Result.failure(e)
         }
     }
@@ -152,6 +182,42 @@ class UserInteractionRepository @Inject constructor(
             
             Result.success(Unit)
         } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    /**
+     * Track search query
+     */
+    suspend fun trackSearch(query: String, resultCount: Int): Result<Unit> {
+        return try {
+            val userId = authRepository.getCurrentUserId() 
+                ?: return Result.failure(Exception("User not authenticated"))
+            
+            android.util.Log.d("UserInteraction", "Tracking search: query=$query, resultCount=$resultCount, userId=$userId")
+            
+            val searchData = hashMapOf(
+                "query" to query,
+                "resultCount" to resultCount,
+                "timestamp" to FieldValue.serverTimestamp()
+            )
+            
+            firestore
+                .collection("user_interactions")
+                .document(userId)
+                .collection("searches")
+                .add(searchData)
+                .await()
+            
+            android.util.Log.d("UserInteraction", "Firestore search saved successfully")
+            
+            // Track in Firebase Analytics
+            analyticsTracker.trackSearch(query, resultCount)
+            android.util.Log.d("UserInteraction", "Analytics search tracked")
+            
+            Result.success(Unit)
+        } catch (e: Exception) {
+            android.util.Log.e("UserInteraction", "Error tracking search: ${e.message}", e)
             Result.failure(e)
         }
     }

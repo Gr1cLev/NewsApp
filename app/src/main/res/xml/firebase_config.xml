@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Enable Firebase Analytics debug mode -->
+    <bool name="google_analytics_automatic_screen_reporting_enabled">true</bool>
+    <bool name="google_analytics_adid_collection_enabled">false</bool>
+</resources>

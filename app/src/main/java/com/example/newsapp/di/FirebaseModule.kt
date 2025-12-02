@@ -49,9 +49,18 @@ object FirebaseModule {
     fun provideFirebaseAnalytics(@ApplicationContext context: Context): FirebaseAnalytics {
         // Initialize Firebase if not already initialized
         if (FirebaseApp.getApps(context).isEmpty()) {
+            android.util.Log.d("FirebaseModule", "Initializing Firebase...")
             FirebaseApp.initializeApp(context)
         }
-        return FirebaseAnalytics.getInstance(context)
+        
+        val analytics = FirebaseAnalytics.getInstance(context)
+        
+        // Enable analytics collection explicitly
+        analytics.setAnalyticsCollectionEnabled(true)
+        
+        android.util.Log.d("FirebaseModule", "Firebase Analytics initialized and enabled")
+        
+        return analytics
     }
 }
 

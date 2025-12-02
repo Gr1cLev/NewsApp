@@ -117,10 +117,10 @@ private enum class HomeTab(
     val filledIcon: androidx.compose.ui.graphics.vector.ImageVector,
     val outlinedIcon: androidx.compose.ui.graphics.vector.ImageVector
 ) {
-    News("Berita", Icons.Filled.Article, Icons.Outlined.Article),
-    Search("Cari", Icons.Filled.Search, Icons.Outlined.Search),
-    Bookmarks("Tersimpan", Icons.Filled.Bookmark, Icons.Outlined.BookmarkBorder),
-    Profile("Profil", Icons.Filled.Person, Icons.Outlined.PersonOutline)
+    News("News", Icons.Filled.Article, Icons.Outlined.Article),
+    Search("Search", Icons.Filled.Search, Icons.Outlined.Search),
+    Bookmarks("Saved", Icons.Filled.Bookmark, Icons.Outlined.BookmarkBorder),
+    Profile("Profile", Icons.Filled.Person, Icons.Outlined.PersonOutline)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -338,10 +338,10 @@ private fun HomeTopBar(
         title = {
             Text(
                 text = when (tab) {
-                    HomeTab.News -> "Berita Hari Ini"
-                    HomeTab.Search -> "Cari Berita"
-                    HomeTab.Bookmarks -> "Tersimpan"
-                    HomeTab.Profile -> profile?.fullName().takeUnless { it.isNullOrBlank() } ?: "Profil"
+                    HomeTab.News -> "Today's News"
+                    HomeTab.Search -> "Search News"
+                    HomeTab.Bookmarks -> "Saved Articles"
+                    HomeTab.Profile -> profile?.fullName().takeUnless { it.isNullOrBlank() } ?: "Profile"
                 },
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 maxLines = 1,
@@ -351,7 +351,7 @@ private fun HomeTopBar(
         actions = {
             if (tab == HomeTab.Profile) {
                 IconButton(onClick = onOpenSettings) {
-                    Icon(imageVector = Icons.Filled.Settings, contentDescription = "Pengaturan")
+                    Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings")
                 }
             }
         },
@@ -490,7 +490,7 @@ private fun SearchTab(
                 SectionTitle("Results for \"$trimmedQuery\"")
                 if (results.isEmpty()) {
                     Text(
-                        text = "Belum ada berita yang cocok.",
+                        text = "No matching articles found.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 } else {
@@ -526,7 +526,7 @@ private fun BookmarksTab(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Belum ada artikel tersimpan.",
+                    text = "No saved articles yet.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -667,7 +667,7 @@ private fun ProfileTab(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "Pengaturan",
+                    text = "Settings",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
                 Text(
