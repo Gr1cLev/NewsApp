@@ -2,6 +2,7 @@ package com.example.newsapp.di
 
 import android.content.Context
 import com.example.newsapp.data.firebase.FirebaseAuthRepository
+import com.example.newsapp.data.firebase.UserInteractionRepository
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
@@ -71,4 +72,5 @@ object FirebaseModule {
 @InstallIn(SingletonComponent::class)
 interface FirebaseEntryPoint {
     fun firebaseAuthRepository(): FirebaseAuthRepository
+    fun userInteractionRepository(): UserInteractionRepository
 }

@@ -4,7 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.model.NewsArticle
+import com.example.newsapp.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,7 +39,14 @@ class SearchViewModel @Inject constructor(
     private val _isSearching = MutableStateFlow(false)
     val isSearching: StateFlow<Boolean> = _isSearching.asStateFlow()
 
-    // All articles for local filtering
+    // Error state
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    // Debounce job for API search
+    private var searchJob: Job? = null
+
+    // All articles for local filtering (fallback)
     private val _allArticles = MutableStateFlow<List<NewsArticle>>(emptyList())
 
     init {
@@ -67,31 +77,68 @@ class SearchViewModel @Inject constructor(
      */
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
-        performSearch(query)
-    }
-
-    /**
-     * Perform search (local filtering)
-     */
-    private fun performSearch(query: String) {
+        _errorMessage.value = null
+        
+        // Cancel previous search job
+        searchJob?.cancel()
+        
         val trimmedQuery = query.trim()
         if (trimmedQuery.isBlank()) {
             _searchResults.value = emptyList()
+            _isSearching.value = false
             return
         }
+        
+        // Debounce: wait 500ms before calling API
+        searchJob = viewModelScope.launch {
+            delay(500)
+            performApiSearch(trimmedQuery)
+        }
+    }
 
+    /**
+     * Perform search via API
+     */
+    private suspend fun performApiSearch(query: String) {
         _isSearching.value = true
-        viewModelScope.launch {
-            try {
-                val results = _allArticles.value.filter {
-                    it.title.contains(trimmedQuery, ignoreCase = true) ||
-                    it.summary.contains(trimmedQuery, ignoreCase = true) ||
-                    it.category.contains(trimmedQuery, ignoreCase = true)
+        try {
+            val result = newsRepository.searchArticles(query)
+            when (result) {
+                is Resource.Success -> {
+                    _searchResults.value = result.data
+                    if (result.data.isEmpty()) {
+                        // Fallback to local search if API returns empty
+                        performLocalSearch(query)
+                    }
                 }
-                _searchResults.value = results
-            } finally {
-                _isSearching.value = false
+                is Resource.Error -> {
+                    _errorMessage.value = result.message
+                    // Fallback to local search on error
+                    performLocalSearch(query)
+                }
+                is Resource.Loading -> {
+                    // Do nothing
+                }
             }
+        } catch (e: Exception) {
+            _errorMessage.value = e.message
+            performLocalSearch(query)
+        } finally {
+            _isSearching.value = false
+        }
+    }
+
+    /**
+     * Perform local search (fallback)
+     */
+    private fun performLocalSearch(query: String) {
+        val results = _allArticles.value.filter {
+            it.title.contains(query, ignoreCase = true) ||
+            it.summary.contains(query, ignoreCase = true) ||
+            it.category.contains(query, ignoreCase = true)
+        }
+        if (results.isNotEmpty()) {
+            _searchResults.value = results
         }
     }
 

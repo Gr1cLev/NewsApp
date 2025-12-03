@@ -62,7 +62,10 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.newsapp.R
 import com.example.newsapp.data.NewsRepository
+import com.example.newsapp.data.firebase.UserInteractionRepository
+import com.example.newsapp.di.FirebaseEntryPoint
 import com.example.newsapp.model.NewsArticle
+import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -80,14 +83,70 @@ fun ArticleDetailScreen(
     var isBookmarked by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
+    // Get UserInteractionRepository from Hilt for tracking
+    val userInteractionRepository = remember {
+        val appContext = context.applicationContext
+        EntryPointAccessors.fromApplication(
+            appContext,
+            FirebaseEntryPoint::class.java
+        ).userInteractionRepository()
+    }
+
     val article by produceState<NewsArticle?>(initialValue = null, articleId) {
         value = withContext(Dispatchers.IO) { newsRepository.getArticleById(articleId) }
     }
 
+    // Track reading time
+    var readingStartTime by remember { mutableStateOf(0L) }
+    
+    // Track article click when article is loaded
     LaunchedEffect(article) {
-        article?.let {
+        article?.let { currentArticle ->
+            // Start reading time tracking
+            readingStartTime = System.currentTimeMillis()
+            
+            // Check bookmark status
             isBookmarked = withContext(Dispatchers.IO) {
-                newsRepository.isArticleBookmarked(it.id)
+                newsRepository.isArticleBookmarked(currentArticle.id)
+            }
+            
+            // Track article click to Firebase
+            withContext(Dispatchers.IO) {
+                try {
+                    userInteractionRepository.trackArticleClick(
+                        articleId = currentArticle.id.toString(),
+                        title = currentArticle.title,
+                        category = currentArticle.category,
+                        source = currentArticle.source
+                    )
+                    android.util.Log.d("ArticleDetail", "Article click tracked: ${currentArticle.title}")
+                } catch (e: Exception) {
+                    android.util.Log.e("ArticleDetail", "Failed to track article click: ${e.message}")
+                }
+            }
+        }
+    }
+    
+    // Track reading time when leaving the screen
+    androidx.compose.runtime.DisposableEffect(article) {
+        onDispose {
+            article?.let { currentArticle ->
+                if (readingStartTime > 0) {
+                    val readingDuration = (System.currentTimeMillis() - readingStartTime) / 1000
+                    if (readingDuration > 2) { // Only track if user spent more than 2 seconds
+                        coroutineScope.launch(Dispatchers.IO) {
+                            try {
+                                userInteractionRepository.trackReadingTime(
+                                    articleId = currentArticle.id.toString(),
+                                    durationSeconds = readingDuration
+                                )
+                                android.util.Log.d("ArticleDetail", "Reading time tracked: ${readingDuration}s for ${currentArticle.title}")
+                            } catch (e: Exception) {
+                                android.util.Log.e("ArticleDetail", "Failed to track reading time: ${e.message}")
+                            }
+                        }
+                    }
+                }
             }
         }
     }
