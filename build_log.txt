@@ -1,0 +1,265 @@
+﻿> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:processDebugNavigationResources UP-TO-DATE
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:processDebugGoogleServices UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:kspDebugKotlin UP-TO-DATE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:compressDebugAssets UP-TO-DATE
+> Task :app:checkDebugDuplicateClasses UP-TO-DATE
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexDebug UP-TO-DATE
+> Task :app:mergeLibDexDebug UP-TO-DATE
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:mergeDebugNativeLibs UP-TO-DATE
+> Task :app:stripDebugDebugSymbols UP-TO-DATE
+> Task :app:validateSigningDebug UP-TO-DATE
+> Task :app:writeDebugAppMetadata UP-TO-DATE
+> Task :app:writeDebugSigningConfigVersions UP-TO-DATE
+
+> Task :app:compileDebugKotlin FAILED
+.\gradlew.bat : e: file:///D:/UM
+N/MAP/NewsApp/app/src/main/java/
+com/example/newsapp/ml/ML_Recomm
+endationEngine.kt:3:33 
+Unresolved reference 'model'.
+At line:1 char:1
++ .\gradlew.bat assembleDebug 
+--warning-mode all 2>&1 | 
+Out-File -FileP ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : N 
+   otSpecified: (e: file:///D:  
+  /U...erence 'model'.:String   
+ ) [], RemoteException
+    + FullyQualifiedErrorId : N 
+   ativeCommandError
+ 
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:93:26 Unresolved reference 
+'NewsArticle'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:105:41 Cannot infer type for 
+this parameter. Please specify 
+it explicitly.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:105:41 Unresolved reference. 
+None of the following 
+candidates is applicable 
+because of a receiver type 
+mismatch:
+fun <T, R> 
+Iterable<T>.map(transform: (T) 
+-> R): List<R>
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:105:47 Cannot infer type for 
+this parameter. Please specify 
+it explicitly.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:119:14 Cannot infer type for 
+this parameter. Please specify 
+it explicitly.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:119:14 Not enough information 
+to infer type argument for 'T'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:119:14 Not enough information 
+to infer type argument for 'R'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:119:33 Cannot infer type for 
+this parameter. Please specify 
+it explicitly.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:119:38 Unresolved reference 
+'finalScore'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:120:14 Cannot infer type for 
+this parameter. Please specify 
+it explicitly.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:120:14 Not enough information 
+to infer type argument for 'T'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:132:18 Unresolved reference 
+'NewsArticle'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:153:45 Unresolved reference 
+'mlWeight'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:154:46 Unresolved reference 
+'ruleBasedWeight'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:155:49 Unresolved reference 
+'recencyWeight'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:156:50 Unresolved reference 
+'trendingWeight'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:175:59 Unresolved reference 
+'NewsArticle'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:180:66 Unresolved reference 
+'url'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:195:56 Unresolved reference 
+'url'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:208:48 Unresolved reference 
+'NewsArticle'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:211:45 Unresolved reference 
+'publishedAt'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RecommendationEngine.k
+t:252:22 Unresolved reference 
+'NewsArticle'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RuleBasedEngine.kt:98:
+42 Unresolved reference 
+'publishedTimestamp'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RuleBasedEngine.kt:100
+:59 None of the following 
+candidates is applicable:
+fun BigDecimal.div(other: 
+BigDecimal): BigDecimal
+fun BigInteger.div(other: 
+BigInteger): BigInteger
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RuleBasedEngine.kt:103
+:22 'operator' modifier is 
+required on 
+'FirNamedFunctionSymbol 
+kotlin/compareTo' in 
+'compareTo'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RuleBasedEngine.kt:104
+:22 'operator' modifier is 
+required on 
+'FirNamedFunctionSymbol 
+kotlin/compareTo' in 
+'compareTo'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RuleBasedEngine.kt:105
+:22 'operator' modifier is 
+required on 
+'FirNamedFunctionSymbol 
+kotlin/compareTo' in 
+'compareTo'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RuleBasedEngine.kt:106
+:22 'operator' modifier is 
+required on 
+'FirNamedFunctionSymbol 
+kotlin/compareTo' in 
+'compareTo'.
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RuleBasedEngine.kt:109
+:58 None of the following 
+candidates is applicable:
+fun BigDecimal.div(other: 
+BigDecimal): BigDecimal
+fun BigInteger.div(other: 
+BigInteger): BigInteger
+e: file:///D:/UMN/MAP/NewsApp/ap
+p/src/main/java/com/example/news
+app/ml/ML_RuleBasedEngine.kt:110
+:25 Argument type mismatch: 
+actual type is 'kotlin.Double', 
+but 'kotlin.Float' was expected.
+
+FAILURE: Build failed with an 
+exception.
+
+* What went wrong:
+Execution failed for task 
+':app:compileDebugKotlin'.
+> A failure occurred while 
+executing org.jetbrains.kotlin.c
+ompilerRunner.GradleCompilerRunn
+erWithWorkers$GradleKotlinCompil
+erWorkAction
+   > Compilation error. See log 
+for more details
+
+* Try:
+> Run with --stacktrace option 
+to get the stack trace.
+> Run with --info or --debug 
+option to get more log output.
+> Run with --scan to get full 
+insights.
+> Get more help at 
+https://help.gradle.org.
+
+BUILD FAILED in 8s
+31 actionable tasks: 1 executed, 30 up-to-date

@@ -8,6 +8,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
+import com.google.firebase.storage.FirebaseStorage
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,10 +35,10 @@ object FirebaseModule {
     fun provideFirebaseFirestore(): FirebaseFirestore {
         val firestore = FirebaseFirestore.getInstance()
         
-        // Configure Firestore settings
+        // Configure Firestore settings with LIMITED cache to reduce memory pressure
         val settings = FirebaseFirestoreSettings.Builder()
             .setPersistenceEnabled(true) // Enable offline persistence
-            .setCacheSizeBytes(FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED)
+            .setCacheSizeBytes(50 * 1024 * 1024) // 50 MB cache (was unlimited)
             .build()
         
         firestore.firestoreSettings = settings
@@ -62,6 +63,12 @@ object FirebaseModule {
         android.util.Log.d("FirebaseModule", "Firebase Analytics initialized and enabled")
         
         return analytics
+    }
+    
+    @Provides
+    @Singleton
+    fun provideFirebaseStorage(): FirebaseStorage {
+        return FirebaseStorage.getInstance()
     }
 }
 
