@@ -142,7 +142,21 @@ class NewsViewModel @Inject constructor(
                             applyPersonalization(result.data, currentState.featuredArticles)
                         }
                     } else if (result is Resource.Error) {
-                        // Keep existing articles if fetch fails
+                        val isRateLimited = result.message?.contains("429") == true ||
+                                result.message?.contains("rate limit", ignoreCase = true) == true
+                        if (isRateLimited) {
+                            val cached = newsRepository.getCachedArticlesByCategory(category)
+                            if (cached.isNotEmpty()) {
+                                _categoryArticles.value = cached
+                                val currentState = _uiState.value
+                                if (currentState is NewsUiState.Success) {
+                                    applyPersonalization(cached, currentState.featuredArticles)
+                                    _uiState.value = currentState // keep success state
+                                }
+                                return@launch
+                            }
+                        }
+                        // Keep existing articles if fetch fails and no cache
                         _uiState.value = NewsUiState.Error(result.message ?: "Failed to load category")
                     }
                 } catch (e: Exception) {

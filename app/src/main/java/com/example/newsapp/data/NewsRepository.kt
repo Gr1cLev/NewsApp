@@ -298,6 +298,15 @@ class NewsRepository @Inject constructor(
     fun getArticles(): List<NewsArticle> =
         cachedData?.articles ?: emptyList()
 
+    suspend fun getCachedArticlesByCategory(category: String): List<NewsArticle> {
+        // Try memory first
+        val fromCache = cachedData?.articles?.filter { it.category.equals(category, ignoreCase = true) }
+        if (!fromCache.isNullOrEmpty()) return fromCache
+
+        // Firestore fallback
+        return firebaseArticleCacheRepository.getArticlesByCategory(category)
+    }
+
     suspend fun getBookmarks(): List<NewsArticle> {
         // Load bookmark IDs from Firestore
         val firestoreBookmarks = firebaseBookmarkRepository.loadBookmarks()
