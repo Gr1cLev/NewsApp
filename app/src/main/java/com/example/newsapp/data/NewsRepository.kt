@@ -159,7 +159,7 @@ class NewsRepository @Inject constructor(
      * Search articles dari network
      */
     suspend fun searchArticles(query: String, category: String = "General"): Resource<List<NewsArticle>> = withContext(Dispatchers.IO) {
-        safeApiCall {
+        val result = safeApiCall {
             val response = newsApiService.searchEverything(
                 query = query,
                 language = "en", // Change to English for more results
@@ -197,6 +197,17 @@ class NewsRepository @Inject constructor(
                 throw Exception("Search Error: ${response.code()}")
             }
         }
+
+        // Update article index so detail screens can resolve by ID
+        if (result is Resource.Success) {
+            val updatedIndex = articleIndex.toMutableMap()
+            result.data.forEach { article ->
+                updatedIndex[article.id] = article
+            }
+            articleIndex = updatedIndex
+        }
+
+        result
     }
 
     /**
@@ -323,7 +334,21 @@ class NewsRepository @Inject constructor(
                 return null
             }
         }
-        return articleIndex[articleId]
+
+        // Return from in-memory index if present
+        articleIndex[articleId]?.let { return it }
+
+        // Fallback to Firestore cache so deep links/search/bookmarks still resolve
+        val cachedArticle = firebaseArticleCacheRepository.getArticleById(articleId)
+        if (cachedArticle != null) {
+            val updatedIndex = articleIndex.toMutableMap()
+            updatedIndex[articleId] = cachedArticle
+            articleIndex = updatedIndex
+            return cachedArticle
+        }
+
+        Log.w(TAG, "Article $articleId not found in repository or cache")
+        return null
     }
 
     fun getSearchSuggestions(): List<String> =
