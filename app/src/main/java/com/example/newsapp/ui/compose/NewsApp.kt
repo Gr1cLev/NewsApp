@@ -46,11 +46,19 @@ fun NewsApp(
     var bookmarksVersion by remember { mutableIntStateOf(0) }
     var profileVersion by remember { mutableIntStateOf(0) }
 
+    // Get Firebase Auth Repository
+    val firebaseAuthRepository = remember {
+        val appContext = context.applicationContext
+        dagger.hilt.android.EntryPointAccessors.fromApplication(
+            appContext,
+            com.example.newsapp.di.FirebaseEntryPoint::class.java
+        ).firebaseAuthRepository()
+    }
+    
     LaunchedEffect(Unit) {
-        val hasActiveProfile = withContext(Dispatchers.IO) {
-            ProfileRepository.hasActiveProfile(context)
-        }
-        startDestination = if (hasActiveProfile) {
+        // Check Firebase Auth state (supports Email, Google, and Anonymous)
+        val isAuthenticated = firebaseAuthRepository.isUserAuthenticated()
+        startDestination = if (isAuthenticated) {
             AppDestination.Home
         } else {
             AppDestination.Login

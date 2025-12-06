@@ -64,6 +64,7 @@ class BookmarkViewModel @Inject constructor(
     fun toggleBookmark(articleId: Int): Boolean {
         var isBookmarked = false
         viewModelScope.launch {
+            // Toggle bookmark in repository (now async)
             isBookmarked = newsRepository.toggleBookmark(articleId)
             
             // Track bookmark action in Firebase with full article info

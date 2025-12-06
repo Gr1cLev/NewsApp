@@ -93,11 +93,12 @@ class UserInteractionRepository @Inject constructor(
                 .document(userId)
                 .collection("articles")
                 .document(articleId)
-                .update(
+                .set(
                     mapOf(
                         "timeSpentReading" to FieldValue.increment(durationSeconds),
                         "updatedAt" to FieldValue.serverTimestamp()
-                    )
+                    ),
+                    com.google.firebase.firestore.SetOptions.merge()
                 ).await()
             
             // Track in Firebase Analytics
@@ -138,7 +139,7 @@ class UserInteractionRepository @Inject constructor(
                 .document(userId)
                 .collection("articles")
                 .document(articleId)
-                .update(updates)
+                .set(updates, com.google.firebase.firestore.SetOptions.merge())
                 .await()
             
             android.util.Log.d("UserInteraction", "Firestore bookmark updated successfully")
@@ -171,12 +172,13 @@ class UserInteractionRepository @Inject constructor(
                 .document(userId)
                 .collection("articles")
                 .document(articleId)
-                .update(
+                .set(
                     mapOf(
                         "isShared" to true,
                         "sharedAt" to FieldValue.serverTimestamp(),
                         "updatedAt" to FieldValue.serverTimestamp()
-                    )
+                    ),
+                    com.google.firebase.firestore.SetOptions.merge()
                 )
                 .await()
             

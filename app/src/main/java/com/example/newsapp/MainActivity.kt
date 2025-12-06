@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
 import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.data.UserPreferences
+import com.example.newsapp.data.firebase.FirebaseAuthRepository
 import com.example.newsapp.ui.compose.NewsApp
 import com.example.newsapp.ui.theme.NewsAppTheme
 import com.example.newsapp.util.Resource
@@ -24,6 +25,9 @@ class MainActivity : ComponentActivity() {
     
     @Inject
     lateinit var newsRepository: NewsRepository
+    
+    @Inject
+    lateinit var firebaseAuthRepository: FirebaseAuthRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val nightMode = if (UserPreferences.isNightModeEnabled(this)) {
@@ -34,6 +38,17 @@ class MainActivity : ComponentActivity() {
         AppCompatDelegate.setDefaultNightMode(nightMode)
         super.onCreate(savedInstanceState)
         newsRepository.invalidateCache()
+        
+        // Log current Firebase Auth state (do NOT override existing auth)
+        lifecycleScope.launch {
+            val currentUser = firebaseAuthRepository.getCurrentUser()
+            if (currentUser != null) {
+                val authMethod = if (currentUser.isAnonymous) "Anonymous" else "Authenticated"
+                Log.d("MainActivity", "✅ Firebase User ($authMethod): ${currentUser.uid}")
+            } else {
+                Log.d("MainActivity", "⚠️ No Firebase user logged in")
+            }
+        }
         
         // DEBUG: Test API call
         lifecycleScope.launch {

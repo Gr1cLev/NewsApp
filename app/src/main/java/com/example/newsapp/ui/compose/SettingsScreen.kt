@@ -57,8 +57,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.newsapp.R
-import com.example.newsapp.data.ProfileRepository
 import com.example.newsapp.data.UserPreferences
+import com.example.newsapp.di.FirebaseEntryPoint
+import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -73,6 +74,16 @@ fun SettingsScreen(
     onToggleDarkTheme: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
+    
+    // Get FirebaseAuthRepository from Hilt
+    val firebaseAuthRepository = remember {
+        val appContext = context.applicationContext
+        EntryPointAccessors.fromApplication(
+            appContext,
+            FirebaseEntryPoint::class.java
+        ).firebaseAuthRepository()
+    }
+    
     var nightMode by remember { mutableStateOf(isDarkTheme) }
     var notificationsEnabled by remember { mutableStateOf(UserPreferences.isNotificationsEnabled(context)) }
     var showLogoutDialog by remember { mutableStateOf(false) }
@@ -95,25 +106,18 @@ fun SettingsScreen(
                     onClick = {
                         coroutineScope.launch {
                             isProcessing = true
-                            val result = withContext(Dispatchers.IO) {
-                                ProfileRepository.logout(context)
+                            // Use Firebase Auth signOut
+                            withContext(Dispatchers.IO) {
+                                firebaseAuthRepository.signOut()
                             }
                             isProcessing = false
                             showLogoutDialog = false
-                            result.onSuccess {
-                                Toast.makeText(
-                                    context,
-                                    context.getString(R.string.toast_logout_success),
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                onLogout()
-                            }.onFailure { error ->
-                                Toast.makeText(
-                                    context,
-                                    error.message ?: context.getString(R.string.error_generic),
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.toast_logout_success),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            onLogout()
                         }
                     }
                 ) {
