@@ -12,6 +12,11 @@ data class ML_ScoringWeights(
     val recency: Float = 0.15f,        // 15% - Article freshness (important for news)
     val trending: Float = 0.05f        // 5% - Global popularity
 ) {
+    // Backward-compat aliases to avoid breaking older call sites
+    val mlWeight: Float get() = mlModel
+    val ruleWeight: Float get() = ruleBased
+    val recencyWeight: Float get() = recency
+    val trendingWeight: Float get() = trending
     init {
         val sum = mlModel + ruleBased + recency + trending
         require(sum in 0.99f..1.01f) { 

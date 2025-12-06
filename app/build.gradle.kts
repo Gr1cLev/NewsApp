@@ -89,6 +89,9 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.ui)
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
     
     // Hilt
     implementation(libs.hilt.android)

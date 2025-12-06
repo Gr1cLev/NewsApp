@@ -125,4 +125,8 @@
     <string name="logout_confirm_message">Are you sure you want to logout?</string>
     <string name="logout_confirm_yes">Yes</string>
     <string name="logout_confirm_no">No</string>
+    <string name="toast_download_starting">Menyiapkan unduhan PDF...</string>
+    <string name="toast_notification_permission_needed">Izinkan notifikasi agar unduhan berjalan.</string>
+    <string name="toast_download_storage_permission_denied">Izin penyimpanan dibutuhkan untuk menyimpan PDF.</string>
+    <string name="toast_download_success">PDF berhasil disimpan.</string>
 </resources>

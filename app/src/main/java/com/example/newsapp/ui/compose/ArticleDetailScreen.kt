@@ -1,7 +1,12 @@
 package com.example.newsapp.ui.compose
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
+import android.os.Build
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -58,6 +63,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.newsapp.R
@@ -65,11 +71,17 @@ import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.data.firebase.UserInteractionRepository
 import com.example.newsapp.di.FirebaseEntryPoint
 import com.example.newsapp.model.NewsArticle
+import com.example.newsapp.work.ArticlePdfDownloadWorker
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,6 +94,7 @@ fun ArticleDetailScreen(
     val context = LocalContext.current
     var isBookmarked by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+    val workManager = remember(context) { WorkManager.getInstance(context) }
 
     // Get UserInteractionRepository from Hilt for tracking
     val userInteractionRepository = remember {
@@ -175,6 +188,84 @@ fun ArticleDetailScreen(
 
     val currentArticle = article!!
     val detailSurfaceColor = MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
+    val enqueueDownload = remember(currentArticle, workManager, context) {
+        {
+            val request = OneTimeWorkRequestBuilder<ArticlePdfDownloadWorker>()
+                .setInputData(
+                    workDataOf(ArticlePdfDownloadWorker.KEY_ARTICLE_ID to currentArticle.id)
+                )
+                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                .build()
+            workManager.enqueueUniqueWork(
+                "download-article-${currentArticle.id}",
+                ExistingWorkPolicy.REPLACE,
+                request
+            )
+            Toast.makeText(
+                context,
+                context.getString(R.string.toast_download_starting),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    fun needsNotificationPermission(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+
+    fun needsLegacyStoragePermission(): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
+
+    val storagePermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            enqueueDownload()
+        } else {
+            Toast.makeText(
+                context,
+                context.getString(R.string.toast_download_storage_permission_denied),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            if (needsLegacyStoragePermission()) {
+                storagePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            } else {
+                enqueueDownload()
+            }
+        } else {
+            Toast.makeText(
+                context,
+                context.getString(R.string.toast_notification_permission_needed),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    val startDownloadWithPermissions = remember(currentArticle) {
+        {
+            when {
+                needsNotificationPermission() ->
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                needsLegacyStoragePermission() ->
+                    storagePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                else -> enqueueDownload()
+            }
+        }
+    }
 
     DetailBackground {
         Column(
@@ -264,7 +355,8 @@ fun ArticleDetailScreen(
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
-                        }
+                        },
+                        onDownload = { startDownloadWithPermissions() }
                     )
                 }
             }
@@ -371,9 +463,9 @@ private fun AiInsightSection(article: NewsArticle) {
 @Composable
 private fun ActionRow(
     isBookmarked: Boolean,
-    onBookmarkToggle: () -> Unit
+    onBookmarkToggle: () -> Unit,
+    onDownload: () -> Unit
 ) {
-    val context = LocalContext.current
     val bookmarkLabel = stringResource(
         if (isBookmarked) R.string.action_remove_bookmark else R.string.action_add_bookmark
     )
@@ -396,13 +488,7 @@ private fun ActionRow(
             )
         }
         FilledTonalButton(
-            onClick = {
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.toast_download_unavailable),
-                    Toast.LENGTH_SHORT
-                ).show()
-            },
+            onClick = onDownload,
             shape = RoundedCornerShape(18.dp),
             modifier = Modifier.weight(1f)
         ) {
