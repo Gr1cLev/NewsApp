@@ -33,6 +33,18 @@ service cloud.firestore {
       allow write: if request.auth != null; // Any authenticated user can cache articles
     }
     
+    // ML models metadata - public read, no write (managed via Cloud Functions or manual)
+    // This collection stores ML model version info for client downloads
+    match /ml_models/{modelId} {
+      allow read: if true; // Public read so app can check for new models
+      allow write: if false; // No client writes, managed server-side
+    }
+    
+    // ML training logs - no client access (admin only)
+    match /ml_training_logs/{logId} {
+      allow read, write: if false;
+    }
+    
     // Default: deny all other access
     match /{document=**} {
       allow read, write: if false;

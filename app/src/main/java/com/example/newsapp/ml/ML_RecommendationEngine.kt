@@ -39,7 +39,7 @@ class ML_RecommendationEngine @Inject constructor(
     
     /**
      * Initialize the recommendation engine
-     * Loads cached model or falls back to rule-based only
+     * Loads cached model or downloads from Firestore (FREE!)
      */
     suspend fun initialize() {
         android.util.Log.d(TAG, "Initializing recommendation engine...")
@@ -50,10 +50,21 @@ class ML_RecommendationEngine @Inject constructor(
             currentModel = cachedModel
             isModelLoaded = true
             _modelStatus.value = ModelStatus.Loaded(cachedModel.version)
-            android.util.Log.d(TAG, "✅ ML model loaded: version=${cachedModel.version}")
+            android.util.Log.d(TAG, "✅ ML model loaded from cache: version=${cachedModel.version}")
+            
+            // Check for updates in background (non-blocking)
+            try {
+                if (modelDownloader.isUpdateAvailable()) {
+                    android.util.Log.d(TAG, "🔄 New model version available, downloading...")
+                    updateModel(forceDownload = true)
+                }
+            } catch (e: Exception) {
+                android.util.Log.w(TAG, "Failed to check for model updates", e)
+            }
         } else {
-            _modelStatus.value = ModelStatus.NotLoaded
-            android.util.Log.d(TAG, "⚠️ No ML model available, using rule-based only")
+            android.util.Log.d(TAG, "📥 No cached model, downloading from Firestore...")
+            // No cache, download from Firestore immediately
+            updateModel(forceDownload = false)
         }
     }
     

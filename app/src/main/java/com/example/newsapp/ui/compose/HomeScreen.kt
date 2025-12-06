@@ -499,7 +499,6 @@ private fun SearchTab(
     // Get ML-powered recommendations from ViewModel
     val recommendedArticles by searchViewModel.recommendedArticles.collectAsState()
     val isLoadingRecommendations by searchViewModel.isLoadingRecommendations.collectAsState()
-    val modelStatus by searchViewModel.modelStatus.collectAsState()
     
     // Pull-to-refresh state
     var isRefreshing by remember { mutableStateOf(false) }
@@ -553,15 +552,6 @@ private fun SearchTab(
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 // ML Recommendations Section
                 SectionTitle("✨ Recommended for You")
-                
-                // Model status badge (small, subtle)
-                Text(
-                    text = modelStatus,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                
                 // Loading state
                 if (isLoadingRecommendations) {
                     repeat(3) {

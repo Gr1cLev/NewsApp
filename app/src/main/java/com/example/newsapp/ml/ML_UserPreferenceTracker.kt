@@ -453,7 +453,7 @@ class ML_UserPreferenceTracker @Inject constructor(
         // Thresholds
         private const val MIN_READING_TIME_SECONDS = 5L
         private const val MAX_RECENT_ARTICLES = 20
-        private const val MIN_INTERACTIONS_FOR_ML = 10
+        private const val MIN_INTERACTIONS_FOR_ML = 70
         
         // Default categories for balanced initialization
         val DEFAULT_CATEGORIES = listOf(

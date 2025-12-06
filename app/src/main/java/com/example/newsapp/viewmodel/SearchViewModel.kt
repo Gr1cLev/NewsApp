@@ -72,6 +72,10 @@ class SearchViewModel @Inject constructor(
     init {
         loadSuggestions()
         loadAllArticles()
+        // Initialize ML engine (downloads model from Firestore if needed)
+        viewModelScope.launch {
+            recommendationEngine.initialize()
+        }
         loadRecommendations()
         observeModelStatus()
     }
@@ -226,7 +230,7 @@ class SearchViewModel @Inject constructor(
                 )
                 
                 // Choose scoring weights based on user preference data
-                val weights = if (totalInteractions < 10) {
+                val weights = if (totalInteractions < 70) {
                     // New user: prefer rule-based (cold start)
                     android.util.Log.d("SearchViewModel", "⚙️ Using RULE_HEAVY weights (cold start)")
                     ML_ScoringWeights.RULE_HEAVY

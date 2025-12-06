@@ -1,8 +1,7 @@
 package com.example.newsapp.ml
 
 import android.content.Context
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.tasks.await
 import java.io.File
@@ -10,24 +9,24 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Downloads and manages ML model artifacts from Firebase Storage
+ * Downloads and manages ML model artifacts from Firestore (FREE!)
  * 
  * Responsibilities:
- * - Download model from Firebase Storage
+ * - Fetch model from Firestore collection
  * - Cache model locally
  * - Check for updates
  * - Manage model versions
  * 
- * Download strategy:
- * - Check local cache first
- * - Download only if new version available
- * - Background download (non-blocking)
- * - WiFi-only option for large models
+ * Advantages over Firebase Storage:
+ * - ✅ FREE on Spark Plan (1 GB + 50K reads/day)
+ * - ✅ No file download needed (direct query)
+ * - ✅ Real-time updates
+ * - ✅ Simpler code
  */
 @Singleton
 class ML_ModelDownloader @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val storage: FirebaseStorage
+    private val firestore: FirebaseFirestore
 ) {
     
     private val modelCache: File by lazy {
@@ -37,7 +36,7 @@ class ML_ModelDownloader @Inject constructor(
     }
     
     /**
-     * Download latest model from Firebase Storage
+     * Download latest model from Firestore (FREE!)
      * 
      * @param forceDownload If true, download even if cached version exists
      * @return Downloaded model artifacts or null if download fails
@@ -53,24 +52,26 @@ class ML_ModelDownloader @Inject constructor(
                 }
             }
             
-            android.util.Log.d(TAG, "Downloading model from Firebase Storage...")
+            android.util.Log.d(TAG, "Fetching model from Firestore...")
             
-            // Get reference to model file
-            val modelRef: StorageReference = storage.reference
-                .child(MODEL_STORAGE_PATH)
+            // Get model document from Firestore
+            val modelDoc = firestore.collection(MODEL_COLLECTION)
+                .document(MODEL_DOCUMENT_ID)
+                .get()
+                .await()
             
-            // Download to local file
-            val localFile = File(modelCache, MODEL_FILENAME)
-            modelRef.getFile(localFile).await()
+            if (!modelDoc.exists()) {
+                android.util.Log.e(TAG, "Model document not found in Firestore")
+                return Result.failure(Exception("Model not found"))
+            }
             
-            android.util.Log.d(TAG, "Model downloaded: ${localFile.length()} bytes")
+            android.util.Log.d(TAG, "Model fetched from Firestore")
             
-            // Parse JSON
-            val json = localFile.readText()
-            val model = ML_ModelArtifacts.fromJson(json)
+            // Parse model data
+            val model = ML_ModelArtifacts.fromFirestore(modelDoc.data)
             
             if (model == null) {
-                android.util.Log.e(TAG, "Failed to parse model JSON")
+                android.util.Log.e(TAG, "Failed to parse model from Firestore")
                 return Result.failure(Exception("Invalid model format"))
             }
             
@@ -79,6 +80,9 @@ class ML_ModelDownloader @Inject constructor(
                 android.util.Log.e(TAG, "Model validation failed")
                 return Result.failure(Exception("Model validation failed"))
             }
+            
+            // Save to local cache for offline use
+            saveToCache(model)
             
             // Save version info
             saveVersionInfo(model.version, model.trainedAt)
@@ -94,14 +98,18 @@ class ML_ModelDownloader @Inject constructor(
     }
     
     /**
-     * Check if newer model version is available
+     * Check if newer model version is available in Firestore
      */
     suspend fun isUpdateAvailable(): Boolean {
         return try {
-            val modelRef = storage.reference.child(MODEL_STORAGE_PATH)
-            val metadata = modelRef.metadata.await()
+            val modelDoc = firestore.collection(MODEL_COLLECTION)
+                .document(MODEL_DOCUMENT_ID)
+                .get()
+                .await()
             
-            val remoteVersion = metadata.getCustomMetadata("version") ?: return false
+            if (!modelDoc.exists()) return false
+            
+            val remoteVersion = modelDoc.getString("version") ?: return false
             val localVersion = getLocalVersion()
             
             remoteVersion != localVersion
@@ -154,6 +162,20 @@ class ML_ModelDownloader @Inject constructor(
     }
     
     /**
+     * Save model to local cache
+     */
+    private fun saveToCache(model: ML_ModelArtifacts) {
+        try {
+            val localFile = File(modelCache, MODEL_FILENAME)
+            val json = model.toJson()
+            localFile.writeText(json)
+            android.util.Log.d(TAG, "Model saved to cache: ${localFile.length()} bytes")
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Failed to save model to cache", e)
+        }
+    }
+    
+    /**
      * Get locally cached model version
      */
     private fun getLocalVersion(): String? {
@@ -202,8 +224,9 @@ class ML_ModelDownloader @Inject constructor(
     companion object {
         private const val TAG = "ML_ModelDownloader"
         
-        // Firebase Storage path
-        private const val MODEL_STORAGE_PATH = "ml_models/recommendation_model_v1.json"
+        // Firestore collection and document
+        private const val MODEL_COLLECTION = "ml_models"
+        private const val MODEL_DOCUMENT_ID = "recommendation_model_v1"
         
         // Local cache
         private const val MODEL_CACHE_DIR = "ml_models"

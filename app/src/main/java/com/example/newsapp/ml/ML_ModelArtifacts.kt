@@ -168,6 +168,96 @@ data class ML_ModelArtifacts(
         }
         
         /**
+         * Parse from Firestore document data (from Python training notebook)
+         * 
+         * Expected structure:
+         * {
+         *   "version": "v20251206_181659",
+         *   "createdAt": "2025-12-06T18:16:59",
+         *   "algorithmType": "collaborative_filtering_svd",
+         *   "nComponents": 1,
+         *   "trainingStats": {...},
+         *   "categoryWeights": [...],
+         *   "userFactors": [{"userId": "...", "factors": [...]}, ...],
+         *   "articleFactors": [{"articleId": "...", "factors": [...]}, ...]
+         * }
+         */
+        fun fromFirestore(data: Map<String, Any>?): ML_ModelArtifacts? {
+            if (data == null) return null
+            
+            return try {
+                // Extract basic fields
+                val version = data["version"] as? String ?: "unknown"
+                val createdAt = data["createdAt"] as? String ?: ""
+                val nComponents = (data["nComponents"] as? Number)?.toInt() ?: 50
+                
+                // Parse training stats
+                val trainingStats = data["trainingStats"] as? Map<String, Any> ?: emptyMap()
+                val totalUsers = (trainingStats["totalUsers"] as? Number)?.toInt() ?: 0
+                val totalArticles = (trainingStats["totalArticles"] as? Number)?.toInt() ?: 0
+                val totalInteractions = (trainingStats["totalInteractions"] as? Number)?.toInt() ?: 0
+                
+                // Parse user factors
+                val userFactorsList = data["userFactors"] as? List<Map<String, Any>> ?: emptyList()
+                val userEmbeddings = mutableMapOf<String, List<Float>>()
+                for (userFactor in userFactorsList) {
+                    val userId = userFactor["userId"] as? String ?: continue
+                    val factors = userFactor["factors"] as? List<*>
+                    val floatFactors = factors?.mapNotNull { 
+                        when (it) {
+                            is Number -> it.toFloat()
+                            else -> null
+                        }
+                    } ?: continue
+                    userEmbeddings[userId] = floatFactors
+                }
+                
+                // Parse article factors
+                val articleFactorsList = data["articleFactors"] as? List<Map<String, Any>> ?: emptyList()
+                val articleEmbeddings = mutableMapOf<String, List<Float>>()
+                for (articleFactor in articleFactorsList) {
+                    val articleId = articleFactor["articleId"] as? String ?: continue
+                    val factors = articleFactor["factors"] as? List<*>
+                    val floatFactors = factors?.mapNotNull {
+                        when (it) {
+                            is Number -> it.toFloat()
+                            else -> null
+                        }
+                    } ?: continue
+                    articleEmbeddings[articleId] = floatFactors
+                }
+                
+                // Parse timestamp from ISO string
+                val trainedAtMillis = try {
+                    java.time.Instant.parse(createdAt).toEpochMilli()
+                } catch (e: Exception) {
+                    System.currentTimeMillis()
+                }
+                
+                android.util.Log.d(TAG, "Parsed Firestore model: users=${userEmbeddings.size}, articles=${articleEmbeddings.size}")
+                
+                ML_ModelArtifacts(
+                    userEmbeddings = userEmbeddings,
+                    articleEmbeddings = articleEmbeddings,
+                    userBiases = emptyMap(), // SVD model doesn't use biases
+                    articleBiases = emptyMap(),
+                    globalMean = 0f,
+                    version = version,
+                    trainedAt = trainedAtMillis,
+                    accuracy = 0f,
+                    embeddingDimension = nComponents,
+                    userCount = totalUsers,
+                    articleCount = totalArticles,
+                    interactionCount = totalInteractions
+                )
+                
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Failed to parse Firestore model", e)
+                null
+            }
+        }
+        
+        /**
          * Create empty/default model (for cold start)
          */
         fun createDefault(): ML_ModelArtifacts {
