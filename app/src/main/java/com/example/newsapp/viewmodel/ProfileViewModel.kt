@@ -3,7 +3,7 @@ package com.example.newsapp.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.newsapp.data.ProfileRepository
+import com.example.newsapp.data.firebase.FirebaseAuthRepository
 import com.example.newsapp.model.UserProfile
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -15,11 +15,12 @@ import javax.inject.Inject
 
 /**
  * ViewModel for Profile/Auth
- * Manages user authentication state and profile data
+ * Manages user authentication state and profile data using Firebase
  */
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val firebaseAuthRepository: FirebaseAuthRepository
 ) : ViewModel() {
 
     // Auth state
@@ -39,176 +40,48 @@ class ProfileViewModel @Inject constructor(
     }
 
     /**
-     * Check current authentication status
+     * Check current authentication status from Firebase
      */
     private fun checkAuthStatus() {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
-            try {
-                val profile = ProfileRepository.getActiveProfile(context)
-                if (profile != null) {
-                    _userProfile.value = profile
-                    _authState.value = AuthState.Authenticated(profile)
-                } else {
-                    _authState.value = AuthState.Guest
-                }
-            } catch (e: Exception) {
+            
+            val currentUser = firebaseAuthRepository.getCurrentUser()
+            if (currentUser != null) {
+                // Create UserProfile from Firebase User
+                val profile = UserProfile(
+                    id = currentUser.uid,
+                    firstName = currentUser.displayName?.split(" ")?.getOrNull(0) ?: "",
+                    lastName = currentUser.displayName?.split(" ")?.getOrNull(1) ?: "",
+                    email = currentUser.email ?: "",
+                    password = "" // Not stored for security
+                )
+                _userProfile.value = profile
+                _authState.value = AuthState.Authenticated(profile)
+            } else {
                 _authState.value = AuthState.Guest
             }
         }
     }
 
     /**
-     * Login with email and password
+     * Refresh auth state (call after login/register from LoginScreen)
      */
-    fun login(email: String, password: String) {
-        viewModelScope.launch {
-            _authState.value = AuthState.Loading
-            _errorMessage.value = null
-            
-            try {
-                // Validate inputs
-                if (email.isBlank() || !email.contains("@")) {
-                    _errorMessage.value = "Please enter a valid email"
-                    _authState.value = AuthState.Guest
-                    return@launch
-                }
-                
-                if (password.length < 3) {
-                    _errorMessage.value = "Password must be at least 3 characters"
-                    _authState.value = AuthState.Guest
-                    return@launch
-                }
-                
-                // Attempt login
-                val result = ProfileRepository.authenticate(context, email, password)
-                result.fold(
-                    onSuccess = { profile ->
-                        _userProfile.value = profile
-                        _authState.value = AuthState.Authenticated(profile)
-                    },
-                    onFailure = { e ->
-                        _errorMessage.value = e.message ?: "Invalid email or password"
-                        _authState.value = AuthState.Guest
-                    }
-                )
-            } catch (e: Exception) {
-                _errorMessage.value = e.message ?: "Login failed"
-                _authState.value = AuthState.Guest
-            }
-        }
+    fun refreshAuthState() {
+        checkAuthStatus()
     }
-
-    /**
-     * Register new user
-     */
-    fun register(firstName: String, lastName: String, email: String, password: String) {
-        viewModelScope.launch {
-            _authState.value = AuthState.Loading
-            _errorMessage.value = null
-            
-            try {
-                // Validate inputs
-                if (firstName.isBlank() || lastName.isBlank()) {
-                    _errorMessage.value = "Please enter your name"
-                    _authState.value = AuthState.Guest
-                    return@launch
-                }
-                
-                if (email.isBlank() || !email.contains("@")) {
-                    _errorMessage.value = "Please enter a valid email"
-                    _authState.value = AuthState.Guest
-                    return@launch
-                }
-                
-                if (password.length < 3) {
-                    _errorMessage.value = "Password must be at least 3 characters"
-                    _authState.value = AuthState.Guest
-                    return@launch
-                }
-                
-                // Register new profile
-                val result = ProfileRepository.registerProfile(
-                    context = context,
-                    firstName = firstName,
-                    lastName = lastName,
-                    email = email,
-                    password = password
-                )
-                
-                result.fold(
-                    onSuccess = { profile ->
-                        _userProfile.value = profile
-                        _authState.value = AuthState.Authenticated(profile)
-                    },
-                    onFailure = { e ->
-                        _errorMessage.value = e.message ?: "Registration failed"
-                        _authState.value = AuthState.Guest
-                    }
-                )
-            } catch (e: Exception) {
-                _errorMessage.value = e.message ?: "Registration failed"
-                _authState.value = AuthState.Guest
-            }
-        }
-    }
-
+    
     /**
      * Logout current user
      */
     fun logout() {
         viewModelScope.launch {
             try {
-                ProfileRepository.logout(context)
+                firebaseAuthRepository.signOut()
                 _userProfile.value = null
                 _authState.value = AuthState.Guest
             } catch (e: Exception) {
                 _errorMessage.value = e.message ?: "Logout failed"
-            }
-        }
-    }
-
-    /**
-     * Update user profile
-     */
-    fun updateProfile(firstName: String, lastName: String, email: String, password: String?) {
-        viewModelScope.launch {
-            _errorMessage.value = null
-            
-            try {
-                val currentProfile = _userProfile.value ?: return@launch
-                
-                // Validate inputs
-                if (firstName.isBlank() || lastName.isBlank()) {
-                    _errorMessage.value = "Please enter your name"
-                    return@launch
-                }
-                
-                if (email.isBlank() || !email.contains("@")) {
-                    _errorMessage.value = "Please enter a valid email"
-                    return@launch
-                }
-                
-                // Create updated profile
-                val updatedProfile = currentProfile.copy(
-                    firstName = firstName,
-                    lastName = lastName,
-                    email = email,
-                    password = if (!password.isNullOrBlank()) password else currentProfile.password
-                )
-                
-                val result = ProfileRepository.updateActiveProfile(context, updatedProfile)
-                result.fold(
-                    onSuccess = { profile ->
-                        _userProfile.value = profile
-                        _authState.value = AuthState.Authenticated(profile)
-                    },
-                    onFailure = { e ->
-                        _errorMessage.value = e.message ?: "Profile update failed"
-                    }
-                )
-            } catch (e: Exception) {
-                _errorMessage.value = e.message ?: "Profile update failed"
             }
         }
     }

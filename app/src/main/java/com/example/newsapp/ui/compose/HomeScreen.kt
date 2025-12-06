@@ -424,18 +424,24 @@ private fun NewsTab(
                 contentPadding = PaddingValues(vertical = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Featured articles (only on "All" category)
-                if (newsData.featuredArticles.isNotEmpty() && selectedCategory.equals("All", ignoreCase = true)) {
+                // Featured articles - filter by selected category
+                val featuredForCategory = if (selectedCategory.equals("Top", ignoreCase = true)) {
+                    // Show personalized featured for "Top"
+                    if (personalizedFeatured.isNotEmpty()) {
+                        personalizedFeatured
+                    } else {
+                        newsData.featuredArticles
+                    }
+                } else {
+                    // Filter featured by selected category
+                    categoryArticles.filter { it.isFeatured }
+                }
+                
+                if (featuredForCategory.isNotEmpty()) {
                     item { SectionTitle("Featured") }
                     item {
-                        // Use personalized featured if available, fallback to original
-                        val featuredToShow = if (personalizedFeatured.isNotEmpty()) {
-                            personalizedFeatured
-                        } else {
-                            newsData.featuredArticles
-                        }
                         FeaturedCarousel(
-                            articles = featuredToShow,
+                            articles = featuredForCategory,
                             onArticleClick = onArticleClick
                         )
                     }
@@ -454,8 +460,8 @@ private fun NewsTab(
 
                 item { SectionTitle("For You") }
 
-                // Articles list - use personalized for "All", categoryArticles for specific categories
-                val articlesToShow = if (selectedCategory.equals("All", ignoreCase = true) && personalizedArticles.isNotEmpty()) {
+                // Articles list - use personalized for "Top", categoryArticles for specific categories
+                val articlesToShow = if (selectedCategory.equals("Top", ignoreCase = true) && personalizedArticles.isNotEmpty()) {
                     personalizedArticles
                 } else {
                     categoryArticles

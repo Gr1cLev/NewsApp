@@ -173,9 +173,9 @@ class SearchViewModel @Inject constructor(
     }
 
     /**
-     * Get bookmarked article IDs
+     * Get bookmarked article IDs (suspend function for Firestore access)
      */
-    fun getBookmarkedIds(): Set<Int> {
+    suspend fun getBookmarkedIds(): Set<Int> {
         return newsRepository.getBookmarks().map { it.id }.toSet()
     }
 
@@ -284,7 +284,7 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             recommendationEngine.modelStatus.collect { status ->
                 _modelStatus.value = when (status) {
-                    is ML_RecommendationEngine.ModelStatus.NotLoaded -> "No ML model (using rules)"
+                    is ML_RecommendationEngine.ModelStatus.NotLoaded -> ""
                     is ML_RecommendationEngine.ModelStatus.Downloading -> "Downloading ML model..."
                     is ML_RecommendationEngine.ModelStatus.Loaded -> "ML model ready (v${status.version})"
                     is ML_RecommendationEngine.ModelStatus.Error -> "ML model error: ${status.message}"
@@ -304,7 +304,6 @@ class SearchViewModel @Inject constructor(
             )
             userPreferenceTracker.onArticleClicked(article)
             // Reload recommendations after interaction
-            delay(200) // Small delay to let preference update
             loadRecommendations()
         }
     }
@@ -320,7 +319,6 @@ class SearchViewModel @Inject constructor(
             )
             userPreferenceTracker.onArticleBookmarked(article, isBookmarked = true)
             // Reload recommendations after interaction
-            delay(200)
             loadRecommendations()
         }
     }

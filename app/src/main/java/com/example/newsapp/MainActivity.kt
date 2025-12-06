@@ -39,18 +39,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         newsRepository.invalidateCache()
         
-        // Initialize Firebase Anonymous Auth for Analytics
+        // Log current Firebase Auth state (do NOT override existing auth)
         lifecycleScope.launch {
-            if (!firebaseAuthRepository.isUserAuthenticated()) {
-                Log.d("MainActivity", "🔐 Initializing Firebase Anonymous Auth...")
-                val result = firebaseAuthRepository.signInAnonymously()
-                result.onSuccess { user ->
-                    Log.d("MainActivity", "✅ Firebase Anonymous Auth: ${user.uid}")
-                }.onFailure { error ->
-                    Log.e("MainActivity", "❌ Firebase Auth failed: ${error.message}")
-                }
+            val currentUser = firebaseAuthRepository.getCurrentUser()
+            if (currentUser != null) {
+                val authMethod = if (currentUser.isAnonymous) "Anonymous" else "Authenticated"
+                Log.d("MainActivity", "✅ Firebase User ($authMethod): ${currentUser.uid}")
             } else {
-                Log.d("MainActivity", "✅ Firebase User: ${firebaseAuthRepository.getCurrentUserId()}")
+                Log.d("MainActivity", "⚠️ No Firebase user logged in")
             }
         }
         

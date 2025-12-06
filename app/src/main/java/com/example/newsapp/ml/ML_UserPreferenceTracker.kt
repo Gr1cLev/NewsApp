@@ -3,10 +3,16 @@ package com.example.newsapp.ml
 import android.content.Context
 import android.content.SharedPreferences
 import com.example.newsapp.model.NewsArticle
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.min
@@ -17,6 +23,11 @@ import kotlin.math.min
  * This component updates immediately when user interacts with articles,
  * providing instant response without waiting for ML model retraining.
  * 
+ * Features:
+ * - Per-user preference isolation (userId prefix)
+ * - Firestore sync for cross-device persistence
+ * - Reactive to auth state changes
+ * 
  * Tracked metrics:
  * - Category preferences (which categories user likes)
  * - Reading patterns (time spent per category)
@@ -25,24 +36,61 @@ import kotlin.math.min
  */
 @Singleton
 class ML_UserPreferenceTracker @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val firebaseAuth: FirebaseAuth,
+    private val firestore: FirebaseFirestore
 ) {
     
-    private val prefs: SharedPreferences by lazy {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    }
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
     
-    // Category scores (higher = more interested)
-    private val _categoryScores = MutableStateFlow<Map<String, Float>>(loadCategoryScores())
+    @Volatile
+    private var currentUserId: String? = null
+    
+    private val prefs: SharedPreferences
+        get() {
+            val userId = currentUserId ?: firebaseAuth.currentUser?.uid ?: "guest"
+            return context.getSharedPreferences("${PREFS_NAME}_$userId", Context.MODE_PRIVATE)
+        }
+    
+    // Category scores (higher = more interested) - MUST be initialized BEFORE init block!
+    private val _categoryScores = MutableStateFlow<Map<String, Float>>(emptyMap())
     val categoryScores: StateFlow<Map<String, Float>> = _categoryScores.asStateFlow()
     
     // Recent articles (for recency boost)
-    private val _recentArticles = MutableStateFlow<List<String>>(loadRecentArticles())
+    private val _recentArticles = MutableStateFlow<List<String>>(emptyList())
     val recentArticles: StateFlow<List<String>> = _recentArticles.asStateFlow()
     
     // Total interactions count
-    private val _totalInteractions = MutableStateFlow(loadTotalInteractions())
+    private val _totalInteractions = MutableStateFlow(0)
     val totalInteractions: StateFlow<Int> = _totalInteractions.asStateFlow()
+    
+    init {
+        // Listen to auth state changes
+        firebaseAuth.addAuthStateListener { auth ->
+            val newUserId = auth.currentUser?.uid
+            if (newUserId != currentUserId) {
+                android.util.Log.d(TAG, "Auth state changed: $currentUserId -> $newUserId")
+                
+                // IMPORTANT: Clear StateFlows immediately to prevent showing old user's data
+                _categoryScores.value = emptyMap()
+                _recentArticles.value = emptyList()
+                _totalInteractions.value = 0
+                
+                currentUserId = newUserId
+                
+                // Reload preferences for new user
+                coroutineScope.launch {
+                    loadPreferencesForCurrentUser()
+                }
+            }
+        }
+        
+        // Initial load - load preferences for current user
+        coroutineScope.launch {
+            currentUserId = firebaseAuth.currentUser?.uid
+            loadPreferencesForCurrentUser()
+        }
+    }
     
     /**
      * Track article click - increment category preference
@@ -72,6 +120,9 @@ class ML_UserPreferenceTracker @Inject constructor(
         saveCategoryScores(currentScores)
         saveRecentArticles(recentList)
         saveTotalInteractions(_totalInteractions.value)
+        
+        // Sync to Firestore (non-blocking)
+        syncToFirestore()
         
         android.util.Log.d(TAG, "Article clicked: ${article.title}, Category: $category, New score: ${currentScores[category]}")
     }
@@ -107,6 +158,9 @@ class ML_UserPreferenceTracker @Inject constructor(
         
         _categoryScores.value = currentScores
         saveCategoryScores(currentScores)
+        
+        // Sync to Firestore
+        syncToFirestore()
         
         android.util.Log.d(TAG, "Article bookmarked: ${article.title}, Category: $category, Bookmarked: $isBookmarked")
     }
@@ -215,6 +269,173 @@ class ML_UserPreferenceTracker @Inject constructor(
             .apply()
     }
     
+    /**
+     * Load preferences for current user from Firestore (with local fallback)
+     */
+    private suspend fun loadPreferencesForCurrentUser() {
+        try {
+            val userId = currentUserId
+            if (userId == null) {
+                android.util.Log.w(TAG, "No user logged in, using empty preferences")
+                clearPreferences()
+                return
+            }
+            
+            android.util.Log.d(TAG, "Loading preferences for user: $userId")
+            
+            // Try Firestore first
+            val firestoreData = try {
+                firestore.collection("user_preferences")
+                    .document(userId)
+                    .collection("ml_data")
+                    .document("preferences")
+                    .get()
+                    .await()
+            } catch (e: Exception) {
+                android.util.Log.w(TAG, "Failed to load from Firestore: ${e.message}")
+                null
+            }
+            
+            if (firestoreData != null && firestoreData.exists()) {
+                // Load from Firestore
+                val categoryScoresMap = firestoreData.get("categoryScores") as? Map<String, Any>
+                val categoryScores = categoryScoresMap?.mapValues { (it.value as? Number)?.toFloat() ?: 0f } ?: emptyMap()
+                val totalInteractions = (firestoreData.get("totalInteractions") as? Number)?.toInt() ?: 0
+                
+                _categoryScores.value = categoryScores
+                _totalInteractions.value = totalInteractions
+                _recentArticles.value = emptyList()
+                
+                // Save to local cache for this userId
+                saveCategoryScores(categoryScores)
+                saveTotalInteractions(totalInteractions)
+                saveRecentArticles(emptyList())
+                
+                android.util.Log.d(TAG, "✅ Loaded preferences from Firestore: ${categoryScores.size} categories, $totalInteractions interactions")
+            } else {
+                // No Firestore data - load from local SharedPreferences (per-userId)
+                val localScores = loadCategoryScores()
+                val localInteractions = loadTotalInteractions()
+                val localRecent = loadRecentArticles()
+                
+                _categoryScores.value = localScores
+                _totalInteractions.value = localInteractions
+                _recentArticles.value = localRecent
+                
+                if (localScores.isEmpty()) {
+                    android.util.Log.d(TAG, "🆕 New user - starting with empty preferences")
+                } else {
+                    android.util.Log.d(TAG, "📱 Loaded preferences from local storage: ${localScores.size} categories")
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Error loading preferences: ${e.message}", e)
+            clearPreferences()
+        }
+    }
+    
+    /**
+     * Sync current preferences to Firestore
+     */
+    private fun syncToFirestore() {
+        val userId = currentUserId ?: return
+        
+        coroutineScope.launch {
+            try {
+                val data = hashMapOf(
+                    "categoryScores" to _categoryScores.value,
+                    "totalInteractions" to _totalInteractions.value,
+                    "lastUpdated" to com.google.firebase.Timestamp.now(),
+                    "version" to 1
+                )
+                
+                firestore.collection("user_preferences")
+                    .document(userId)
+                    .collection("ml_data")
+                    .document("preferences")
+                    .set(data)
+                    .await()
+                
+                android.util.Log.d(TAG, "☁️ Synced preferences to Firestore for user: $userId")
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Failed to sync to Firestore: ${e.message}", e)
+            }
+        }
+    }
+    
+    /**
+     * Clear all preferences (on logout)
+     */
+    fun clearPreferences() {
+        _categoryScores.value = emptyMap()
+        _recentArticles.value = emptyList()
+        _totalInteractions.value = 0
+        
+        // Clear local storage
+        prefs.edit().clear().apply()
+        
+        android.util.Log.d(TAG, "🗑️ Cleared all preferences")
+    }
+    
+    /**
+     * Initialize balanced preferences for new user
+     * All categories start with equal weight (5.0) for fair recommendations
+     */
+    suspend fun initializeBalancedPreferences(userId: String) {
+        try {
+            // Check if preferences already exist
+            val existingData = firestore.collection("user_preferences")
+                .document(userId)
+                .collection("ml_data")
+                .document("preferences")
+                .get()
+                .await()
+            
+            if (existingData.exists()) {
+                android.util.Log.d(TAG, "⚠️ Preferences already exist for user: $userId")
+                return
+            }
+            
+            // Create balanced initial preferences
+            val balancedScores = mapOf(
+                "Sports" to 5.0f,
+                "Business" to 5.0f,
+                "Technology" to 5.0f,
+                "Health" to 5.0f,
+                "Entertainment" to 5.0f
+            )
+            
+            val initialData = hashMapOf(
+                "categoryScores" to balancedScores,
+                "totalInteractions" to 0,
+                "lastUpdated" to com.google.firebase.Timestamp.now(),
+                "version" to 1
+            )
+            
+            // Save to Firestore
+            firestore.collection("user_preferences")
+                .document(userId)
+                .collection("ml_data")
+                .document("preferences")
+                .set(initialData)
+                .await()
+            
+            // Update local StateFlows
+            _categoryScores.value = balancedScores
+            _totalInteractions.value = 0
+            _recentArticles.value = emptyList()
+            
+            // Save to local cache
+            saveCategoryScores(balancedScores)
+            saveTotalInteractions(0)
+            saveRecentArticles(emptyList())
+            
+            android.util.Log.d(TAG, "✅ Initialized balanced preferences for new user: $userId")
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Failed to initialize preferences: ${e.message}", e)
+        }
+    }
+    
     companion object {
         private const val TAG = "ML_UserPreferenceTracker"
         private const val PREFS_NAME = "ml_user_preferences"
@@ -233,5 +454,11 @@ class ML_UserPreferenceTracker @Inject constructor(
         private const val MIN_READING_TIME_SECONDS = 5L
         private const val MAX_RECENT_ARTICLES = 20
         private const val MIN_INTERACTIONS_FOR_ML = 10
+        
+        // Default categories for balanced initialization
+        val DEFAULT_CATEGORIES = listOf(
+            "Sports", "Business", "Technology", "Health", "Entertainment"
+        )
+        const val BALANCED_INITIAL_SCORE = 5.0f
     }
 }

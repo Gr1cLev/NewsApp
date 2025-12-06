@@ -32,7 +32,7 @@ class NewsViewModel @Inject constructor(
     val uiState: StateFlow<NewsUiState> = _uiState.asStateFlow()
 
     // Selected category
-    private val _selectedCategory = MutableStateFlow("All")
+    private val _selectedCategory = MutableStateFlow("Top")
     val selectedCategory: StateFlow<String> = _selectedCategory.asStateFlow()
 
     // Category-specific articles
@@ -97,7 +97,7 @@ class NewsViewModel @Inject constructor(
                     categories = newsData.categories
                 )
                 // Refresh current category articles
-                if (_selectedCategory.value.equals("All", ignoreCase = true)) {
+                if (_selectedCategory.value.equals("Top", ignoreCase = true)) {
                     _categoryArticles.value = newsData.articles
                     applyPersonalization(newsData.articles, newsData.featuredArticles)
                 } else {
@@ -118,8 +118,8 @@ class NewsViewModel @Inject constructor(
         _selectedCategory.value = category
         
         viewModelScope.launch {
-            if (category.equals("All", ignoreCase = true)) {
-                // Use cached articles for "All" - apply personalization
+            if (category.equals("Top", ignoreCase = true)) {
+                // Use cached articles for "Top" - apply personalization
                 val currentState = _uiState.value
                 if (currentState is NewsUiState.Success) {
                     _categoryArticles.value = currentState.articles
@@ -135,6 +135,12 @@ class NewsViewModel @Inject constructor(
                     )
                     if (result is Resource.Success) {
                         _categoryArticles.value = result.data
+                        
+                        // Apply personalization to category-specific featured
+                        val currentState = _uiState.value
+                        if (currentState is NewsUiState.Success) {
+                            applyPersonalization(result.data, currentState.featuredArticles)
+                        }
                     } else if (result is Resource.Error) {
                         // Keep existing articles if fetch fails
                         _uiState.value = NewsUiState.Error(result.message ?: "Failed to load category")
@@ -159,16 +165,18 @@ class NewsViewModel @Inject constructor(
             val preferences = userPreferenceTracker.categoryScores.value
             
             if (preferences.isEmpty()) {
-                // No preferences yet - use original order
-                _personalizedFeatured.value = featuredArticles
-                _personalizedArticles.value = articles
+                // No preferences yet (balanced init) - shuffle for random order
+                _personalizedFeatured.value = featuredArticles.shuffled()
+                _personalizedArticles.value = articles.shuffled()
+                android.util.Log.d("NewsViewModel", "🎲 Balanced preferences - articles shuffled randomly")
                 return@launch
             }
             
-            // Sort featured by category preference scores
-            val sortedFeatured = featuredArticles.sortedByDescending { article ->
-                preferences.getOrDefault(article.category, 0f)
-            }
+            // Group featured by category, shuffle within groups, then sort by preference
+            val sortedFeatured = featuredArticles
+                .groupBy { it.category }
+                .flatMap { (_, articlesInCategory) -> articlesInCategory.shuffled() }
+                .sortedByDescending { article -> preferences.getOrDefault(article.category, 0f) }
             
             // Get personalized recommendations for "For You"
             val recommendations = ruleBasedEngine.getRecommendations(
@@ -185,9 +193,9 @@ class NewsViewModel @Inject constructor(
     }
 
     /**
-     * Get bookmarked article IDs
+     * Get bookmarked article IDs (suspend function for Firestore access)
      */
-    fun getBookmarkedIds(): Set<Int> {
+    suspend fun getBookmarkedIds(): Set<Int> {
         return newsRepository.getBookmarks().map { it.id }.toSet()
     }
 }

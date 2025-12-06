@@ -4,7 +4,6 @@ import com.example.newsapp.model.firebase.User
 import com.example.newsapp.model.firebase.UserPreferences
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -19,6 +18,10 @@ class FirebaseAuthRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
     private val firestore: FirebaseFirestore
 ) {
+    
+    // Lazy injection to avoid circular dependency
+    @Inject
+    lateinit var preferenceTracker: com.example.newsapp.ml.ML_UserPreferenceTracker
     
     /**
      * Get current Firebase user
@@ -64,23 +67,6 @@ class FirebaseAuthRepository @Inject constructor(
                 createUserDocument(firebaseUser, displayName)
                 Result.success(firebaseUser)
             } ?: Result.failure(Exception("Registration failed"))
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-    
-    /**
-     * Sign in with Google
-     */
-    suspend fun signInWithGoogle(idToken: String): Result<FirebaseUser> {
-        return try {
-            val credential = GoogleAuthProvider.getCredential(idToken, null)
-            val result = firebaseAuth.signInWithCredential(credential).await()
-            result.user?.let { firebaseUser ->
-                // Create or update user document
-                createOrUpdateUserDocument(firebaseUser)
-                Result.success(firebaseUser)
-            } ?: Result.failure(Exception("Google sign-in failed"))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -148,6 +134,9 @@ class FirebaseAuthRepository @Inject constructor(
             .document(firebaseUser.uid)
             .set(user)
             .await()
+        
+        // Initialize balanced ML preferences for new user
+        preferenceTracker.initializeBalancedPreferences(firebaseUser.uid)
     }
     
     /**
