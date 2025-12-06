@@ -154,6 +154,8 @@ fun HomeScreen(
     val categoryArticles by newsViewModel.categoryArticles.collectAsState()
     val isFetchingCategory by newsViewModel.isFetchingCategory.collectAsState()
     val isRefreshing by newsViewModel.isRefreshing.collectAsState()
+    val personalizedFeatured by newsViewModel.personalizedFeatured.collectAsState()
+    val personalizedArticles by newsViewModel.personalizedArticles.collectAsState()
     
     val searchQuery by searchViewModel.searchQuery.collectAsState()
     val searchResults by searchViewModel.searchResults.collectAsState()
@@ -264,6 +266,8 @@ fun HomeScreen(
                         newsViewModel = newsViewModel,
                         newsData = state,
                         categoryArticles = categoryArticles,
+                        personalizedFeatured = personalizedFeatured,
+                        personalizedArticles = personalizedArticles,
                         selectedCategory = selectedCategory,
                         isFetchingCategory = isFetchingCategory,
                         isRefreshing = isRefreshing,
@@ -398,6 +402,8 @@ private fun NewsTab(
     newsViewModel: NewsViewModel,
     newsData: NewsUiState.Success,
     categoryArticles: List<NewsArticle>,
+    personalizedFeatured: List<NewsArticle>,
+    personalizedArticles: List<NewsArticle>,
     selectedCategory: String,
     isFetchingCategory: Boolean,
     isRefreshing: Boolean,
@@ -422,8 +428,14 @@ private fun NewsTab(
                 if (newsData.featuredArticles.isNotEmpty() && selectedCategory.equals("All", ignoreCase = true)) {
                     item { SectionTitle("Featured") }
                     item {
+                        // Use personalized featured if available, fallback to original
+                        val featuredToShow = if (personalizedFeatured.isNotEmpty()) {
+                            personalizedFeatured
+                        } else {
+                            newsData.featuredArticles
+                        }
                         FeaturedCarousel(
-                            articles = newsData.featuredArticles,
+                            articles = featuredToShow,
                             onArticleClick = onArticleClick
                         )
                     }
@@ -442,8 +454,14 @@ private fun NewsTab(
 
                 item { SectionTitle("For You") }
 
-                // Articles list
-                items(categoryArticles) { article ->
+                // Articles list - use personalized for "All", categoryArticles for specific categories
+                val articlesToShow = if (selectedCategory.equals("All", ignoreCase = true) && personalizedArticles.isNotEmpty()) {
+                    personalizedArticles
+                } else {
+                    categoryArticles
+                }
+                
+                items(articlesToShow) { article ->
                     ArticleCard(
                         article = article,
                         isBookmarked = bookmarkedIds.contains(article.id),

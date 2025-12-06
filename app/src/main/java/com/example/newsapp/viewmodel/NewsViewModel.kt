@@ -3,6 +3,8 @@ package com.example.newsapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.newsapp.data.NewsRepository
+import com.example.newsapp.ml.ML_RuleBasedEngine
+import com.example.newsapp.ml.ML_UserPreferenceTracker
 import com.example.newsapp.model.NewsArticle
 import com.example.newsapp.model.NewsCategory
 import com.example.newsapp.util.Resource
@@ -16,10 +18,13 @@ import javax.inject.Inject
 /**
  * ViewModel for News tab
  * Manages news data, categories, featured articles with StateFlow
+ * Integrates ML recommendations for personalized content
  */
 @HiltViewModel
 class NewsViewModel @Inject constructor(
-    private val newsRepository: NewsRepository
+    private val newsRepository: NewsRepository,
+    private val userPreferenceTracker: ML_UserPreferenceTracker,
+    private val ruleBasedEngine: ML_RuleBasedEngine
 ) : ViewModel() {
 
     // UI State
@@ -42,6 +47,14 @@ class NewsViewModel @Inject constructor(
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
+    // Personalized featured articles (sorted by preference)
+    private val _personalizedFeatured = MutableStateFlow<List<NewsArticle>>(emptyList())
+    val personalizedFeatured: StateFlow<List<NewsArticle>> = _personalizedFeatured.asStateFlow()
+
+    // Personalized articles for "For You" section
+    private val _personalizedArticles = MutableStateFlow<List<NewsArticle>>(emptyList())
+    val personalizedArticles: StateFlow<List<NewsArticle>> = _personalizedArticles.asStateFlow()
+
     init {
         loadNews()
     }
@@ -60,6 +73,9 @@ class NewsViewModel @Inject constructor(
                     categories = newsData.categories
                 )
                 _categoryArticles.value = newsData.articles
+                
+                // Generate personalized content
+                applyPersonalization(newsData.articles, newsData.featuredArticles)
             } catch (e: Exception) {
                 _uiState.value = NewsUiState.Error(e.message ?: "Unknown error")
             }
@@ -83,6 +99,7 @@ class NewsViewModel @Inject constructor(
                 // Refresh current category articles
                 if (_selectedCategory.value.equals("All", ignoreCase = true)) {
                     _categoryArticles.value = newsData.articles
+                    applyPersonalization(newsData.articles, newsData.featuredArticles)
                 } else {
                     selectCategory(_selectedCategory.value)
                 }
@@ -102,10 +119,11 @@ class NewsViewModel @Inject constructor(
         
         viewModelScope.launch {
             if (category.equals("All", ignoreCase = true)) {
-                // Use cached articles for "All"
+                // Use cached articles for "All" - apply personalization
                 val currentState = _uiState.value
                 if (currentState is NewsUiState.Success) {
                     _categoryArticles.value = currentState.articles
+                    applyPersonalization(currentState.articles, currentState.featuredArticles)
                 }
             } else {
                 // Fetch category-specific articles
@@ -127,6 +145,42 @@ class NewsViewModel @Inject constructor(
                     _isFetchingCategory.value = false
                 }
             }
+        }
+    }
+
+    /**
+     * Apply ML-based personalization to articles and featured content
+     */
+    private fun applyPersonalization(
+        articles: List<NewsArticle>,
+        featuredArticles: List<NewsArticle>
+    ) {
+        viewModelScope.launch {
+            val preferences = userPreferenceTracker.categoryScores.value
+            
+            if (preferences.isEmpty()) {
+                // No preferences yet - use original order
+                _personalizedFeatured.value = featuredArticles
+                _personalizedArticles.value = articles
+                return@launch
+            }
+            
+            // Sort featured by category preference scores
+            val sortedFeatured = featuredArticles.sortedByDescending { article ->
+                preferences.getOrDefault(article.category, 0f)
+            }
+            
+            // Get personalized recommendations for "For You"
+            val recommendations = ruleBasedEngine.getRecommendations(
+                articles = articles,
+                count = minOf(articles.size, 50) // Top 50 personalized articles
+            )
+            
+            _personalizedFeatured.value = sortedFeatured
+            _personalizedArticles.value = recommendations.map { it.first }
+            
+            android.util.Log.d("NewsViewModel", "📊 Personalization applied: ${preferences.size} categories tracked")
+            android.util.Log.d("NewsViewModel", "🎯 Top preference: ${preferences.maxByOrNull { it.value }?.key}")
         }
     }
 
