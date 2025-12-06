@@ -3,6 +3,7 @@ package com.example.newsapp.ml
 import android.content.Context
 import android.content.SharedPreferences
 import com.example.newsapp.model.NewsArticle
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,7 +25,7 @@ import kotlin.math.min
  */
 @Singleton
 class ML_UserPreferenceTracker @Inject constructor(
-    private val context: Context
+    @ApplicationContext private val context: Context
 ) {
     
     private val prefs: SharedPreferences by lazy {
@@ -144,6 +145,13 @@ class ML_UserPreferenceTracker @Inject constructor(
      */
     fun hasEnoughDataForML(): Boolean {
         return _totalInteractions.value >= MIN_INTERACTIONS_FOR_ML
+    }
+    
+    /**
+     * Get total number of interactions (for determining user maturity)
+     */
+    fun getTotalInteractions(): Int {
+        return _totalInteractions.value
     }
     
     /**

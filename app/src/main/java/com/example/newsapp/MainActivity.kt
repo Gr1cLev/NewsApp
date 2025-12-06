@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
 import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.data.UserPreferences
+import com.example.newsapp.data.firebase.FirebaseAuthRepository
 import com.example.newsapp.ui.compose.NewsApp
 import com.example.newsapp.ui.theme.NewsAppTheme
 import com.example.newsapp.util.Resource
@@ -24,6 +25,9 @@ class MainActivity : ComponentActivity() {
     
     @Inject
     lateinit var newsRepository: NewsRepository
+    
+    @Inject
+    lateinit var firebaseAuthRepository: FirebaseAuthRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val nightMode = if (UserPreferences.isNightModeEnabled(this)) {
@@ -34,6 +38,21 @@ class MainActivity : ComponentActivity() {
         AppCompatDelegate.setDefaultNightMode(nightMode)
         super.onCreate(savedInstanceState)
         newsRepository.invalidateCache()
+        
+        // Initialize Firebase Anonymous Auth for Analytics
+        lifecycleScope.launch {
+            if (!firebaseAuthRepository.isUserAuthenticated()) {
+                Log.d("MainActivity", "🔐 Initializing Firebase Anonymous Auth...")
+                val result = firebaseAuthRepository.signInAnonymously()
+                result.onSuccess { user ->
+                    Log.d("MainActivity", "✅ Firebase Anonymous Auth: ${user.uid}")
+                }.onFailure { error ->
+                    Log.e("MainActivity", "❌ Firebase Auth failed: ${error.message}")
+                }
+            } else {
+                Log.d("MainActivity", "✅ Firebase User: ${firebaseAuthRepository.getCurrentUserId()}")
+            }
+        }
         
         // DEBUG: Test API call
         lifecycleScope.launch {

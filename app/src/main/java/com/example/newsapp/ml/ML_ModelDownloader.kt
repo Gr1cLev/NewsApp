@@ -3,6 +3,7 @@ package com.example.newsapp.ml
 import android.content.Context
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.tasks.await
 import java.io.File
 import javax.inject.Inject
@@ -25,7 +26,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class ML_ModelDownloader @Inject constructor(
-    private val context: Context,
+    @ApplicationContext private val context: Context,
     private val storage: FirebaseStorage
 ) {
     

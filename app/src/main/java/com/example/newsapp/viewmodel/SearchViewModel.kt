@@ -3,6 +3,10 @@ package com.example.newsapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.newsapp.data.NewsRepository
+import com.example.newsapp.data.firebase.FirebaseAuthRepository
+import com.example.newsapp.ml.ML_RecommendationEngine
+import com.example.newsapp.ml.ML_ScoringWeights
+import com.example.newsapp.ml.ML_UserPreferenceTracker
 import com.example.newsapp.model.NewsArticle
 import com.example.newsapp.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,11 +20,14 @@ import javax.inject.Inject
 
 /**
  * ViewModel for Search tab
- * Manages search query, results, and suggestions
+ * Manages search query, results, suggestions, and ML-powered recommendations
  */
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val newsRepository: NewsRepository
+    private val newsRepository: NewsRepository,
+    private val recommendationEngine: ML_RecommendationEngine,
+    private val userPreferenceTracker: ML_UserPreferenceTracker,
+    private val authRepository: FirebaseAuthRepository
 ) : ViewModel() {
 
     // Search query
@@ -43,8 +50,21 @@ class SearchViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
+    // ML Recommendations state
+    private val _recommendedArticles = MutableStateFlow<List<NewsArticle>>(emptyList())
+    val recommendedArticles: StateFlow<List<NewsArticle>> = _recommendedArticles.asStateFlow()
+
+    // Recommendation loading state
+    private val _isLoadingRecommendations = MutableStateFlow(false)
+    val isLoadingRecommendations: StateFlow<Boolean> = _isLoadingRecommendations.asStateFlow()
+
+    // Model status
+    private val _modelStatus = MutableStateFlow<String>("Initializing...")
+    val modelStatus: StateFlow<String> = _modelStatus.asStateFlow()
+
     // Debounce job for API search
     private var searchJob: Job? = null
+    private var recommendationJob: Job? = null
 
     // All articles for local filtering (fallback)
     private val _allArticles = MutableStateFlow<List<NewsArticle>>(emptyList())
@@ -52,6 +72,8 @@ class SearchViewModel @Inject constructor(
     init {
         loadSuggestions()
         loadAllArticles()
+        loadRecommendations()
+        observeModelStatus()
     }
 
     /**
@@ -163,5 +185,150 @@ class SearchViewModel @Inject constructor(
     fun refreshArticles() {
         loadAllArticles()
         loadSuggestions()
+        loadRecommendations()
+    }
+
+    /**
+     * Load personalized recommendations using ML engine
+     */
+    fun loadRecommendations() {
+        // Cancel previous job
+        recommendationJob?.cancel()
+        
+        recommendationJob = viewModelScope.launch {
+            _isLoadingRecommendations.value = true
+            
+            try {
+                // Get current user ID
+                val userId = authRepository.getCurrentUser()?.uid ?: "anonymous"
+                
+                // Always refresh articles from repository
+                val candidates = newsRepository.getArticles()
+                _allArticles.value = candidates
+                
+                if (candidates.isEmpty()) {
+                    _recommendedArticles.value = emptyList()
+                    return@launch
+                }
+                
+                // Get current preference scores
+                val totalInteractions = userPreferenceTracker.getTotalInteractions()
+                android.util.Log.d(
+                    "SearchViewModel",
+                    "📊 User interactions: $totalInteractions"
+                )
+                
+                // Log current preferences
+                val preferences = userPreferenceTracker.categoryScores.value
+                android.util.Log.d(
+                    "SearchViewModel",
+                    "🎯 Current preferences: $preferences"
+                )
+                
+                // Choose scoring weights based on user preference data
+                val weights = if (totalInteractions < 10) {
+                    // New user: prefer rule-based (cold start)
+                    android.util.Log.d("SearchViewModel", "⚙️ Using RULE_HEAVY weights (cold start)")
+                    ML_ScoringWeights.RULE_HEAVY
+                } else {
+                    // Experienced user: balanced approach
+                    android.util.Log.d("SearchViewModel", "⚙️ Using DEFAULT weights")
+                    ML_ScoringWeights.DEFAULT
+                }
+                
+                // Get recommendations from ML engine
+                val scoredArticles = recommendationEngine.getRecommendations(
+                    userId = userId,
+                    candidates = candidates,
+                    topN = 10,
+                    weights = weights
+                )
+                
+                // Log top recommendations with scores
+                scoredArticles.take(3).forEach { scored ->
+                    android.util.Log.d(
+                        "SearchViewModel",
+                        "  📰 [${scored.finalScore}] ${scored.article.category}: ${scored.article.title}"
+                    )
+                }
+                
+                // Log category distribution
+                val categoryDistribution = scoredArticles.groupBy { it.article.category }
+                    .mapValues { it.value.size }
+                android.util.Log.d(
+                    "SearchViewModel",
+                    "  📊 Category distribution: $categoryDistribution"
+                )
+                
+                // Extract articles
+                _recommendedArticles.value = scoredArticles.map { it.article }
+                
+                android.util.Log.d(
+                    "SearchViewModel",
+                    "✅ Loaded ${scoredArticles.size} recommendations for user=$userId"
+                )
+                
+            } catch (e: Exception) {
+                android.util.Log.e("SearchViewModel", "Failed to load recommendations", e)
+                _recommendedArticles.value = emptyList()
+            } finally {
+                _isLoadingRecommendations.value = false
+            }
+        }
+    }
+
+    /**
+     * Observe ML model status
+     */
+    private fun observeModelStatus() {
+        viewModelScope.launch {
+            recommendationEngine.modelStatus.collect { status ->
+                _modelStatus.value = when (status) {
+                    is ML_RecommendationEngine.ModelStatus.NotLoaded -> "No ML model (using rules)"
+                    is ML_RecommendationEngine.ModelStatus.Downloading -> "Downloading ML model..."
+                    is ML_RecommendationEngine.ModelStatus.Loaded -> "ML model ready (v${status.version})"
+                    is ML_RecommendationEngine.ModelStatus.Error -> "ML model error: ${status.message}"
+                }
+            }
+        }
+    }
+
+    /**
+     * Track article click for ML learning
+     */
+    fun onArticleClicked(article: NewsArticle) {
+        viewModelScope.launch {
+            android.util.Log.d(
+                "SearchViewModel",
+                "👆 Article clicked: ${article.title} (${article.category})"
+            )
+            userPreferenceTracker.onArticleClicked(article)
+            // Reload recommendations after interaction
+            delay(200) // Small delay to let preference update
+            loadRecommendations()
+        }
+    }
+
+    /**
+     * Track article bookmark for ML learning (only tracks when adding bookmark)
+     */
+    fun onArticleBookmarked(article: NewsArticle) {
+        viewModelScope.launch {
+            android.util.Log.d(
+                "SearchViewModel",
+                "🔖 Article bookmarked: ${article.title} (${article.category})"
+            )
+            userPreferenceTracker.onArticleBookmarked(article, isBookmarked = true)
+            // Reload recommendations after interaction
+            delay(200)
+            loadRecommendations()
+        }
+    }
+
+    /**
+     * Force refresh ML recommendations
+     */
+    fun refreshRecommendations() {
+        loadRecommendations()
     }
 }

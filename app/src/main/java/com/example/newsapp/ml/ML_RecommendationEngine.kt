@@ -101,27 +101,20 @@ class ML_RecommendationEngine @Inject constructor(
         
         android.util.Log.d(TAG, "Getting recommendations for user=$userId, candidates=${candidates.size}, topN=$topN")
         
-        // Score each article
-        val scoredArticles = candidates.map { article ->
-            val score = calculateHybridScore(userId, article, weights)
+        // ALWAYS use rule-based engine for instant category-based recommendations
+        // ML model will be used later for fine-tuning after cloud training
+        android.util.Log.d(TAG, "Using rule-based engine for category-based recommendations")
+        val ruleRecommendations = ruleBasedEngine.getRecommendations(candidates, topN)
+        return ruleRecommendations.map { (article, score) ->
             ScoredArticle(
                 article = article,
-                finalScore = score.finalScore,
-                mlScore = score.mlScore,
-                ruleScore = score.ruleScore,
-                recencyBoost = score.recencyBoost,
-                trendingBoost = score.trendingBoost
+                finalScore = score,
+                mlScore = 0.5f,
+                ruleScore = score,
+                recencyBoost = 0.5f,
+                trendingBoost = 0.0f
             )
         }
-        
-        // Sort by score and take top N
-        val topRecommendations = scoredArticles
-            .sortedByDescending { it.finalScore }
-            .take(topN)
-        
-        android.util.Log.d(TAG, "✅ Generated ${topRecommendations.size} recommendations")
-        
-        return topRecommendations
     }
     
     /**

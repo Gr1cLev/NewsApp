@@ -25,24 +25,13 @@ class ML_RuleBasedEngine @Inject constructor(
     /**
      * Calculate rule-based score for a single article
      * 
-     * Score components:
-     * - Category preference (0-1): Based on user's interaction history
-     * - Recency score (0-1): How fresh the article is
-     * - Bookmark affinity (0-1): If user bookmarks this category
+     * Simplified: Focus 100% on category preference
+     * Recency and text-based boost moved to ML model
      * 
      * @return Normalized score 0.0 - 1.0
      */
     fun calculateScore(article: NewsArticle): Float {
-        val categoryScore = getCategoryScore(article)
-        val recencyScore = getRecencyScore(article)
-        val preferenceBoost = preferenceTracker.getPreferenceBoost(article)
-        
-        // Weighted combination
-        val score = (categoryScore * 0.5f) +      // 50% category preference
-                    (recencyScore * 0.3f) +        // 30% recency
-                    (preferenceBoost * 0.2f)       // 20% user preference boost
-        
-        return min(score, 1.0f)
+        return getCategoryScore(article)
     }
     
     /**
@@ -54,20 +43,50 @@ class ML_RuleBasedEngine @Inject constructor(
     }
     
     /**
-     * Get recommended articles sorted by rule-based score
+     * Get recommended articles sorted by category preference
+     * 
+     * New logic: Prioritize articles from top categories, shuffle within category for freshness
      * 
      * @param articles Pool of articles to rank
      * @param count Number of recommendations to return
-     * @return Top N articles with highest scores
+     * @return Top N articles from preferred categories (shuffled for variety)
      */
     fun getRecommendations(
         articles: List<NewsArticle>,
         count: Int = 10
     ): List<Pair<NewsArticle, Float>> {
-        return articles
-            .map { article -> article to calculateScore(article) }
-            .sortedByDescending { it.second }
-            .take(count)
+        val categoryScores = preferenceTracker.categoryScores.value
+        
+        if (categoryScores.isEmpty()) {
+            // No preference yet - return random articles with neutral score
+            return articles.shuffled().take(count).map { it to 0.5f }
+        }
+        
+        // Get top 3 favorite categories
+        val topCategories = categoryScores.entries
+            .sortedByDescending { it.value }
+            .take(3)
+            .map { it.key }
+        
+        android.util.Log.d(
+            "ML_RuleBasedEngine",
+            "Top categories: $topCategories from preferences: $categoryScores"
+        )
+        
+        // Prioritize articles from top categories
+        val favoriteArticles = articles.filter { it.category in topCategories }.shuffled()
+        val otherArticles = articles.filter { it.category !in topCategories }.shuffled()
+        
+        // Combine: 80% from favorites, 20% from others (for diversity)
+        val favoriteCount = (count * 0.8).toInt()
+        val recommended = favoriteArticles.take(favoriteCount) + 
+                         otherArticles.take(count - favoriteCount)
+        
+        // Assign scores based on category preference
+        return recommended.take(count).map { article ->
+            val categoryScore = getCategoryScore(article)
+            article to categoryScore
+        }
     }
     
     /**
@@ -84,9 +103,16 @@ class ML_RuleBasedEngine @Inject constructor(
         }
         
         val categoryScore = categoryScores[article.category] ?: 0f
+        val maxScore = categoryScores.values.maxOrNull() ?: 1f
         
-        // Normalize to 0-1 range
-        return min(categoryScore / (totalScore * 0.3f), 1.0f)
+        // Normalize relative to max category (gives stronger differentiation)
+        // If this is the top category, give it 1.0
+        // Other categories scale proportionally
+        return if (maxScore > 0f) {
+            categoryScore / maxScore
+        } else {
+            0.5f
+        }
     }
     
     /**

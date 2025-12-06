@@ -45,6 +45,36 @@ class NewsRepository @Inject constructor(
     private var cachedBookmarkProfileId: String? = null
     
     /**
+     * Fetch articles dari multiple categories untuk ML recommendations
+     * Returns diverse articles across Sports, Business, Technology, etc.
+     */
+    suspend fun fetchMultiCategoryArticles(country: String = "us"): Resource<List<NewsArticle>> = withContext(Dispatchers.IO) {
+        val categories = listOf("sports", "business", "technology", "health", "entertainment")
+        val allArticles = mutableListOf<NewsArticle>()
+        var baseTimestamp = System.currentTimeMillis()
+        
+        categories.forEach { category ->
+            try {
+                val result = fetchArticlesFromNetwork(category = category, country = country)
+                if (result is Resource.Success) {
+                    // Adjust IDs to ensure uniqueness across categories
+                    val adjustedArticles = result.data.map { article ->
+                        article.copy(id = baseTimestamp.toInt())
+                            .also { baseTimestamp++ }
+                    }
+                    allArticles.addAll(adjustedArticles)
+                    Log.d(TAG, "📦 Fetched ${adjustedArticles.size} articles for category: $category")
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "⚠️ Failed to fetch $category: ${e.message}")
+            }
+        }
+        
+        Log.d(TAG, "🎯 Multi-category fetch complete: ${allArticles.size} total articles")
+        Resource.Success(allArticles)
+    }
+    
+    /**
      * Fetch articles dari network (NewsAPI)
      * 5 artikel pertama akan di-set sebagai featured
      */
@@ -66,7 +96,7 @@ class NewsRepository @Inject constructor(
                     category.isNullOrEmpty() -> "General"
                     category.equals("All", ignoreCase = true) -> "General"
                     category.equals("Top", ignoreCase = true) -> "General"
-                    else -> category
+                    else -> category.replaceFirstChar { it.uppercaseChar() } // Capitalize: sports -> Sports
                 }
                 
                 val articles = response.body()!!.articles.mapIndexed { index, dto ->
@@ -132,21 +162,21 @@ class NewsRepository @Inject constructor(
             return existing
         }
         
-        // Fetch dari API - COBA BEBERAPA COUNTRY
-        Log.d(TAG, "Fetching fresh data from API...")
+        // Fetch dari API - MULTI CATEGORY untuk ML recommendations
+        Log.d(TAG, "Fetching fresh data from API (multi-category)...")
         
-        // Try Indonesia first with All category
-        var networkResult = fetchArticlesFromNetwork(category = "All", country = "id")
+        // Try multi-category fetch first for diverse data
+        var networkResult = fetchMultiCategoryArticles(country = "us")
         
-        // If Indonesia returns 0, try US
+        // If multi-category returns empty, fallback to Indonesia General
         if (networkResult is Resource.Success && networkResult.data.isEmpty()) {
-            Log.w(TAG, "⚠️ Indonesia returned 0 articles, trying US...")
-            networkResult = fetchArticlesFromNetwork(category = "All", country = "us")
+            Log.w(TAG, "⚠️ Multi-category returned 0 articles, trying Indonesia General...")
+            networkResult = fetchArticlesFromNetwork(category = "All", country = "id")
         }
         
         // If still 0, try general search
         if (networkResult is Resource.Success && networkResult.data.isEmpty()) {
-            Log.w(TAG, "⚠️ US also returned 0, trying general search...")
+            Log.w(TAG, "⚠️ Still 0 articles, trying general search...")
             networkResult = searchArticles("breaking news OR trending", category = "General")
         }
         
@@ -155,7 +185,10 @@ class NewsRepository @Inject constructor(
                 val allArticles = networkResult.data
                 val featured = allArticles.filter { it.isFeatured }
                 
+                // Log category distribution
+                val categoryCount = allArticles.groupingBy { it.category }.eachCount()
                 Log.d(TAG, "✅ API Success: ${allArticles.size} articles, ${featured.size} featured")
+                Log.d(TAG, "📊 Category distribution: $categoryCount")
                 
                 val newsData = NewsData(
                     categories = defaultCategories(),

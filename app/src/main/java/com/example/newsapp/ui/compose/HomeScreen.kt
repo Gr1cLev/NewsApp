@@ -5,6 +5,9 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +32,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Article
@@ -266,12 +270,19 @@ fun HomeScreen(
                         bookmarkedIds = bookmarkedIds,
                         onBookmarkToggle = { article ->
                             coroutineScope.launch {
+                                val wasBookmarked = bookmarkViewModel.isArticleBookmarked(article.id)
                                 bookmarkViewModel.toggleBookmark(article.id)
                                 onBookmarksUpdated()
+                                
+                                // Track bookmark for ML (only when adding bookmark)
+                                if (!wasBookmarked) {
+                                    searchViewModel.onArticleBookmarked(article)
+                                }
+                                
                                 Toast.makeText(
                                     context,
                                     context.getString(
-                                        if (bookmarkViewModel.isArticleBookmarked(article.id))
+                                        if (!wasBookmarked)
                                             R.string.bookmark_added
                                         else
                                             R.string.bookmark_removed
@@ -280,7 +291,11 @@ fun HomeScreen(
                                 ).show()
                             }
                         },
-                        onArticleClick = { onOpenArticle(it.id) }
+                        onArticleClick = { article ->
+                            // Track click for ML
+                            searchViewModel.onArticleClicked(article)
+                            onOpenArticle(article.id)
+                        }
                     )
                     HomeTab.Search -> SearchTab(
                         modifier = Modifier.padding(innerPadding),
@@ -291,12 +306,19 @@ fun HomeScreen(
                         bookmarkedIds = bookmarkedIds,
                         onBookmarkToggle = { article ->
                             coroutineScope.launch {
+                                val wasBookmarked = bookmarkViewModel.isArticleBookmarked(article.id)
                                 bookmarkViewModel.toggleBookmark(article.id)
                                 onBookmarksUpdated()
+                                
+                                // Track bookmark for ML (only when adding bookmark)
+                                if (!wasBookmarked) {
+                                    searchViewModel.onArticleBookmarked(article)
+                                }
+                                
                                 Toast.makeText(
                                     context,
                                     context.getString(
-                                        if (bookmarkViewModel.isArticleBookmarked(article.id))
+                                        if (!wasBookmarked)
                                             R.string.bookmark_added
                                         else
                                             R.string.bookmark_removed
@@ -305,13 +327,21 @@ fun HomeScreen(
                                 ).show()
                             }
                         },
-                        onArticleClick = { onOpenArticle(it.id) }
+                        onArticleClick = { article ->
+                            // Track click for ML
+                            searchViewModel.onArticleClicked(article)
+                            onOpenArticle(article.id)
+                        }
                     )
                     HomeTab.Bookmarks -> BookmarksTab(
                         modifier = Modifier.padding(innerPadding),
                         bookmarkViewModel = bookmarkViewModel,
                         bookmarks = bookmarkedArticles,
-                        onArticleClick = { onOpenArticle(it.id) }
+                        onArticleClick = { article ->
+                            // Track click for ML
+                            searchViewModel.onArticleClicked(article)
+                            onOpenArticle(article.id)
+                        }
                     )
                     HomeTab.Profile -> ProfileTab(
                         modifier = Modifier.padding(innerPadding),
@@ -427,6 +457,7 @@ private fun NewsTab(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SearchTab(
     modifier: Modifier,
@@ -441,20 +472,48 @@ private fun SearchTab(
     val trimmedQuery = searchQuery.trim()
     val results = searchResults
 
-    val recommendations = remember(allArticles) {
+    // Get ML-powered recommendations from ViewModel
+    val recommendedArticles by searchViewModel.recommendedArticles.collectAsState()
+    val isLoadingRecommendations by searchViewModel.isLoadingRecommendations.collectAsState()
+    val modelStatus by searchViewModel.modelStatus.collectAsState()
+    
+    // Pull-to-refresh state
+    var isRefreshing by remember { mutableStateOf(false) }
+
+    // Fallback recommendations if ML not ready
+    val fallbackRecommendations = remember(allArticles) {
         allArticles.filter { it.category.equals("Sports", ignoreCase = true) }.ifEmpty {
             allArticles.take(5)
         }
     }
 
+    // Use ML recommendations or fallback
+    val displayRecommendations = if (recommendedArticles.isNotEmpty()) {
+        recommendedArticles
+    } else {
+        fallbackRecommendations
+    }
+
     TransparentBackground(modifier = modifier) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(18.dp)
+        PullToRefreshBox(
+            isRefreshing = isRefreshing || isLoadingRecommendations,
+            onRefresh = {
+                isRefreshing = true
+                searchViewModel.refreshRecommendations()
+                // Reset after a delay
+                kotlinx.coroutines.MainScope().launch {
+                    kotlinx.coroutines.delay(1000)
+                    isRefreshing = false
+                }
+            }
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(18.dp)
+            ) {
         Spacer(modifier = Modifier.height(16.dp))
         SearchField(
             value = searchQuery,
@@ -468,15 +527,72 @@ private fun SearchTab(
             exit = fadeOut()
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                SectionTitle("Rekomendasi")
-                recommendations.forEach { article ->
-                    ArticleCard(
-                        article = article,
-                        isBookmarked = bookmarkedIds.contains(article.id),
-                        showCategory = true,
-                        onBookmarkToggle = { onBookmarkToggle(article) },
-                        onClick = { onArticleClick(article) }
-                    )
+                // ML Recommendations Section
+                SectionTitle("✨ Recommended for You")
+                
+                // Model status badge (small, subtle)
+                Text(
+                    text = modelStatus,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                
+                // Loading state
+                if (isLoadingRecommendations) {
+                    repeat(3) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(120.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            )
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                            }
+                        }
+                    }
+                } else if (displayRecommendations.isEmpty()) {
+                    // Empty state
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "🤖",
+                                style = MaterialTheme.typography.displaySmall
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Start reading to get personalized recommendations!",
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                } else {
+                    // Display recommendations
+                    displayRecommendations.forEach { article ->
+                        ArticleCard(
+                            article = article,
+                            isBookmarked = bookmarkedIds.contains(article.id),
+                            showCategory = true,
+                            onBookmarkToggle = { onBookmarkToggle(article) },
+                            onClick = { onArticleClick(article) }
+                        )
+                    }
                 }
             }
         }
@@ -508,6 +624,7 @@ private fun SearchTab(
         }
 
         Spacer(modifier = Modifier.height(32.dp))
+        }
         }
     }
 }
