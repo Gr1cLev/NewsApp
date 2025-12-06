@@ -144,20 +144,20 @@ class NewsViewModel @Inject constructor(
                     } else if (result is Resource.Error) {
                         val isRateLimited = result.message?.contains("429") == true ||
                                 result.message?.contains("rate limit", ignoreCase = true) == true
-                        if (isRateLimited) {
-                            val cached = newsRepository.getCachedArticlesByCategory(category)
-                            if (cached.isNotEmpty()) {
-                                _categoryArticles.value = cached
-                                val currentState = _uiState.value
-                                if (currentState is NewsUiState.Success) {
-                                    applyPersonalization(cached, currentState.featuredArticles)
-                                    _uiState.value = currentState // keep success state
-                                }
-                                return@launch
+                        val cached = newsRepository.getCachedArticlesByCategory(category)
+                        if (cached.isNotEmpty()) {
+                            _categoryArticles.value = cached
+                            val currentState = _uiState.value
+                            if (currentState is NewsUiState.Success) {
+                                applyPersonalization(cached, currentState.featuredArticles)
+                                _uiState.value = currentState // keep success state
                             }
+                        } else {
+                            // No cache available: surface error
+                            _uiState.value = NewsUiState.Error(
+                                result.message ?: if (isRateLimited) "Rate limited, no cache" else "Failed to load category"
+                            )
                         }
-                        // Keep existing articles if fetch fails and no cache
-                        _uiState.value = NewsUiState.Error(result.message ?: "Failed to load category")
                     }
                 } catch (e: Exception) {
                     _uiState.value = NewsUiState.Error(e.message ?: "Failed to load category")

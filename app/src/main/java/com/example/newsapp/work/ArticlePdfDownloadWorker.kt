@@ -340,18 +340,36 @@ class ArticlePdfDownloadWorker(
             data = fileUri
             type = "application/pdf"
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+            // Ensure URI perms flow through to chooser/viewer
+            clipData = android.content.ClipData.newRawUri("pdf", fileUri)
         }
-        val pendingIntent = PendingIntent.getActivity(
-            appContext,
-            0,
-            openIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+
+        // Explicitly grant URI permission to all handlers (including chooser)
+        val resolved = appContext.packageManager.queryIntentActivities(openIntent, android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)
+        resolved.forEach { info ->
+            appContext.grantUriPermission(
+                info.activityInfo.packageName,
+                fileUri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+        }
+
+        // Also grant to common PDF viewers (Drive)
+        listOf("com.google.android.apps.docs").forEach { pkg ->
+            try {
+                appContext.grantUriPermission(pkg, fileUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            } catch (_: Exception) { }
+        }
+
         val notification = NotificationCompat.Builder(appContext, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_sys_download_done)
             .setContentTitle("Unduhan selesai")
-            .setContentText("Ketuk untuk membuka PDF")
-            .setContentIntent(pendingIntent)
+            .setContentText("PDF tersimpan di Downloads. Buka via file manager/Drive.")
+            .setStyle(
+                NotificationCompat.BigTextStyle().bigText(
+                    "PDF tersimpan di folder Downloads. Buka melalui file manager atau Drive."
+                )
+            )
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .build()

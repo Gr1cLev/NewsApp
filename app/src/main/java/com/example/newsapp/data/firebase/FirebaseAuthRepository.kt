@@ -223,4 +223,36 @@ class FirebaseAuthRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    /**
+     * Update user profile details (first/last/email) in Firestore user document.
+     * Note: does not update Firebase Auth email; only Firestore profile fields.
+     */
+    suspend fun updateUserProfileDetails(
+        userId: String,
+        firstName: String,
+        lastName: String,
+        email: String
+    ): Result<Unit> {
+        return try {
+            val displayName = listOf(firstName, lastName)
+                .filter { it.isNotBlank() }
+                .joinToString(" ")
+                .ifBlank { "User" }
+
+            val updates = mapOf(
+                "displayName" to displayName,
+                "email" to email
+            )
+
+            firestore.collection("users")
+                .document(userId)
+                .update(updates)
+                .await()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

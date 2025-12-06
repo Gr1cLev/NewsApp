@@ -24,6 +24,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,23 +40,25 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.newsapp.R
-import com.example.newsapp.data.ProfileRepository
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.newsapp.model.UserProfile
-import kotlinx.coroutines.Dispatchers
+import com.example.newsapp.viewmodel.ProfileViewModel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
     onBack: () -> Unit,
-    onProfileSaved: () -> Unit
+    onProfileSaved: () -> Unit,
+    profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    var isLoading by remember { mutableStateOf(true) }
-    var profile: UserProfile? by remember { mutableStateOf(null) }
+    val profile by profileViewModel.userProfile.collectAsState()
+    val isLoadingProfile by profileViewModel.isLoadingProfile.collectAsState()
+    val isSaving by profileViewModel.isSavingProfile.collectAsState()
+    val errorMessage by profileViewModel.errorMessage.collectAsState()
 
     var firstName by rememberSaveable { mutableStateOf("") }
     var lastName by rememberSaveable { mutableStateOf("") }
@@ -67,20 +70,23 @@ fun EditProfileScreen(
     var emailError by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
-        val result = withContext(Dispatchers.IO) {
-            ProfileRepository.getActiveProfile(context)
+        profileViewModel.loadRemoteProfile()
+    }
+
+    LaunchedEffect(profile) {
+        profile?.let { p ->
+            firstName = p.firstName
+            lastName = p.lastName
+            email = p.email
+            password = p.password
         }
-        if (result == null) {
-            Toast.makeText(context, context.getString(R.string.error_profile_missing), Toast.LENGTH_SHORT).show()
-            onBack()
-        } else {
-            profile = result
-            firstName = result.firstName
-            lastName = result.lastName
-            email = result.email
-            password = result.password
+    }
+
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let { msg ->
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            profileViewModel.clearError()
         }
-        isLoading = false
     }
 
     fun validate(): Boolean {
@@ -97,21 +103,12 @@ fun EditProfileScreen(
 
     fun saveProfile() {
         if (!validate()) return
-        val current = profile ?: return
         coroutineScope.launch {
-            isLoading = true
-            val result = withContext(Dispatchers.IO) {
-                ProfileRepository.updateActiveProfile(
-                    context,
-                    current.copy(
-                        firstName = firstName.trim(),
-                        lastName = lastName.trim(),
-                        email = email.trim(),
-                        password = password
-                    )
-                )
-            }
-            isLoading = false
+            val result = profileViewModel.saveProfile(
+                firstName = firstName.trim(),
+                lastName = lastName.trim(),
+                email = email.trim()
+            )
             result.onSuccess {
                 Toast.makeText(context, context.getString(R.string.toast_profile_saved), Toast.LENGTH_SHORT).show()
                 onProfileSaved()
@@ -144,7 +141,7 @@ fun EditProfileScreen(
                 },
                 actions = {
                     TextButton(
-                        enabled = !isLoading,
+                        enabled = !isLoadingProfile && !isSaving,
                         onClick = { saveProfile() }
                     ) {
                         Text(stringResource(R.string.action_save))
@@ -176,7 +173,7 @@ fun EditProfileScreen(
                     { Text(error, color = MaterialTheme.colorScheme.error) }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading,
+                enabled = !isLoadingProfile && !isSaving,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
             )
@@ -193,7 +190,7 @@ fun EditProfileScreen(
                     { Text(error, color = MaterialTheme.colorScheme.error) }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading,
+                enabled = !isLoadingProfile && !isSaving,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
             )
@@ -210,7 +207,7 @@ fun EditProfileScreen(
                     { Text(error, color = MaterialTheme.colorScheme.error) }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading,
+                enabled = !isLoadingProfile && !isSaving,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Next,
@@ -223,7 +220,7 @@ fun EditProfileScreen(
                 onValueChange = { password = it },
                 label = { Text(stringResource(R.string.hint_password)) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading,
+                enabled = !isLoadingProfile && !isSaving,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done,
@@ -234,7 +231,7 @@ fun EditProfileScreen(
 
             Button(
                 onClick = { saveProfile() },
-                enabled = !isLoading,
+                enabled = !isLoadingProfile && !isSaving,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.action_save))

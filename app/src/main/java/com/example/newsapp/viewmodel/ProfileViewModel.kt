@@ -35,6 +35,12 @@ class ProfileViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
+    private val _isLoadingProfile = MutableStateFlow(false)
+    val isLoadingProfile: StateFlow<Boolean> = _isLoadingProfile.asStateFlow()
+
+    private val _isSavingProfile = MutableStateFlow(false)
+    val isSavingProfile: StateFlow<Boolean> = _isSavingProfile.asStateFlow()
+
     init {
         checkAuthStatus()
     }
@@ -62,6 +68,62 @@ class ProfileViewModel @Inject constructor(
                 _authState.value = AuthState.Guest
             }
         }
+    }
+
+    /**
+     * Load profile data from Firestore users collection
+     */
+    fun loadRemoteProfile() {
+        viewModelScope.launch {
+            val uid = firebaseAuthRepository.getCurrentUserId() ?: return@launch
+            _isLoadingProfile.value = true
+            val result = firebaseAuthRepository.getUserDocument(uid)
+            result.onSuccess { user ->
+                val parts = user.displayName.split(" ")
+                val first = parts.getOrNull(0) ?: ""
+                val last = parts.drop(1).joinToString(" ")
+                _userProfile.value = UserProfile(
+                    id = user.userId,
+                    firstName = first,
+                    lastName = last,
+                    email = user.email,
+                    password = "" // not used
+                )
+                _authState.value = AuthState.Authenticated(_userProfile.value!!)
+            }.onFailure { e ->
+                _errorMessage.value = e.message
+            }
+            _isLoadingProfile.value = false
+        }
+    }
+
+    /**
+     * Update profile in Firestore users collection
+     */
+    suspend fun saveProfile(firstName: String, lastName: String, email: String): Result<Unit> {
+        val uid = firebaseAuthRepository.getCurrentUserId()
+            ?: return Result.failure(Exception("User not logged in"))
+        _isSavingProfile.value = true
+        val result = firebaseAuthRepository.updateUserProfileDetails(
+            userId = uid,
+            firstName = firstName,
+            lastName = lastName,
+            email = email
+        )
+        result.onSuccess {
+            _userProfile.value = UserProfile(
+                id = uid,
+                firstName = firstName,
+                lastName = lastName,
+                email = email,
+                password = "" // not used
+            )
+            _authState.value = AuthState.Authenticated(_userProfile.value!!)
+        }.onFailure { e ->
+            _errorMessage.value = e.message
+        }
+        _isSavingProfile.value = false
+        return result
     }
 
     /**

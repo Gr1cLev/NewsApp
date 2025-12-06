@@ -304,7 +304,13 @@ class NewsRepository @Inject constructor(
         if (!fromCache.isNullOrEmpty()) return fromCache
 
         // Firestore fallback
-        return firebaseArticleCacheRepository.getArticlesByCategory(category)
+        val cached = firebaseArticleCacheRepository.getArticlesByCategory(category)
+        if (cached.isNotEmpty()) {
+            val updatedIndex = articleIndex.toMutableMap()
+            cached.forEach { updatedIndex[it.id] = it }
+            articleIndex = updatedIndex
+        }
+        return cached
     }
 
     suspend fun getBookmarks(): List<NewsArticle> {
