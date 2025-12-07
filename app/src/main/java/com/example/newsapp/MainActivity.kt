@@ -10,14 +10,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.data.UserPreferences
 import com.example.newsapp.data.firebase.FirebaseAuthRepository
 import com.example.newsapp.ui.compose.NewsApp
 import com.example.newsapp.ui.theme.NewsAppTheme
+import com.example.newsapp.work.DailyTrendingNotificationWorker
 import com.example.newsapp.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.LocalTime
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -76,6 +83,8 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        scheduleDailyTrendingNotification()
+
         setContent {
             var isDarkTheme by remember { mutableStateOf(UserPreferences.isNightModeEnabled(this)) }
             NewsAppTheme(darkTheme = isDarkTheme) {
@@ -88,5 +97,23 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    private fun scheduleDailyTrendingNotification() {
+        if (!UserPreferences.isNotificationsEnabled(this)) return
+
+        val now = LocalDateTime.now()
+        val target = now.with(LocalTime.of(23, 0)).let { t -> if (t.isAfter(now)) t else t.plusDays(1) }
+        val initialDelay = Duration.between(now, target)
+
+        val request = PeriodicWorkRequestBuilder<DailyTrendingNotificationWorker>(Duration.ofDays(1))
+            .setInitialDelay(initialDelay)
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "daily-trending-push",
+            ExistingPeriodicWorkPolicy.UPDATE,
+            request
+        )
     }
 }
