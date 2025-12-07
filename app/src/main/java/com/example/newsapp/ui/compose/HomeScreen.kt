@@ -69,6 +69,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -662,6 +663,17 @@ private fun BookmarksTab(
             return@TransparentBackground
         }
 
+        var query by rememberSaveable { mutableStateOf("") }
+        val filtered = remember(query, bookmarks) {
+            val trimmed = query.trim()
+            if (trimmed.isBlank()) bookmarks
+            else bookmarks.filter { article ->
+                article.title.contains(trimmed, ignoreCase = true) ||
+                        article.summary.contains(trimmed, ignoreCase = true) ||
+                        article.source.contains(trimmed, ignoreCase = true)
+            }
+        }
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -669,15 +681,34 @@ private fun BookmarksTab(
             contentPadding = PaddingValues(vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-        items(bookmarks) { article ->
-            ArticleCard(
-                article = article,
-                isBookmarked = true,
-                showCategory = true,
-                onBookmarkToggle = { bookmarkViewModel.toggleBookmark(article.id) },
-                onClick = { onArticleClick(article) }
-            )
-        }
+            item {
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.bookmark_search_hint)) },
+                    singleLine = true
+                )
+            }
+
+            if (filtered.isEmpty()) {
+                item {
+                    Text(
+                        text = stringResource(R.string.bookmark_search_empty),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            } else {
+                items(filtered) { article ->
+                    ArticleCard(
+                        article = article,
+                        isBookmarked = true,
+                        showCategory = true,
+                        onBookmarkToggle = { bookmarkViewModel.toggleBookmark(article.id) },
+                        onClick = { onArticleClick(article) }
+                    )
+                }
+            }
         }
     }
 }

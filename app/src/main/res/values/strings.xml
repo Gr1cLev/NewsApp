@@ -77,6 +77,8 @@
     <!-- Detail -->
     <string name="bookmark_added">Added to saved</string>
     <string name="bookmark_removed">Removed from saved</string>
+    <string name="bookmark_search_hint">Search saved articles</string>
+    <string name="bookmark_search_empty">No saved articles match your search.</string>
 
     <!-- Content descriptions -->
     <string name="content_desc_email">Email address</string>
