@@ -66,7 +66,6 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.example.newsapp.R
-import com.example.newsapp.data.ProfileRepository
 import com.example.newsapp.data.firebase.FirebaseAuthRepository
 import com.example.newsapp.di.FirebaseEntryPoint
 

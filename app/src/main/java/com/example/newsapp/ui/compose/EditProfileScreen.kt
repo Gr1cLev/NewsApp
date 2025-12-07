@@ -63,11 +63,14 @@ fun EditProfileScreen(
     var firstName by rememberSaveable { mutableStateOf("") }
     var lastName by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
+    var currentPassword by rememberSaveable { mutableStateOf("") }
+    var newPassword by rememberSaveable { mutableStateOf("") }
 
     var firstNameError by remember { mutableStateOf<String?>(null) }
     var lastNameError by remember { mutableStateOf<String?>(null) }
     var emailError by remember { mutableStateOf<String?>(null) }
+    var currentPasswordError by remember { mutableStateOf<String?>(null) }
+    var newPasswordError by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         profileViewModel.loadRemoteProfile()
@@ -78,7 +81,8 @@ fun EditProfileScreen(
             firstName = p.firstName
             lastName = p.lastName
             email = p.email
-            password = p.password
+            currentPassword = ""
+            newPassword = ""
         }
     }
 
@@ -98,7 +102,12 @@ fun EditProfileScreen(
                 context.getString(R.string.error_invalid_email)
             else -> null
         }
-        return listOf(firstNameError, lastNameError, emailError).all { it == null }
+        currentPasswordError = if (currentPassword.isBlank()) context.getString(R.string.error_required_field) else null
+        newPasswordError = if (newPassword.isNotBlank() && newPassword.length < 6) {
+            "New password must be at least 6 characters"
+        } else null
+
+        return listOf(firstNameError, lastNameError, emailError, currentPasswordError, newPasswordError).all { it == null }
     }
 
     fun saveProfile() {
@@ -107,7 +116,9 @@ fun EditProfileScreen(
             val result = profileViewModel.saveProfile(
                 firstName = firstName.trim(),
                 lastName = lastName.trim(),
-                email = email.trim()
+                email = email.trim(),
+                currentPassword = currentPassword,
+                newPassword = newPassword.ifBlank { null }
             )
             result.onSuccess {
                 Toast.makeText(context, context.getString(R.string.toast_profile_saved), Toast.LENGTH_SHORT).show()
@@ -198,8 +209,7 @@ fun EditProfileScreen(
             OutlinedTextField(
                 value = email,
                 onValueChange = {
-                    email = it
-                    if (emailError != null) emailError = null
+                    // Email not editable
                 },
                 label = { Text(stringResource(R.string.hint_email)) },
                 isError = emailError != null,
@@ -207,7 +217,7 @@ fun EditProfileScreen(
                     { Text(error, color = MaterialTheme.colorScheme.error) }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoadingProfile && !isSaving,
+                enabled = false,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Next,
@@ -216,9 +226,38 @@ fun EditProfileScreen(
             )
 
             OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
+                value = currentPassword,
+                onValueChange = {
+                    currentPassword = it
+                    if (currentPasswordError != null) currentPasswordError = null
+                },
                 label = { Text(stringResource(R.string.hint_password)) },
+                isError = currentPasswordError != null,
+                supportingText = currentPasswordError?.let { error ->
+                    { Text(error, color = MaterialTheme.colorScheme.error) }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoadingProfile && !isSaving,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done,
+                    keyboardType = KeyboardType.Password
+                ),
+                visualTransformation = PasswordVisualTransformation()
+            )
+
+            OutlinedTextField(
+                value = newPassword,
+                onValueChange = {
+                    newPassword = it
+                    if (newPasswordError != null) newPasswordError = null
+                },
+                label = { Text("New password (optional)") },
+                placeholder = { Text("Leave blank to keep current password") },
+                isError = newPasswordError != null,
+                supportingText = newPasswordError?.let { error ->
+                    { Text(error, color = MaterialTheme.colorScheme.error) }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoadingProfile && !isSaving,
                 singleLine = true,

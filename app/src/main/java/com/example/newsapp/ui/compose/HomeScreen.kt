@@ -95,7 +95,6 @@ import coil.request.ImageRequest
 import java.io.InputStream
 import com.example.newsapp.R
 import com.example.newsapp.data.NewsRepository
-import com.example.newsapp.data.ProfileRepository
 import com.example.newsapp.model.NewsArticle
 import com.example.newsapp.model.NewsCategory
 import com.example.newsapp.model.NewsData

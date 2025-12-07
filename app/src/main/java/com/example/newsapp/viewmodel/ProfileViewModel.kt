@@ -64,6 +64,9 @@ class ProfileViewModel @Inject constructor(
                 )
                 _userProfile.value = profile
                 _authState.value = AuthState.Authenticated(profile)
+
+                // Try to refresh from Firestore document for latest data
+                loadRemoteProfile()
             } else {
                 _authState.value = AuthState.Guest
             }
@@ -100,15 +103,23 @@ class ProfileViewModel @Inject constructor(
     /**
      * Update profile in Firestore users collection
      */
-    suspend fun saveProfile(firstName: String, lastName: String, email: String): Result<Unit> {
+    suspend fun saveProfile(
+        firstName: String,
+        lastName: String,
+        email: String,
+        currentPassword: String,
+        newPassword: String?
+    ): Result<Unit> {
         val uid = firebaseAuthRepository.getCurrentUserId()
             ?: return Result.failure(Exception("User not logged in"))
         _isSavingProfile.value = true
-        val result = firebaseAuthRepository.updateUserProfileDetails(
+        val result = firebaseAuthRepository.updateUserProfileWithPassword(
             userId = uid,
             firstName = firstName,
             lastName = lastName,
-            email = email
+            email = email,
+            currentPassword = currentPassword,
+            newPassword = newPassword
         )
         result.onSuccess {
             _userProfile.value = UserProfile(
@@ -159,7 +170,15 @@ class ProfileViewModel @Inject constructor(
      * Refresh profile data
      */
     fun refresh() {
-        checkAuthStatus()
+        viewModelScope.launch {
+            val uid = firebaseAuthRepository.getCurrentUserId()
+            if (uid == null) {
+                _authState.value = AuthState.Guest
+                _userProfile.value = null
+            } else {
+                loadRemoteProfile()
+            }
+        }
     }
 }
 
