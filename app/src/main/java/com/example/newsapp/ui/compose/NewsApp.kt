@@ -167,7 +167,8 @@ fun NewsApp(
                     }
                 },
                 isDarkTheme = isDarkTheme,
-                onToggleDarkTheme = onThemeChanged
+                onToggleDarkTheme = onThemeChanged,
+                newsRepository = newsRepository
             )
         }
 

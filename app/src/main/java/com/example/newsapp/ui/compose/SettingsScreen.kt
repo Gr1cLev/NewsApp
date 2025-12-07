@@ -52,14 +52,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.newsapp.R
+import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.data.UserPreferences
 import com.example.newsapp.di.FirebaseEntryPoint
+import com.example.newsapp.util.Resource
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -73,7 +76,8 @@ fun SettingsScreen(
     onOpenBackground: () -> Unit,
     onLogout: () -> Unit,
     isDarkTheme: Boolean,
-    onToggleDarkTheme: (Boolean) -> Unit
+    onToggleDarkTheme: (Boolean) -> Unit,
+    newsRepository: NewsRepository
 ) {
     val context = LocalContext.current
     
@@ -90,11 +94,34 @@ fun SettingsScreen(
     var notificationsEnabled by remember { mutableStateOf(UserPreferences.isNotificationsEnabled(context)) }
     var showLogoutDialog by remember { mutableStateOf(false) }
     var isProcessing by remember { mutableStateOf(false) }
+    var apiStatus by remember { mutableStateOf("Checking API status...") }
+    var apiStatusColor by remember { mutableStateOf(Color.Gray) }
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+    val errorColor = MaterialTheme.colorScheme.error
 
     LaunchedEffect(isDarkTheme) {
         nightMode = isDarkTheme
+    }
+    
+    LaunchedEffect(Unit) {
+        val result = withContext(Dispatchers.IO) {
+            newsRepository.fetchArticlesFromNetwork(category = "Top", country = "id")
+        }
+        when (result) {
+            is Resource.Success -> {
+                apiStatus = "API OK"
+                apiStatusColor = Color(0xFF2E7D32) // green
+            }
+            is Resource.Error -> {
+                apiStatus = "API error: ${result.message}"
+                apiStatusColor = errorColor
+            }
+            Resource.Loading -> {
+                apiStatus = "Checking API status..."
+                apiStatusColor = Color.Gray
+            }
+        }
     }
 
     if (showLogoutDialog) {
@@ -245,6 +272,33 @@ fun SettingsScreen(
                     text = stringResource(R.string.settings_information_section),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
+                
+                ElevatedCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.elevatedCardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 14.dp),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "API status",
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                            Text(
+                                text = apiStatus,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = apiStatusColor
+                            )
+                        }
+                    }
+                }
 
                 ExpandableInfoCard(
                     title = stringResource(R.string.settings_faq),
