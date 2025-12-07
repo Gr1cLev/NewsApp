@@ -45,6 +45,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,6 +62,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.newsapp.R
 import com.example.newsapp.data.UserPreferences
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,6 +71,7 @@ fun BackgroundSettingsScreen(
     onBack: () -> Unit
 ){
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     var currentUri by remember { mutableStateOf(UserPreferences.getBackgroundUri(context)) }
     var pendingUri by remember { mutableStateOf<Uri?>(null) }
     var alphaLevel by remember { mutableStateOf(UserPreferences.getBackgroundAlphaLevel(context)) }
@@ -167,6 +170,11 @@ fun BackgroundSettingsScreen(
                                 onClick = {
                                     currentUri = pendingUri.toString()
                                     UserPreferences.setBackgroundUri(context, currentUri)
+                                    pendingUri?.let { uri ->
+                                        coroutineScope.launch {
+                                            persistUri(uri)
+                                        }
+                                    }
                                     pendingUri = null
                                     Toast.makeText(context, "Background updated", Toast.LENGTH_SHORT).show()
                                 }
