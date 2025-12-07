@@ -130,7 +130,7 @@ fun LoginScreen(
             
             isLoading = false
             firebaseResult.onSuccess {
-                toastMessage = "Login berhasil!"
+                toastMessage = "Login successful!"
                 onAuthenticated()
             }.onFailure { error ->
                 passwordError = error.message ?: context.getString(R.string.error_generic)
@@ -144,10 +144,10 @@ fun LoginScreen(
             val result = firebaseAuthRepository.signInAnonymously()
             isLoading = false
             result.onSuccess {
-                toastMessage = "Masuk sebagai Guest berhasil!"
+                toastMessage = "Signed in as Guest!"
                 onAuthenticated()
             }.onFailure { error ->
-                toastMessage = "Anonymous login gagal: ${error.message}"
+                toastMessage = "Anonymous login failed: ${error.message}"
             }
         }
     }
@@ -215,7 +215,7 @@ fun LoginScreen(
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                Text("Lanjutkan sebagai Guest")
+                Text("Continue as Guest")
             }
         }
     }

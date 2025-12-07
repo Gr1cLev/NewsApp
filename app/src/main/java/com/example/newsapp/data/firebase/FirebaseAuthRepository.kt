@@ -288,9 +288,9 @@ class FirebaseAuthRepository @Inject constructor(
     private fun mapAuthException(e: Exception): Exception {
         return when (e) {
             is FirebaseAuthInvalidUserException ->
-                Exception("Akun tidak ditemukan. Silakan daftar terlebih dahulu.")
+                Exception("Account not found. Please register first.")
             is FirebaseAuthInvalidCredentialsException ->
-                Exception("Password salah. Periksa kembali password Anda.")
+                Exception("Incorrect password. Please check your password.")
             else -> e
         }
     }

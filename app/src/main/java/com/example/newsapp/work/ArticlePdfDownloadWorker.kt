@@ -92,19 +92,19 @@ class ArticlePdfDownloadWorker(
         val articleId = inputData.getInt(KEY_ARTICLE_ID, -1)
         if (articleId == -1) return Result.failure()
 
-        setForeground(createForegroundInfo(0, "Menyiapkan unduhan..."))
+        setForeground(createForegroundInfo(0, "Preparing download..."))
 
         val article = entryPoint().newsRepository().getArticleById(articleId)
-            ?: return Result.failure(Data.Builder().putString("error", "Artikel tidak ditemukan").build())
+            ?: return Result.failure(Data.Builder().putString("error", "Article not found").build())
 
         return try {
-            setForeground(createForegroundInfo(40, "Membuat PDF..."))
+            setForeground(createForegroundInfo(40, "Generating PDF..."))
             val pdfUri = writePdf(article)
-            setForeground(createForegroundInfo(90, "Hampir selesai..."))
+            setForeground(createForegroundInfo(90, "Almost done..."))
             showCompletedNotification(pdfUri)
             Result.success(Data.Builder().putString("filePath", pdfUri.toString()).build())
         } catch (e: Exception) {
-            showErrorNotification(e.message ?: "Gagal membuat PDF")
+            showErrorNotification(e.message ?: "Failed to create PDF")
             Result.failure(Data.Builder().putString("error", e.message).build())
         }
     }
@@ -268,11 +268,11 @@ class ArticlePdfDownloadWorker(
             val resolver = appContext.contentResolver
             val collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
             val itemUri = resolver.insert(collection, contentValues)
-                ?: throw IllegalStateException("Gagal membuat entri MediaStore")
+                ?: throw IllegalStateException("Failed to create MediaStore entry")
 
             resolver.openOutputStream(itemUri)?.use { out ->
                 pdfDocument.writeTo(out)
-            } ?: throw IllegalStateException("Gagal membuka stream MediaStore")
+            } ?: throw IllegalStateException("Failed to open MediaStore stream")
 
             // Mark as not pending so it appears to user
             contentValues.clear()
@@ -317,7 +317,7 @@ class ArticlePdfDownloadWorker(
         createChannelIfNeeded()
         val notification = NotificationCompat.Builder(appContext, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_sys_download)
-            .setContentTitle("Mengunduh PDF")
+            .setContentTitle("Downloading PDF")
             .setContentText(message)
             .setProgress(100, progress, progress == 0)
             .setOngoing(true)
@@ -363,11 +363,11 @@ class ArticlePdfDownloadWorker(
 
         val notification = NotificationCompat.Builder(appContext, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_sys_download_done)
-            .setContentTitle("Unduhan selesai")
-            .setContentText("PDF tersimpan di Downloads. Buka via file manager/Drive.")
+            .setContentTitle("Download complete")
+            .setContentText("PDF saved to Downloads. Open via Files or Drive.")
             .setStyle(
                 NotificationCompat.BigTextStyle().bigText(
-                    "PDF tersimpan di folder Downloads. Buka melalui file manager atau Drive."
+                    "PDF saved in the Downloads folder. Open it via your file manager or Drive."
                 )
             )
             .setAutoCancel(true)
@@ -383,7 +383,7 @@ class ArticlePdfDownloadWorker(
         createChannelIfNeeded()
         val notification = NotificationCompat.Builder(appContext, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_notify_error)
-            .setContentTitle("Unduhan gagal")
+            .setContentTitle("Download failed")
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .build()
@@ -394,10 +394,10 @@ class ArticlePdfDownloadWorker(
         val manager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Artikel PDF",
+            "Article PDF",
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            description = "Notifikasi unduhan PDF artikel"
+            description = "Article PDF download notifications"
         }
         manager.createNotificationChannel(channel)
     }
