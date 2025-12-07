@@ -1059,9 +1059,11 @@ private fun ArticleCard(
 
 @Composable
 private fun SectionTitle(text: String) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     Text(
         text = text,
-        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+        color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface
     )
 }
 

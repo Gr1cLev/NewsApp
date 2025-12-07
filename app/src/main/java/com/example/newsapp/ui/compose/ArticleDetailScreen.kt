@@ -1,4 +1,4 @@
-package com.example.newsapp.ui.compose
+﻿package com.example.newsapp.ui.compose
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -191,6 +191,9 @@ fun ArticleDetailScreen(
 
     val currentArticle = article!!
     val detailSurfaceColor = MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val onSurfaceColor = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface
+    val onSurfaceVariantColor = if (isDark) Color.White.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
     val enqueueDownload = remember(currentArticle, workManager, context) {
         {
             val request = OneTimeWorkRequestBuilder<ArticlePdfDownloadWorker>()
@@ -318,12 +321,13 @@ fun ArticleDetailScreen(
                         )
                         Text(
                             text = currentArticle.title,
-                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
+                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                            color = onSurfaceColor
                         )
                         Text(
                             text = "${currentArticle.publishedAt} • ${currentArticle.source}",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = onSurfaceVariantColor
                         )
                     }
 
@@ -436,13 +440,16 @@ private fun HeroHeader(article: NewsArticle) {
 private fun AiInsightSection(article: NewsArticle) {
     val labels = remember(article) { generateAiTags(article) }
     if (labels.isEmpty()) return
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val titleColor = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface
 
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
             text = stringResource(R.string.article_ai_section_title),
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = titleColor
         )
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -560,3 +567,6 @@ private fun DetailBackground(
         content()
     }
 }
+
+
+
