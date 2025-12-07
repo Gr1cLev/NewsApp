@@ -31,6 +31,7 @@ private object AppDestination {
     const val ArticleDetail = "article/{articleId}"
     const val Settings = "settings"
     const val EditProfile = "settings/edit-profile"
+    const val BackgroundSettings = "settings/background"
 
     fun articleDetail(articleId: Int) = "article/$articleId"
 }
@@ -156,6 +157,7 @@ fun NewsApp(
             SettingsScreen(
                 onBack = { navController.popBackStack() },
                 onEditProfile = { navController.navigate(AppDestination.EditProfile) },
+                onOpenBackground = { navController.navigate(AppDestination.BackgroundSettings) },
                 onLogout = {
                     newsRepository.invalidateCache()
                     bookmarksVersion++
@@ -176,6 +178,12 @@ fun NewsApp(
                     profileVersion++
                     navController.popBackStack()
                 }
+            )
+        }
+
+        composable(AppDestination.BackgroundSettings) {
+            BackgroundSettingsScreen(
+                onBack = { navController.popBackStack() }
             )
         }
     }

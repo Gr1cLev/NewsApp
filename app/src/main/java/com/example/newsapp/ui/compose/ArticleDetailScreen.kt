@@ -82,6 +82,9 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.example.newsapp.data.UserPreferences
+import com.example.newsapp.ui.compose.imageAlphaForLevel
+import com.example.newsapp.ui.compose.rememberBackgroundBitmap
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -526,16 +529,10 @@ private fun DetailBackground(
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
-    val backdrop = remember {
-        try {
-            context.resources.openRawResource(R.raw.imagebghome).use { stream ->
-                BitmapFactory.decodeStream(stream)
-            }
-        } catch (error: Exception) {
-            null
-        }
-    }
+    val backdrop = rememberBackgroundBitmap(context)
     val baseColor = MaterialTheme.colorScheme.background
+    val alphaLevel = UserPreferences.getBackgroundAlphaLevel(context)
+    val imageAlpha = imageAlphaForLevel(alphaLevel)
 
     Box(modifier = modifier.fillMaxSize()) {
         if (backdrop != null) {
@@ -544,7 +541,7 @@ private fun DetailBackground(
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
-                alpha = 0.16f
+                alpha = imageAlpha
             )
         }
         Box(

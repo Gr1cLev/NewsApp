@@ -84,15 +84,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import android.net.Uri
 import androidx.annotation.RawRes
 import androidx.compose.ui.graphics.asImageBitmap
-import android.graphics.BitmapFactory
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.newsapp.data.UserPreferences
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import java.io.InputStream
 import com.example.newsapp.R
 import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.model.NewsArticle
@@ -109,6 +106,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import com.example.newsapp.ui.compose.rememberBackgroundBitmap
+import com.example.newsapp.ui.compose.imageAlphaForLevel
 
 private data class ProfileLoadState(
     val loaded: Boolean,
@@ -1109,29 +1108,20 @@ private fun TransparentBackground(
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
-    // Menggunakan MaterialTheme untuk deteksi dark mode yang lebih reliable dan reactive
     val isDarkMode = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val backgroundBitmap = rememberBackgroundBitmap(context)
+    val alphaLevel = UserPreferences.getBackgroundAlphaLevel(context)
+    val imageAlpha = imageAlphaForLevel(alphaLevel)
     
     Box(modifier = modifier.fillMaxSize()) {
-        // Background image dengan transparansi - menggunakan BitmapFactory untuk raw resource
-        val bitmap = remember {
-            try {
-                context.resources.openRawResource(R.raw.imagebghome).use { inputStream ->
-                    BitmapFactory.decodeStream(inputStream)
-                }
-            } catch (e: Exception) {
-                null
-            }
-        }
-        
-        if (bitmap != null) {
+        if (backgroundBitmap != null) {
             androidx.compose.foundation.Image(
-                bitmap = bitmap.asImageBitmap(),
+                bitmap = backgroundBitmap.asImageBitmap(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
-                    .alpha(0.4f), // Alpha 40% untuk visibilitas yang baik
+                    .alpha(imageAlpha),
             )
         } else {
             // Fallback jika gambar tidak bisa dimuat
