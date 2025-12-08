@@ -112,20 +112,20 @@ class ML_RecommendationEngine @Inject constructor(
         
         android.util.Log.d(TAG, "Getting recommendations for user=$userId, candidates=${candidates.size}, topN=$topN")
         
-        // ALWAYS use rule-based engine for instant category-based recommendations
-        // ML model will be used later for fine-tuning after cloud training
-        android.util.Log.d(TAG, "Using rule-based engine for category-based recommendations")
-        val ruleRecommendations = ruleBasedEngine.getRecommendations(candidates, topN)
-        return ruleRecommendations.map { (article, score) ->
+        // Hybrid scoring (ML + rule-based + recency/trending)
+        val scored = candidates.map { article ->
+            val hybrid = calculateHybridScore(userId, article, weights)
             ScoredArticle(
                 article = article,
-                finalScore = score,
-                mlScore = 0.5f,
-                ruleScore = score,
-                recencyBoost = 0.5f,
-                trendingBoost = 0.0f
+                finalScore = hybrid.finalScore,
+                mlScore = hybrid.mlScore,
+                ruleScore = hybrid.ruleScore,
+                recencyBoost = hybrid.recencyBoost,
+                trendingBoost = hybrid.trendingBoost
             )
-        }
+        }.sortedByDescending { it.finalScore }
+
+        return scored.take(topN)
     }
     
     /**
@@ -178,25 +178,28 @@ class ML_RecommendationEngine @Inject constructor(
      */
     private fun calculateMLScore(userId: String, article: NewsArticle): Float {
         val model = currentModel ?: return 0.5f
+        val articleKey = article.id.toString()
         
-        // Get embeddings (using title as unique identifier since no url field)
-        val userEmbedding = model.getUserEmbedding(userId)
-        val articleEmbedding = model.getArticleEmbedding(article.title)
-        
-        // If embeddings not found (cold start), use global mean
-        if (userEmbedding == null || articleEmbedding == null) {
+        val hasUserEmbedding = model.hasUserEmbedding(userId)
+        val hasArticleEmbedding = model.hasArticleEmbedding(articleKey)
+        if (!hasUserEmbedding || !hasArticleEmbedding) {
             return model.globalMean
         }
+
+        // Get embeddings (use stable article ID key to match server artifact)
+        val userEmbedding = model.getUserEmbedding(userId)
+        val articleEmbedding = model.getArticleEmbedding(articleKey)
         
         // Dot product of embeddings
         var dotProduct = 0.0f
-        for (i in userEmbedding.indices) {
+        val dim = minOf(userEmbedding.size, articleEmbedding.size)
+        for (i in 0 until dim) {
             dotProduct += userEmbedding[i] * articleEmbedding[i]
         }
         
-        // Add biases (using title as unique identifier)
+        // Add biases
         val userBias = model.getUserBias(userId)
-        val articleBias = model.getArticleBias(article.title)
+        val articleBias = model.getArticleBias(articleKey)
         
         // Final prediction
         val prediction = dotProduct + userBias + articleBias + model.globalMean
