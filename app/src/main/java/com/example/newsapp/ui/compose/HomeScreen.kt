@@ -788,7 +788,8 @@ private fun ProfileTab(
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     text = profile.fullName().ifBlank { profile.email.substringBefore("@") },
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = profile.email,
