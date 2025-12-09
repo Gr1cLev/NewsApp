@@ -1,0 +1,53 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // User documents - only owner can read/write
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // User interactions - only owner can read/write
+    match /user_interactions/{userId}/articles/{articleId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // User ML preferences - only owner can read/write
+    // This collection stores ML category preferences for personalization
+    match /user_preferences/{userId}/ml_data/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // User bookmarks - only owner can read/write
+    // This collection stores bookmarked articles
+    match /user_bookmarks/{userId}/bookmarks/{articleId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Articles cache - public read, authenticated write
+    // This collection caches articles from API for fallback when rate limited
+    // Any authenticated user can read and write to prevent cache miss
+    match /articles_cache/{articleId} {
+      allow read: if true; // Public read for all users
+      allow write: if request.auth != null; // Any authenticated user can cache articles
+    }
+    
+    // ML models metadata - public read, no write (managed via Cloud Functions or manual)
+    // This collection stores ML model version info for client downloads
+    match /ml_models/{modelId} {
+      allow read: if true; // Public read so app can check for new models
+      allow write: if false; // No client writes, managed server-side
+    }
+    
+    // ML training logs - no client access (admin only)
+    match /ml_training_logs/{logId} {
+      allow read, write: if false;
+    }
+    
+    // Default: deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

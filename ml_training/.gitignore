@@ -1,0 +1,27 @@
+# Service Account Key - DO NOT COMMIT
+serviceAccountKey.json
+
+# Datasets (can be large)
+datasets/*.json
+datasets/*.png
+
+# Trained models (can be regenerated)
+models/*.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.jupyter/
+.local/
+
+# Environment
+venv/
+env/
+ENV/

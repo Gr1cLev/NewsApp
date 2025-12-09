@@ -1,7 +1,12 @@
-package com.example.newsapp.ui.compose
+﻿package com.example.newsapp.ui.compose
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
+import android.os.Build
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -58,15 +63,28 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.newsapp.R
 import com.example.newsapp.data.NewsRepository
+import com.example.newsapp.data.firebase.UserInteractionRepository
+import com.example.newsapp.di.FirebaseEntryPoint
 import com.example.newsapp.model.NewsArticle
+import com.example.newsapp.work.ArticlePdfDownloadWorker
+import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
+import androidx.work.WorkManager
+import androidx.work.workDataOf
+import com.example.newsapp.data.UserPreferences
+import com.example.newsapp.ui.compose.imageAlphaForLevel
+import com.example.newsapp.ui.compose.rememberBackgroundBitmap
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,15 +97,72 @@ fun ArticleDetailScreen(
     val context = LocalContext.current
     var isBookmarked by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+    val workManager = remember(context) { WorkManager.getInstance(context) }
+
+    // Get UserInteractionRepository from Hilt for tracking
+    val userInteractionRepository = remember {
+        val appContext = context.applicationContext
+        EntryPointAccessors.fromApplication(
+            appContext,
+            FirebaseEntryPoint::class.java
+        ).userInteractionRepository()
+    }
 
     val article by produceState<NewsArticle?>(initialValue = null, articleId) {
         value = withContext(Dispatchers.IO) { newsRepository.getArticleById(articleId) }
     }
 
+    // Track reading time
+    var readingStartTime by remember { mutableStateOf(0L) }
+    
+    // Track article click when article is loaded
     LaunchedEffect(article) {
-        article?.let {
+        article?.let { currentArticle ->
+            // Start reading time tracking
+            readingStartTime = System.currentTimeMillis()
+            
+            // Check bookmark status
             isBookmarked = withContext(Dispatchers.IO) {
-                newsRepository.isArticleBookmarked(it.id)
+                newsRepository.isArticleBookmarked(currentArticle.id)
+            }
+            
+            // Track article click to Firebase
+            withContext(Dispatchers.IO) {
+                try {
+                    userInteractionRepository.trackArticleClick(
+                        articleId = currentArticle.id.toString(),
+                        title = currentArticle.title,
+                        category = currentArticle.category,
+                        source = currentArticle.source
+                    )
+                    android.util.Log.d("ArticleDetail", "Article click tracked: ${currentArticle.title}")
+                } catch (e: Exception) {
+                    android.util.Log.e("ArticleDetail", "Failed to track article click: ${e.message}")
+                }
+            }
+        }
+    }
+    
+    // Track reading time when leaving the screen
+    androidx.compose.runtime.DisposableEffect(article) {
+        onDispose {
+            article?.let { currentArticle ->
+                if (readingStartTime > 0) {
+                    val readingDuration = (System.currentTimeMillis() - readingStartTime) / 1000
+                    if (readingDuration > 2) { // Only track if user spent more than 2 seconds
+                        coroutineScope.launch(Dispatchers.IO) {
+                            try {
+                                userInteractionRepository.trackReadingTime(
+                                    articleId = currentArticle.id.toString(),
+                                    durationSeconds = readingDuration
+                                )
+                                android.util.Log.d("ArticleDetail", "Reading time tracked: ${readingDuration}s for ${currentArticle.title}")
+                            } catch (e: Exception) {
+                                android.util.Log.e("ArticleDetail", "Failed to track reading time: ${e.message}")
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -116,6 +191,87 @@ fun ArticleDetailScreen(
 
     val currentArticle = article!!
     val detailSurfaceColor = MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val onSurfaceColor = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface
+    val onSurfaceVariantColor = if (isDark) Color.White.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
+    val enqueueDownload = remember(currentArticle, workManager, context) {
+        {
+            val request = OneTimeWorkRequestBuilder<ArticlePdfDownloadWorker>()
+                .setInputData(
+                    workDataOf(ArticlePdfDownloadWorker.KEY_ARTICLE_ID to currentArticle.id)
+                )
+                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                .build()
+            workManager.enqueueUniqueWork(
+                "download-article-${currentArticle.id}",
+                ExistingWorkPolicy.REPLACE,
+                request
+            )
+            Toast.makeText(
+                context,
+                context.getString(R.string.toast_download_starting),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    fun needsNotificationPermission(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+
+    fun needsLegacyStoragePermission(): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
+
+    val storagePermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            enqueueDownload()
+        } else {
+            Toast.makeText(
+                context,
+                context.getString(R.string.toast_download_storage_permission_denied),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            if (needsLegacyStoragePermission()) {
+                storagePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            } else {
+                enqueueDownload()
+            }
+        } else {
+            Toast.makeText(
+                context,
+                context.getString(R.string.toast_notification_permission_needed),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    val startDownloadWithPermissions = remember(currentArticle) {
+        {
+            when {
+                needsNotificationPermission() ->
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                needsLegacyStoragePermission() ->
+                    storagePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                else -> enqueueDownload()
+            }
+        }
+    }
 
     DetailBackground {
         Column(
@@ -165,12 +321,13 @@ fun ArticleDetailScreen(
                         )
                         Text(
                             text = currentArticle.title,
-                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
+                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                            color = onSurfaceColor
                         )
                         Text(
                             text = "${currentArticle.publishedAt} • ${currentArticle.source}",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = onSurfaceVariantColor
                         )
                     }
 
@@ -205,7 +362,8 @@ fun ArticleDetailScreen(
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
-                        }
+                        },
+                        onDownload = { startDownloadWithPermissions() }
                     )
                 }
             }
@@ -282,13 +440,16 @@ private fun HeroHeader(article: NewsArticle) {
 private fun AiInsightSection(article: NewsArticle) {
     val labels = remember(article) { generateAiTags(article) }
     if (labels.isEmpty()) return
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val titleColor = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface
 
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
             text = stringResource(R.string.article_ai_section_title),
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = titleColor
         )
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -312,9 +473,9 @@ private fun AiInsightSection(article: NewsArticle) {
 @Composable
 private fun ActionRow(
     isBookmarked: Boolean,
-    onBookmarkToggle: () -> Unit
+    onBookmarkToggle: () -> Unit,
+    onDownload: () -> Unit
 ) {
-    val context = LocalContext.current
     val bookmarkLabel = stringResource(
         if (isBookmarked) R.string.action_remove_bookmark else R.string.action_add_bookmark
     )
@@ -337,13 +498,7 @@ private fun ActionRow(
             )
         }
         FilledTonalButton(
-            onClick = {
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.toast_download_unavailable),
-                    Toast.LENGTH_SHORT
-                ).show()
-            },
+            onClick = onDownload,
             shape = RoundedCornerShape(18.dp),
             modifier = Modifier.weight(1f)
         ) {
@@ -381,16 +536,10 @@ private fun DetailBackground(
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
-    val backdrop = remember {
-        try {
-            context.resources.openRawResource(R.raw.imagebghome).use { stream ->
-                BitmapFactory.decodeStream(stream)
-            }
-        } catch (error: Exception) {
-            null
-        }
-    }
+    val backdrop = rememberBackgroundBitmap(context)
     val baseColor = MaterialTheme.colorScheme.background
+    val alphaLevel = UserPreferences.getBackgroundAlphaLevel(context)
+    val imageAlpha = imageAlphaForLevel(alphaLevel)
 
     Box(modifier = modifier.fillMaxSize()) {
         if (backdrop != null) {
@@ -399,7 +548,7 @@ private fun DetailBackground(
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
-                alpha = 0.16f
+                alpha = imageAlpha
             )
         }
         Box(
@@ -418,3 +567,6 @@ private fun DetailBackground(
         content()
     }
 }
+
+
+

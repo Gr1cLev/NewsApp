@@ -2,6 +2,8 @@ package com.example.newsapp.data
 
 import android.content.Context
 import android.util.Log
+import com.example.newsapp.data.firebase.FirebaseArticleCacheRepository
+import com.example.newsapp.data.firebase.FirebaseBookmarkRepository
 import com.example.newsapp.model.NewsArticle
 import com.example.newsapp.model.NewsCategory
 import com.example.newsapp.model.NewsData
@@ -16,24 +18,37 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Repository - 100% API NewsAPI.org
- * No local JSON fallback
+ * Repository - API + Firestore Cache + Bookmarks
+ * Strategy:
+ * 1. Fetch API → Cache to Firestore
+ * 2. API 429 rate limit → Load from Firestore cache
+ * 3. Search → Cache first, then API
+ * 4. Bookmarks → Load full articles from cache
  */
 @Singleton
 class NewsRepository @Inject constructor(
     private val context: Context,
-    private val newsApiService: NewsApiService
+    private val newsApiService: NewsApiService,
+    private val firebaseBookmarkRepository: FirebaseBookmarkRepository,
+    private val firebaseArticleCacheRepository: FirebaseArticleCacheRepository
 ) {
     
     companion object {
         private const val TAG = "NewsRepository"
+        private const val PREFS_NAME = "news_cache"
+        private const val KEY_MULTI_CATEGORY_TIMESTAMP = "multi_category_timestamp"
+        private const val CACHE_TTL_MS = 30 * 60 * 1000L // 30 minutes
     }
 
+    private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    
     fun invalidateCache() {
         cachedData = null
         articleIndex = emptyMap()
         bookmarkIds.clear()
         cachedBookmarkProfileId = null
+        cachedMultiCategoryArticles = null
+        prefs.edit().remove(KEY_MULTI_CATEGORY_TIMESTAMP).apply()
     }
 
     
@@ -43,6 +58,55 @@ class NewsRepository @Inject constructor(
     private var articleIndex: Map<Int, NewsArticle> = emptyMap()
     @Volatile
     private var cachedBookmarkProfileId: String? = null
+    @Volatile
+    private var cachedMultiCategoryArticles: List<NewsArticle>? = null
+    
+    /**
+     * Fetch articles dari multiple categories untuk ML recommendations
+     * Returns diverse articles across Sports, Business, Technology, etc.
+     * Implements 30-minute cache TTL to reduce API calls.
+     */
+    suspend fun fetchMultiCategoryArticles(country: String = "us", forceRefresh: Boolean = false): Resource<List<NewsArticle>> = withContext(Dispatchers.IO) {
+        // Check cache first (unless force refresh)
+        if (!forceRefresh) {
+            val lastFetchTime = prefs.getLong(KEY_MULTI_CATEGORY_TIMESTAMP, 0L)
+            val cacheAge = System.currentTimeMillis() - lastFetchTime
+            
+            if (cacheAge < CACHE_TTL_MS && cachedMultiCategoryArticles != null) {
+                Log.d(TAG, "✅ Using cached multi-category articles (age: ${cacheAge / 1000}s)")
+                return@withContext Resource.Success(cachedMultiCategoryArticles!!)
+            }
+        }
+        
+        // Fetch fresh data
+        val categories = listOf("sports", "business", "technology", "health", "entertainment")
+        val allArticles = mutableListOf<NewsArticle>()
+        var baseTimestamp = System.currentTimeMillis()
+        
+        categories.forEach { category ->
+            try {
+                val result = fetchArticlesFromNetwork(category = category, country = country)
+                if (result is Resource.Success) {
+                    // Adjust IDs to ensure uniqueness across categories
+                    val adjustedArticles = result.data.map { article ->
+                        article.copy(id = kotlin.math.abs(article.title.hashCode()) + baseTimestamp.toInt())
+                            .also { baseTimestamp++ }
+                    }
+                    allArticles.addAll(adjustedArticles)
+                    Log.d(TAG, "📦 Fetched ${adjustedArticles.size} articles for category: $category")
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "⚠️ Failed to fetch $category: ${e.message}")
+            }
+        }
+        
+        // Update cache
+        cachedMultiCategoryArticles = allArticles
+        prefs.edit().putLong(KEY_MULTI_CATEGORY_TIMESTAMP, System.currentTimeMillis()).apply()
+        
+        Log.d(TAG, "🎯 Multi-category fetch complete: ${allArticles.size} total articles (cache updated)")
+        Resource.Success(allArticles)
+    }
     
     /**
      * Fetch articles dari network (NewsAPI)
@@ -61,17 +125,16 @@ class NewsRepository @Inject constructor(
             )
             
             if (response.isSuccessful && response.body() != null) {
-                // Determine display category: use requested category or "General" for "All"/"Top"
+                // Determine display category: use requested category or "General" for "Top"
                 val displayCategory = when {
                     category.isNullOrEmpty() -> "General"
-                    category.equals("All", ignoreCase = true) -> "General"
                     category.equals("Top", ignoreCase = true) -> "General"
-                    else -> category
+                    else -> category.replaceFirstChar { it.uppercaseChar() } // Capitalize: sports -> Sports
                 }
                 
                 val articles = response.body()!!.articles.mapIndexed { index, dto ->
                     dto.toNewsArticle(
-                        id = System.currentTimeMillis().toInt() + index,
+                        id = kotlin.math.abs((dto.url ?: dto.title).hashCode()) + index,
                         category = displayCategory,
                         isFeatured = index < 5 // 5 artikel pertama = featured
                     )
@@ -96,7 +159,7 @@ class NewsRepository @Inject constructor(
      * Search articles dari network
      */
     suspend fun searchArticles(query: String, category: String = "General"): Resource<List<NewsArticle>> = withContext(Dispatchers.IO) {
-        safeApiCall {
+        val result = safeApiCall {
             val response = newsApiService.searchEverything(
                 query = query,
                 language = "en", // Change to English for more results
@@ -106,17 +169,45 @@ class NewsRepository @Inject constructor(
             if (response.isSuccessful && response.body() != null) {
                 val articles = response.body()!!.articles.mapIndexed { index, dto ->
                     dto.toNewsArticle(
-                        id = System.currentTimeMillis().toInt() + index,
+                        id = kotlin.math.abs((dto.url ?: dto.title).hashCode()) + index,
                         category = category,
                         isFeatured = index < 5 // 5 pertama = featured
                     )
                 }
                 Log.d(TAG, "Search returned ${articles.size} articles")
+                
+                // Cache search results to Firestore for fallback
+                if (articles.isNotEmpty()) {
+                    withContext(Dispatchers.IO) {
+                        firebaseArticleCacheRepository.cacheArticles(articles, "Search-$query")
+                    }
+                }
+                
                 articles
             } else {
+                // Check if it's rate limit error (429)
+                if (response.code() == 429) {
+                    Log.w(TAG, "⚠️ Search rate limited, loading from cache...")
+                    val cachedArticles = firebaseArticleCacheRepository.getRecentArticles(limit = 50)
+                    return@safeApiCall cachedArticles.filter { 
+                        it.title.contains(query, ignoreCase = true) || 
+                        it.summary.contains(query, ignoreCase = true)
+                    }
+                }
                 throw Exception("Search Error: ${response.code()}")
             }
         }
+
+        // Update article index so detail screens can resolve by ID
+        if (result is Resource.Success) {
+            val updatedIndex = articleIndex.toMutableMap()
+            result.data.forEach { article ->
+                updatedIndex[article.id] = article
+            }
+            articleIndex = updatedIndex
+        }
+
+        result
     }
 
     /**
@@ -128,25 +219,25 @@ class NewsRepository @Inject constructor(
         val existing = cachedData
         if (existing != null) {
             Log.d(TAG, "Using cached data")
-            ensureBookmarksLoaded()
+            // Bookmarks loaded on-demand via getBookmarks()
             return existing
         }
         
-        // Fetch dari API - COBA BEBERAPA COUNTRY
-        Log.d(TAG, "Fetching fresh data from API...")
+        // Fetch dari API - MULTI CATEGORY untuk ML recommendations
+        Log.d(TAG, "Fetching fresh data from API (multi-category)...")
         
-        // Try Indonesia first with All category
-        var networkResult = fetchArticlesFromNetwork(category = "All", country = "id")
+        // Try multi-category fetch first for diverse data
+        var networkResult = fetchMultiCategoryArticles(country = "us")
         
-        // If Indonesia returns 0, try US
+        // If multi-category returns empty, fallback to Indonesia General
         if (networkResult is Resource.Success && networkResult.data.isEmpty()) {
-            Log.w(TAG, "⚠️ Indonesia returned 0 articles, trying US...")
-            networkResult = fetchArticlesFromNetwork(category = "All", country = "us")
+            Log.w(TAG, "⚠️ Multi-category returned 0 articles, trying Indonesia General...")
+            networkResult = fetchArticlesFromNetwork(category = "Top", country = "id")
         }
         
         // If still 0, try general search
         if (networkResult is Resource.Success && networkResult.data.isEmpty()) {
-            Log.w(TAG, "⚠️ US also returned 0, trying general search...")
+            Log.w(TAG, "⚠️ Still 0 articles, trying general search...")
             networkResult = searchArticles("breaking news OR trending", category = "General")
         }
         
@@ -155,7 +246,15 @@ class NewsRepository @Inject constructor(
                 val allArticles = networkResult.data
                 val featured = allArticles.filter { it.isFeatured }
                 
+                // Log category distribution
+                val categoryCount = allArticles.groupingBy { it.category }.eachCount()
                 Log.d(TAG, "✅ API Success: ${allArticles.size} articles, ${featured.size} featured")
+                Log.d(TAG, "📊 Category distribution: $categoryCount")
+                
+                // Cache articles to Firestore for fallback
+                withContext(Dispatchers.IO) {
+                    firebaseArticleCacheRepository.cacheArticles(allArticles, "API-MultiCategory")
+                }
                 
                 val newsData = NewsData(
                     categories = defaultCategories(),
@@ -168,12 +267,20 @@ class NewsRepository @Inject constructor(
                 // Cache
                 cachedData = newsData
                 articleIndex = allArticles.associateBy { it.id }
-                ensureBookmarksLoaded()
+                // Bookmarks loaded on-demand via getBookmarks()
                 
                 cachedData ?: newsData
             }
             is Resource.Error -> {
                 Log.e(TAG, "❌ API Failed: ${networkResult.message}")
+                
+                // Check if it's rate limit error (429)
+                if (networkResult.message?.contains("429") == true || 
+                    networkResult.message?.contains("rate limit", ignoreCase = true) == true) {
+                    Log.w(TAG, "⚠️ Rate limit detected, loading from Firestore cache...")
+                    return loadFromCache()
+                }
+                
                 throw Exception("Failed to fetch news: ${networkResult.message}")
             }
             is Resource.Loading -> {
@@ -191,10 +298,45 @@ class NewsRepository @Inject constructor(
     fun getArticles(): List<NewsArticle> =
         cachedData?.articles ?: emptyList()
 
-    fun getBookmarks(): List<NewsArticle> {
-        if (cachedData == null) return emptyList()
-        ensureBookmarksLoaded()
-        return cachedData?.bookmarkedArticles ?: emptyList()
+    suspend fun getCachedArticlesByCategory(category: String): List<NewsArticle> {
+        // Try memory first
+        val fromCache = cachedData?.articles?.filter { it.category.equals(category, ignoreCase = true) }
+        if (!fromCache.isNullOrEmpty()) return fromCache
+
+        // Firestore fallback
+        val cached = firebaseArticleCacheRepository.getArticlesByCategory(category)
+        if (cached.isNotEmpty()) {
+            val updatedIndex = articleIndex.toMutableMap()
+            cached.forEach { updatedIndex[it.id] = it }
+            articleIndex = updatedIndex
+        }
+        return cached
+    }
+
+    suspend fun getBookmarks(): List<NewsArticle> {
+        // Load bookmark IDs from Firestore
+        val firestoreBookmarks = firebaseBookmarkRepository.loadBookmarks()
+        bookmarkIds.clear()
+        bookmarkIds.addAll(firestoreBookmarks)
+        
+        if (firestoreBookmarks.isEmpty()) return emptyList()
+        
+        // Try to get articles from current cache (articleIndex)
+        val articlesFromIndex = firestoreBookmarks.mapNotNull { articleIndex[it] }
+        
+        // If we got all articles from index, return them
+        if (articlesFromIndex.size == firestoreBookmarks.size) {
+            Log.d(TAG, "✅ Loaded ${articlesFromIndex.size} bookmarks from memory cache")
+            refreshCachedBookmarks()
+            return articlesFromIndex
+        }
+        
+        // Otherwise, fetch missing articles from Firestore cache
+        Log.d(TAG, "⚠️ Some bookmarks not in memory, fetching from Firestore cache...")
+        val articlesFromCache = firebaseArticleCacheRepository.getArticlesByIds(firestoreBookmarks)
+        
+        Log.d(TAG, "✅ Loaded ${articlesFromCache.size}/${firestoreBookmarks.size} bookmarks from Firestore cache")
+        return articlesFromCache
     }
 
     suspend fun getArticleById(articleId: Int): NewsArticle? {
@@ -207,29 +349,54 @@ class NewsRepository @Inject constructor(
                 return null
             }
         }
-        return articleIndex[articleId]
+
+        // Return from in-memory index if present
+        articleIndex[articleId]?.let { return it }
+
+        // Fallback to Firestore cache so deep links/search/bookmarks still resolve
+        val cachedArticle = firebaseArticleCacheRepository.getArticleById(articleId)
+        if (cachedArticle != null) {
+            val updatedIndex = articleIndex.toMutableMap()
+            updatedIndex[articleId] = cachedArticle
+            articleIndex = updatedIndex
+            return cachedArticle
+        }
+
+        Log.w(TAG, "Article $articleId not found in repository or cache")
+        return null
     }
 
     fun getSearchSuggestions(): List<String> =
         cachedData?.searchSuggestions ?: emptyList()
 
     fun isArticleBookmarked(articleId: Int): Boolean {
-        ensureBookmarksLoaded()
+        // Use local cache (already loaded from Firestore via getBookmarks())
         return bookmarkIds.contains(articleId)
     }
 
-    fun toggleBookmark(articleId: Int): Boolean {
-        val appContext = context.applicationContext
-        ensureBookmarksLoaded()
-        val profileId = resolveProfileId(appContext)
-        val isBookmarked = if (bookmarkIds.contains(articleId)) {
+    suspend fun toggleBookmark(articleId: Int): Boolean {
+        val isCurrentlyBookmarked = bookmarkIds.contains(articleId)
+        val isBookmarked: Boolean
+        
+        if (isCurrentlyBookmarked) {
+            // Remove bookmark
             bookmarkIds.remove(articleId)
-            false
+            firebaseBookmarkRepository.removeBookmark(articleId)
+            isBookmarked = false
+            Log.d(TAG, "🔖 Bookmark removed: articleId=$articleId")
         } else {
+            // Add bookmark with article metadata
+            val article = getArticleById(articleId)
             bookmarkIds.add(articleId)
-            true
+            firebaseBookmarkRepository.addBookmark(
+                articleId = articleId,
+                title = article?.title ?: "",
+                category = article?.category ?: ""
+            )
+            isBookmarked = true
+            Log.d(TAG, "🔖 Bookmark added: articleId=$articleId")
         }
-        BookmarkRepository.persistBookmarks(appContext, profileId, bookmarkIds)
+        
         refreshCachedBookmarks()
         return isBookmarked
     }
@@ -243,34 +410,8 @@ class NewsRepository @Inject constructor(
     private fun recomputeBookmarks(): List<NewsArticle> =
         bookmarkIds.mapNotNull { articleIndex[it] }
 
-    private fun resolveProfileId(context: Context): String {
-        val profile = ProfileRepository.getActiveProfile(context)
-        return profile?.id ?: BookmarkRepository.GUEST_PROFILE_ID
-    }
-
-    private fun ensureBookmarksLoaded() {
-        val appContext = context.applicationContext
-        val profileId = resolveProfileId(appContext)
-        if (profileId == cachedBookmarkProfileId && cachedData != null) {
-            return
-        }
-        val defaults = if (cachedBookmarkProfileId == null) bookmarkIds.toSet() else emptySet()
-        val stored = BookmarkRepository.readBookmarks(appContext, profileId)
-        bookmarkIds.clear()
-        when {
-            stored.isNotEmpty() -> bookmarkIds.addAll(stored)
-            defaults.isNotEmpty() -> {
-                bookmarkIds.addAll(defaults)
-                BookmarkRepository.persistBookmarks(appContext, profileId, defaults)
-            }
-        }
-        cachedBookmarkProfileId = profileId
-        refreshCachedBookmarks()
-    }
-
     private fun defaultCategories(): List<NewsCategory> = listOf(
-        NewsCategory(0, "All"),
-        NewsCategory(1, "Top"),
+        NewsCategory(0, "Top"),
         NewsCategory(2, "Sports"),
         NewsCategory(3, "Business"),
         NewsCategory(4, "Entertainment"),
@@ -278,6 +419,34 @@ class NewsRepository @Inject constructor(
         NewsCategory(6, "Health"),
         NewsCategory(7, "Science")
     )
+
+    /**
+     * Load articles from Firestore cache (fallback when API rate limited)
+     */
+    private suspend fun loadFromCache(): NewsData {
+        Log.d(TAG, "📦 Loading from Firestore cache...")
+        val cachedArticles = firebaseArticleCacheRepository.getRecentArticles(limit = 100)
+        
+        if (cachedArticles.isEmpty()) {
+            throw Exception("No cached articles available and API rate limited")
+        }
+        
+        val featured = cachedArticles.filter { it.isFeatured }
+        Log.d(TAG, "✅ Loaded ${cachedArticles.size} articles from cache, ${featured.size} featured")
+        
+        val newsData = NewsData(
+            categories = defaultCategories(),
+            featuredArticles = featured,
+            articles = cachedArticles,
+            bookmarkedArticles = emptyList(),
+            searchSuggestions = cachedArticles.take(10).map { it.title }
+        )
+        
+        cachedData = newsData
+        articleIndex = cachedArticles.associateBy { it.id }
+        
+        return newsData
+    }
 }
 
 

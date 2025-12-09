@@ -4,9 +4,11 @@ import com.example.newsapp.model.firebase.User
 import com.example.newsapp.model.firebase.UserPreferences
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,6 +21,10 @@ class FirebaseAuthRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
     private val firestore: FirebaseFirestore
 ) {
+    
+    // Lazy injection to avoid circular dependency
+    @Inject
+    lateinit var preferenceTracker: com.example.newsapp.ml.ML_UserPreferenceTracker
     
     /**
      * Get current Firebase user
@@ -40,12 +46,13 @@ class FirebaseAuthRepository @Inject constructor(
      */
     suspend fun signInWithEmail(email: String, password: String): Result<FirebaseUser> {
         return try {
-            val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+            val cleanEmail = email.trim()
+            val result = firebaseAuth.signInWithEmailAndPassword(cleanEmail, password).await()
             result.user?.let {
                 Result.success(it)
             } ?: Result.failure(Exception("Authentication failed"))
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(mapAuthException(e))
         }
     }
     
@@ -64,23 +71,6 @@ class FirebaseAuthRepository @Inject constructor(
                 createUserDocument(firebaseUser, displayName)
                 Result.success(firebaseUser)
             } ?: Result.failure(Exception("Registration failed"))
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-    
-    /**
-     * Sign in with Google
-     */
-    suspend fun signInWithGoogle(idToken: String): Result<FirebaseUser> {
-        return try {
-            val credential = GoogleAuthProvider.getCredential(idToken, null)
-            val result = firebaseAuth.signInWithCredential(credential).await()
-            result.user?.let { firebaseUser ->
-                // Create or update user document
-                createOrUpdateUserDocument(firebaseUser)
-                Result.success(firebaseUser)
-            } ?: Result.failure(Exception("Google sign-in failed"))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -148,6 +138,9 @@ class FirebaseAuthRepository @Inject constructor(
             .document(firebaseUser.uid)
             .set(user)
             .await()
+        
+        // Initialize balanced ML preferences for new user
+        preferenceTracker.initializeBalancedPreferences(firebaseUser.uid)
     }
     
     /**
@@ -232,6 +225,73 @@ class FirebaseAuthRepository @Inject constructor(
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    /**
+     * Update user profile details (first/last/email) in Firestore user document.
+     * Note: does not update Firebase Auth email; only Firestore profile fields.
+     */
+    /**
+     * Update profile details and optionally password (requires current password).
+     * Email is not changed here; only displayName + optional password update.
+     */
+    suspend fun updateUserProfileWithPassword(
+        userId: String,
+        firstName: String,
+        lastName: String,
+        email: String,
+        currentPassword: String,
+        newPassword: String?
+    ): Result<Unit> {
+        return try {
+            val user = firebaseAuth.currentUser ?: throw Exception("User not logged in")
+            val currentEmail = user.email ?: throw Exception("Email not available")
+
+            // Re-authenticate with current email + provided current password
+            val credential = EmailAuthProvider.getCredential(currentEmail, currentPassword)
+            user.reauthenticate(credential).await()
+
+            // Update password if provided
+            if (!newPassword.isNullOrBlank()) {
+                user.updatePassword(newPassword).await()
+            }
+
+            val displayName = listOf(firstName, lastName)
+                .filter { it.isNotBlank() }
+                .joinToString(" ")
+                .ifBlank { "User" }
+
+            // Update display name in Auth
+            val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                .setDisplayName(displayName)
+                .build()
+            user.updateProfile(profileUpdates).await()
+
+            // Update Firestore doc (displayName + email for consistency)
+            val updates = mapOf(
+                "displayName" to displayName,
+                "email" to email
+            )
+
+            firestore.collection("users")
+                .document(userId)
+                .update(updates)
+                .await()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(mapAuthException(e))
+        }
+    }
+
+    private fun mapAuthException(e: Exception): Exception {
+        return when (e) {
+            is FirebaseAuthInvalidUserException ->
+                Exception("Account not found. Please register first.")
+            is FirebaseAuthInvalidCredentialsException ->
+                Exception("Incorrect password. Please check your password.")
+            else -> e
         }
     }
 }

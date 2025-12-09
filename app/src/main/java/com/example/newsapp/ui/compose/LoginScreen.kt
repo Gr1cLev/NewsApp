@@ -66,13 +66,9 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.example.newsapp.R
-import com.example.newsapp.data.ProfileRepository
 import com.example.newsapp.data.firebase.FirebaseAuthRepository
 import com.example.newsapp.di.FirebaseEntryPoint
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
+
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -101,42 +97,7 @@ fun LoginScreen(
         ).firebaseAuthRepository()
     }
 
-    // Google Sign-In setup
-    val googleSignInClient = remember {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(context.getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
-        GoogleSignIn.getClient(context, gso)
-    }
 
-    val googleSignInLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                account.idToken?.let { idToken ->
-                    scope.launch {
-                        isLoading = true
-                        val authResult = firebaseAuthRepository.signInWithGoogle(idToken)
-                        isLoading = false
-                        authResult.onSuccess {
-                            toastMessage = "Login dengan Google berhasil!"
-                            onAuthenticated()
-                        }.onFailure { error ->
-                            toastMessage = "Google Sign-In gagal: ${error.message}"
-                        }
-                    }
-                } ?: run {
-                    toastMessage = "ID Token tidak ditemukan"
-                }
-            } catch (e: ApiException) {
-                toastMessage = "Google Sign-In gagal: ${e.message}"
-            }
-        }
-    }
 
     toastMessage?.let { message ->
         LaunchedEffect(message) {
@@ -164,33 +125,15 @@ fun LoginScreen(
         scope.launch {
             isLoading = true
             
-            // Try Firebase Auth first
+            // Firebase Auth only (no legacy fallback)
             val firebaseResult = firebaseAuthRepository.signInWithEmail(email.trim(), password)
             
-            if (firebaseResult.isSuccess) {
-                isLoading = false
-                toastMessage = "Login berhasil!"
-                onAuthenticated()
-                return@launch
-            }
-            
-            // Fallback to ProfileRepository for backward compatibility
-            val result = withContext(Dispatchers.IO) {
-                ProfileRepository.authenticate(context, email.trim(), password)
-            }
             isLoading = false
-            result.onSuccess { profile ->
-                toastMessage = context.getString(
-                    R.string.toast_login_success,
-                    profile.fullName().ifBlank { profile.email }
-                )
+            firebaseResult.onSuccess {
+                toastMessage = "Login successful!"
                 onAuthenticated()
             }.onFailure { error ->
-                passwordError = when (error) {
-                    is ProfileRepository.InvalidCredentialsException ->
-                        context.getString(R.string.error_invalid_credentials)
-                    else -> error.message ?: context.getString(R.string.error_generic)
-                }
+                passwordError = error.message ?: context.getString(R.string.error_generic)
             }
         }
     }
@@ -201,18 +144,15 @@ fun LoginScreen(
             val result = firebaseAuthRepository.signInAnonymously()
             isLoading = false
             result.onSuccess {
-                toastMessage = "Masuk sebagai Guest berhasil!"
+                toastMessage = "Signed in as Guest!"
                 onAuthenticated()
             }.onFailure { error ->
-                toastMessage = "Anonymous login gagal: ${error.message}"
+                toastMessage = "Anonymous login failed: ${error.message}"
             }
         }
     }
 
-    fun attemptGoogleSignIn() {
-        val signInIntent = googleSignInClient.signInIntent
-        googleSignInLauncher.launch(signInIntent)
-    }
+
 
     AuthBackgroundLayout(
         title = context.getString(R.string.auth_login_title),
@@ -261,41 +201,6 @@ fun LoginScreen(
                 supportingText = passwordError
             )
 
-            // Divider with "atau" text
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Divider(modifier = Modifier.weight(1f))
-                Text(
-                    text = "or",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Divider(modifier = Modifier.weight(1f))
-            }
-
-            // Google Sign-In Button
-            OutlinedButton(
-                onClick = ::attemptGoogleSignIn,
-                enabled = !isLoading,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                contentPadding = PaddingValues(vertical = 12.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_google),
-                    contentDescription = "Google",
-                    modifier = Modifier.size(20.dp),
-                    tint = Color.Unspecified
-                )
-                Spacer(modifier = Modifier.size(8.dp))
-                Text("Masuk dengan Google")
-            }
-
             // Anonymous Mode Button
             OutlinedButton(
                 onClick = ::attemptAnonymousLogin,
@@ -310,7 +215,7 @@ fun LoginScreen(
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                Text("Lanjutkan sebagai Guest")
+                Text("Continue as Guest")
             }
         }
     }
@@ -322,6 +227,16 @@ fun RegisterScreen(
     onRegistered: () -> Unit
 ) {
     val context = LocalContext.current
+    
+    // Get FirebaseAuthRepository from Hilt
+    val firebaseAuthRepository = remember {
+        val appContext = context.applicationContext
+        EntryPointAccessors.fromApplication(
+            appContext,
+            FirebaseEntryPoint::class.java
+        ).firebaseAuthRepository()
+    }
+    
     var firstName by rememberSaveable { mutableStateOf("") }
     var lastName by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
@@ -361,30 +276,25 @@ fun RegisterScreen(
         if (!validate()) return
         scope.launch {
             isLoading = true
-            val result = withContext(Dispatchers.IO) {
-                ProfileRepository.registerProfile(
-                    context = context,
-                    firstName = firstName.trim(),
-                    lastName = lastName.trim(),
-                    email = email.trim(),
-                    password = password
-                )
-            }
+            
+            // Use Firebase Auth for registration
+            val displayName = "${firstName.trim()} ${lastName.trim()}"
+            val result = firebaseAuthRepository.registerWithEmail(
+                email = email.trim(),
+                password = password,
+                displayName = displayName
+            )
+            
             isLoading = false
-            result.onSuccess { profile ->
-                toastMessage = context.getString(
-                    R.string.toast_register_success,
-                    profile.fullName().ifBlank { profile.email }
-                )
+            result.onSuccess {
+                toastMessage = "Registration successful!"
                 onRegistered()
             }.onFailure { error ->
-                when (error) {
-                    is ProfileRepository.EmailAlreadyExistsException -> {
-                        emailError = context.getString(R.string.error_email_exists)
-                    }
-                    else -> {
-                        toastMessage = error.message ?: context.getString(R.string.error_generic)
-                    }
+                // Check for duplicate email
+                if (error.message?.contains("already in use") == true) {
+                    emailError = context.getString(R.string.error_email_exists)
+                } else {
+                    toastMessage = error.message ?: context.getString(R.string.error_generic)
                 }
             }
         }
