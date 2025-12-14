@@ -23,7 +23,7 @@ A modern Android news application with ML-powered personalized article recommend
 
 | Home | Search | Saved | Profile |
 |:----:|:------:|:-----:|:-------:|
-| ![Home](screenshots/home_newsapp.jpeg) | ![Search](screenshots/search_newsapp.jpeg) | ![Saved](screenshots/saved_newsapp.jpeg) | ![Profile](screenshots/profile_newsapp.jpeg) |
+| ![Home](Screenshots/home_newsapp.jpeg) | ![Search](Screenshots/search_newsapp.jpeg) | ![Saved](Screenshots/saved_newsapp.jpeg) | ![Profile](Screenshots/profile_newsapp.jpeg) |
 
 ---
 
