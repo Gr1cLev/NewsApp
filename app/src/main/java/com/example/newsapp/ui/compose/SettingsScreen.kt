@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.MailOutline
@@ -51,14 +52,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.newsapp.R
-import com.example.newsapp.data.ProfileRepository
+import com.example.newsapp.data.NewsRepository
 import com.example.newsapp.data.UserPreferences
+import com.example.newsapp.di.FirebaseEntryPoint
+import com.example.newsapp.util.Resource
+import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -68,20 +73,55 @@ import kotlinx.coroutines.withContext
 fun SettingsScreen(
     onBack: () -> Unit,
     onEditProfile: () -> Unit,
+    onOpenBackground: () -> Unit,
     onLogout: () -> Unit,
     isDarkTheme: Boolean,
-    onToggleDarkTheme: (Boolean) -> Unit
+    onToggleDarkTheme: (Boolean) -> Unit,
+    newsRepository: NewsRepository
 ) {
     val context = LocalContext.current
+    
+    // Get FirebaseAuthRepository from Hilt
+    val firebaseAuthRepository = remember {
+        val appContext = context.applicationContext
+        EntryPointAccessors.fromApplication(
+            appContext,
+            FirebaseEntryPoint::class.java
+        ).firebaseAuthRepository()
+    }
+    
     var nightMode by remember { mutableStateOf(isDarkTheme) }
     var notificationsEnabled by remember { mutableStateOf(UserPreferences.isNotificationsEnabled(context)) }
     var showLogoutDialog by remember { mutableStateOf(false) }
     var isProcessing by remember { mutableStateOf(false) }
+    var apiStatus by remember { mutableStateOf("Checking API status...") }
+    var apiStatusColor by remember { mutableStateOf(Color.Gray) }
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+    val errorColor = MaterialTheme.colorScheme.error
 
     LaunchedEffect(isDarkTheme) {
         nightMode = isDarkTheme
+    }
+    
+    LaunchedEffect(Unit) {
+        val result = withContext(Dispatchers.IO) {
+            newsRepository.fetchArticlesFromNetwork(category = "Top", country = "id")
+        }
+        when (result) {
+            is Resource.Success -> {
+                apiStatus = "API OK"
+                apiStatusColor = Color(0xFF2E7D32) // green
+            }
+            is Resource.Error -> {
+                apiStatus = "API error: ${result.message}"
+                apiStatusColor = errorColor
+            }
+            Resource.Loading -> {
+                apiStatus = "Checking API status..."
+                apiStatusColor = Color.Gray
+            }
+        }
     }
 
     if (showLogoutDialog) {
@@ -95,25 +135,18 @@ fun SettingsScreen(
                     onClick = {
                         coroutineScope.launch {
                             isProcessing = true
-                            val result = withContext(Dispatchers.IO) {
-                                ProfileRepository.logout(context)
+                            // Use Firebase Auth signOut
+                            withContext(Dispatchers.IO) {
+                                firebaseAuthRepository.signOut()
                             }
                             isProcessing = false
                             showLogoutDialog = false
-                            result.onSuccess {
-                                Toast.makeText(
-                                    context,
-                                    context.getString(R.string.toast_logout_success),
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                onLogout()
-                            }.onFailure { error ->
-                                Toast.makeText(
-                                    context,
-                                    error.message ?: context.getString(R.string.error_generic),
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.toast_logout_success),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            onLogout()
                         }
                     }
                 ) {
@@ -186,10 +219,86 @@ fun SettingsScreen(
                     }
                 )
 
+                ElevatedCard(
+                    onClick = onOpenBackground,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.elevatedCardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 18.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                                    .padding(10.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Image,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = "Background settings",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
+                                )
+                                Text(
+                                    text = "Change wallpaper and transparency",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        Icon(
+                            imageVector = Icons.Filled.ChevronRight,
+                            contentDescription = null
+                        )
+                    }
+                }
+
                 Text(
                     text = stringResource(R.string.settings_information_section),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
+                
+                ElevatedCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.elevatedCardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 14.dp),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "API status",
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                            Text(
+                                text = apiStatus,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = apiStatusColor
+                            )
+                        }
+                    }
+                }
 
                 ExpandableInfoCard(
                     title = stringResource(R.string.settings_faq),

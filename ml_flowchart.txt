@@ -1,0 +1,22 @@
+```mermaid
+flowchart TD
+    A[App Launch] --> B{Model available in Storage?}
+    B -- Yes --> C[Download latest model JSON]
+    B -- No --> D[Use rule-based recommender]
+    C --> E[Cache model locally]
+    E --> F[Load model artifacts]
+    F --> G[Generate recommendations]
+    D --> G
+
+    %% User interactions loop
+    G --> H[User clicks/reads/bookmarks]
+    H --> I[Track interactions to Firestore]
+    H --> J[Update local preferences]
+
+    %% Manual training pipeline (offline notebook)
+    I --> K[Data export via Admin SDK]
+    K --> L[Train SVD (Notebook)]
+    L --> M[Evaluate & version model]
+    M --> N[Upload model JSON to Firebase Storage]
+    N --> B
+```

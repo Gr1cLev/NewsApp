@@ -5,6 +5,9 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +32,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Article
@@ -65,6 +69,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -80,18 +85,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import android.net.Uri
 import androidx.annotation.RawRes
 import androidx.compose.ui.graphics.asImageBitmap
-import android.graphics.BitmapFactory
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.newsapp.data.UserPreferences
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import java.io.InputStream
 import com.example.newsapp.R
 import com.example.newsapp.data.NewsRepository
-import com.example.newsapp.data.ProfileRepository
 import com.example.newsapp.model.NewsArticle
 import com.example.newsapp.model.NewsCategory
 import com.example.newsapp.model.NewsData
@@ -106,6 +107,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import com.example.newsapp.ui.compose.rememberBackgroundBitmap
+import com.example.newsapp.ui.compose.imageAlphaForLevel
 
 private data class ProfileLoadState(
     val loaded: Boolean,
@@ -150,6 +153,8 @@ fun HomeScreen(
     val categoryArticles by newsViewModel.categoryArticles.collectAsState()
     val isFetchingCategory by newsViewModel.isFetchingCategory.collectAsState()
     val isRefreshing by newsViewModel.isRefreshing.collectAsState()
+    val personalizedFeatured by newsViewModel.personalizedFeatured.collectAsState()
+    val personalizedArticles by newsViewModel.personalizedArticles.collectAsState()
     
     val searchQuery by searchViewModel.searchQuery.collectAsState()
     val searchResults by searchViewModel.searchResults.collectAsState()
@@ -260,18 +265,27 @@ fun HomeScreen(
                         newsViewModel = newsViewModel,
                         newsData = state,
                         categoryArticles = categoryArticles,
+                        personalizedFeatured = personalizedFeatured,
+                        personalizedArticles = personalizedArticles,
                         selectedCategory = selectedCategory,
                         isFetchingCategory = isFetchingCategory,
                         isRefreshing = isRefreshing,
                         bookmarkedIds = bookmarkedIds,
                         onBookmarkToggle = { article ->
                             coroutineScope.launch {
+                                val wasBookmarked = bookmarkViewModel.isArticleBookmarked(article.id)
                                 bookmarkViewModel.toggleBookmark(article.id)
                                 onBookmarksUpdated()
+                                
+                                // Track bookmark for ML (only when adding bookmark)
+                                if (!wasBookmarked) {
+                                    searchViewModel.onArticleBookmarked(article)
+                                }
+                                
                                 Toast.makeText(
                                     context,
                                     context.getString(
-                                        if (bookmarkViewModel.isArticleBookmarked(article.id))
+                                        if (!wasBookmarked)
                                             R.string.bookmark_added
                                         else
                                             R.string.bookmark_removed
@@ -280,7 +294,11 @@ fun HomeScreen(
                                 ).show()
                             }
                         },
-                        onArticleClick = { onOpenArticle(it.id) }
+                        onArticleClick = { article ->
+                            // Track click for ML
+                            searchViewModel.onArticleClicked(article)
+                            onOpenArticle(article.id)
+                        }
                     )
                     HomeTab.Search -> SearchTab(
                         modifier = Modifier.padding(innerPadding),
@@ -291,12 +309,19 @@ fun HomeScreen(
                         bookmarkedIds = bookmarkedIds,
                         onBookmarkToggle = { article ->
                             coroutineScope.launch {
+                                val wasBookmarked = bookmarkViewModel.isArticleBookmarked(article.id)
                                 bookmarkViewModel.toggleBookmark(article.id)
                                 onBookmarksUpdated()
+                                
+                                // Track bookmark for ML (only when adding bookmark)
+                                if (!wasBookmarked) {
+                                    searchViewModel.onArticleBookmarked(article)
+                                }
+                                
                                 Toast.makeText(
                                     context,
                                     context.getString(
-                                        if (bookmarkViewModel.isArticleBookmarked(article.id))
+                                        if (!wasBookmarked)
                                             R.string.bookmark_added
                                         else
                                             R.string.bookmark_removed
@@ -305,13 +330,21 @@ fun HomeScreen(
                                 ).show()
                             }
                         },
-                        onArticleClick = { onOpenArticle(it.id) }
+                        onArticleClick = { article ->
+                            // Track click for ML
+                            searchViewModel.onArticleClicked(article)
+                            onOpenArticle(article.id)
+                        }
                     )
                     HomeTab.Bookmarks -> BookmarksTab(
                         modifier = Modifier.padding(innerPadding),
                         bookmarkViewModel = bookmarkViewModel,
                         bookmarks = bookmarkedArticles,
-                        onArticleClick = { onOpenArticle(it.id) }
+                        onArticleClick = { article ->
+                            // Track click for ML
+                            searchViewModel.onArticleClicked(article)
+                            onOpenArticle(article.id)
+                        }
                     )
                     HomeTab.Profile -> ProfileTab(
                         modifier = Modifier.padding(innerPadding),
@@ -368,6 +401,8 @@ private fun NewsTab(
     newsViewModel: NewsViewModel,
     newsData: NewsUiState.Success,
     categoryArticles: List<NewsArticle>,
+    personalizedFeatured: List<NewsArticle>,
+    personalizedArticles: List<NewsArticle>,
     selectedCategory: String,
     isFetchingCategory: Boolean,
     isRefreshing: Boolean,
@@ -388,12 +423,24 @@ private fun NewsTab(
                 contentPadding = PaddingValues(vertical = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Featured articles (only on "All" category)
-                if (newsData.featuredArticles.isNotEmpty() && selectedCategory.equals("All", ignoreCase = true)) {
+                // Featured articles - filter by selected category
+                val featuredForCategory = if (selectedCategory.equals("Top", ignoreCase = true)) {
+                    // Show personalized featured for "Top"
+                    if (personalizedFeatured.isNotEmpty()) {
+                        personalizedFeatured
+                    } else {
+                        newsData.featuredArticles
+                    }
+                } else {
+                    // Filter featured by selected category
+                    categoryArticles.filter { it.isFeatured }
+                }
+                
+                if (featuredForCategory.isNotEmpty()) {
                     item { SectionTitle("Featured") }
                     item {
                         FeaturedCarousel(
-                            articles = newsData.featuredArticles,
+                            articles = featuredForCategory,
                             onArticleClick = onArticleClick
                         )
                     }
@@ -412,8 +459,14 @@ private fun NewsTab(
 
                 item { SectionTitle("For You") }
 
-                // Articles list
-                items(categoryArticles) { article ->
+                // Articles list - use personalized for "Top", categoryArticles for specific categories
+                val articlesToShow = if (selectedCategory.equals("Top", ignoreCase = true) && personalizedArticles.isNotEmpty()) {
+                    personalizedArticles
+                } else {
+                    categoryArticles
+                }
+                
+                items(articlesToShow) { article ->
                     ArticleCard(
                         article = article,
                         isBookmarked = bookmarkedIds.contains(article.id),
@@ -427,6 +480,7 @@ private fun NewsTab(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SearchTab(
     modifier: Modifier,
@@ -441,20 +495,47 @@ private fun SearchTab(
     val trimmedQuery = searchQuery.trim()
     val results = searchResults
 
-    val recommendations = remember(allArticles) {
+    // Get ML-powered recommendations from ViewModel
+    val recommendedArticles by searchViewModel.recommendedArticles.collectAsState()
+    val isLoadingRecommendations by searchViewModel.isLoadingRecommendations.collectAsState()
+    
+    // Pull-to-refresh state
+    var isRefreshing by remember { mutableStateOf(false) }
+
+    // Fallback recommendations if ML not ready
+    val fallbackRecommendations = remember(allArticles) {
         allArticles.filter { it.category.equals("Sports", ignoreCase = true) }.ifEmpty {
             allArticles.take(5)
         }
     }
 
+    // Use ML recommendations or fallback
+    val displayRecommendations = if (recommendedArticles.isNotEmpty()) {
+        recommendedArticles
+    } else {
+        fallbackRecommendations
+    }
+
     TransparentBackground(modifier = modifier) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(18.dp)
+        PullToRefreshBox(
+            isRefreshing = isRefreshing || isLoadingRecommendations,
+            onRefresh = {
+                isRefreshing = true
+                searchViewModel.refreshRecommendations()
+                // Reset after a delay
+                kotlinx.coroutines.MainScope().launch {
+                    kotlinx.coroutines.delay(1000)
+                    isRefreshing = false
+                }
+            }
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(18.dp)
+            ) {
         Spacer(modifier = Modifier.height(16.dp))
         SearchField(
             value = searchQuery,
@@ -468,15 +549,63 @@ private fun SearchTab(
             exit = fadeOut()
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                SectionTitle("Rekomendasi")
-                recommendations.forEach { article ->
-                    ArticleCard(
-                        article = article,
-                        isBookmarked = bookmarkedIds.contains(article.id),
-                        showCategory = true,
-                        onBookmarkToggle = { onBookmarkToggle(article) },
-                        onClick = { onArticleClick(article) }
-                    )
+                // ML Recommendations Section
+                SectionTitle("✨ Recommended for You")
+                // Loading state
+                if (isLoadingRecommendations) {
+                    repeat(3) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(120.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            )
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                            }
+                        }
+                    }
+                } else if (displayRecommendations.isEmpty()) {
+                    // Empty state
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "🤖",
+                                style = MaterialTheme.typography.displaySmall
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Start reading to get personalized recommendations!",
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                } else {
+                    // Display recommendations
+                    displayRecommendations.forEach { article ->
+                        ArticleCard(
+                            article = article,
+                            isBookmarked = bookmarkedIds.contains(article.id),
+                            showCategory = true,
+                            onBookmarkToggle = { onBookmarkToggle(article) },
+                            onClick = { onArticleClick(article) }
+                        )
+                    }
                 }
             }
         }
@@ -509,6 +638,7 @@ private fun SearchTab(
 
         Spacer(modifier = Modifier.height(32.dp))
         }
+        }
     }
 }
 
@@ -533,6 +663,17 @@ private fun BookmarksTab(
             return@TransparentBackground
         }
 
+        var query by rememberSaveable { mutableStateOf("") }
+        val filtered = remember(query, bookmarks) {
+            val trimmed = query.trim()
+            if (trimmed.isBlank()) bookmarks
+            else bookmarks.filter { article ->
+                article.title.contains(trimmed, ignoreCase = true) ||
+                        article.summary.contains(trimmed, ignoreCase = true) ||
+                        article.source.contains(trimmed, ignoreCase = true)
+            }
+        }
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -540,15 +681,34 @@ private fun BookmarksTab(
             contentPadding = PaddingValues(vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-        items(bookmarks) { article ->
-            ArticleCard(
-                article = article,
-                isBookmarked = true,
-                showCategory = true,
-                onBookmarkToggle = { bookmarkViewModel.toggleBookmark(article.id) },
-                onClick = { onArticleClick(article) }
-            )
-        }
+            item {
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.bookmark_search_hint)) },
+                    singleLine = true
+                )
+            }
+
+            if (filtered.isEmpty()) {
+                item {
+                    Text(
+                        text = stringResource(R.string.bookmark_search_empty),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            } else {
+                items(filtered) { article ->
+                    ArticleCard(
+                        article = article,
+                        isBookmarked = true,
+                        showCategory = true,
+                        onBookmarkToggle = { bookmarkViewModel.toggleBookmark(article.id) },
+                        onClick = { onArticleClick(article) }
+                    )
+                }
+            }
         }
     }
 }
@@ -628,7 +788,8 @@ private fun ProfileTab(
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     text = profile.fullName().ifBlank { profile.email.substringBefore("@") },
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = profile.email,
@@ -930,9 +1091,11 @@ private fun ArticleCard(
 
 @Composable
 private fun SectionTitle(text: String) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     Text(
         text = text,
-        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+        color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface
     )
 }
 
@@ -979,29 +1142,20 @@ private fun TransparentBackground(
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
-    // Menggunakan MaterialTheme untuk deteksi dark mode yang lebih reliable dan reactive
     val isDarkMode = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val backgroundBitmap = rememberBackgroundBitmap(context)
+    val alphaLevel = UserPreferences.getBackgroundAlphaLevel(context)
+    val imageAlpha = imageAlphaForLevel(alphaLevel)
     
     Box(modifier = modifier.fillMaxSize()) {
-        // Background image dengan transparansi - menggunakan BitmapFactory untuk raw resource
-        val bitmap = remember {
-            try {
-                context.resources.openRawResource(R.raw.imagebghome).use { inputStream ->
-                    BitmapFactory.decodeStream(inputStream)
-                }
-            } catch (e: Exception) {
-                null
-            }
-        }
-        
-        if (bitmap != null) {
+        if (backgroundBitmap != null) {
             androidx.compose.foundation.Image(
-                bitmap = bitmap.asImageBitmap(),
+                bitmap = backgroundBitmap.asImageBitmap(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
-                    .alpha(0.4f), // Alpha 40% untuk visibilitas yang baik
+                    .alpha(imageAlpha),
             )
         } else {
             // Fallback jika gambar tidak bisa dimuat
